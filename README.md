@@ -2,7 +2,13 @@
 
 
 
-## Getting started
+## Getting Started
+Please follow all steps in order.
+
+### Add an SSH Key for Your Local Device.
+To allow git to access repositories from the remote, add an ssh key to your gitlab account. You can find a short guide [here](https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/How-to-configure-GitLab-SSH-keys-for-secure-Git-connections).
+
+### Clone the Repo
 To use your repository, clone it to your local device
 
 ```bash
