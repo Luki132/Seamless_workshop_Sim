@@ -1,4 +1,4 @@
 [submodule "src/common"]
 	path = src/common
-	url = git@git.scc.kit.edu:seamless-engineering/se22/common/common.git
+	url = https://git.scc.kit.edu/seamless-engineering/se22/common/common.git
 	branch = main
