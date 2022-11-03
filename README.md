@@ -14,8 +14,7 @@ To allow git to access repositories from the remote, add the ssh key to your git
 To use your repository, clone it to your local device
 
 ```bash
-cd ~
-git clone git@git.scc.kit.edu:seamless-engineering/se22/students/se22_a_ws.git
+cd ~ && git clone git@git.scc.kit.edu:seamless-engineering/se22/students/se22_a_ws.git
 ``` 
 Go to the root folder of your workspace (se22_a_ws).
 ```bash
