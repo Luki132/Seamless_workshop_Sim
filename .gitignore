@@ -212,3 +212,4 @@ venv/
 .catkin_workspace
 .catkin_tools/
 .code/
+.vscode/

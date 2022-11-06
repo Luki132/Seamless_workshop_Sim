@@ -8,7 +8,7 @@ Please follow all steps in order.
 
 ### Add an SSH Key for Your Local Device.
 Before you can download and update this repository with the following commands, you need to create a ssh key.
-To allow git to access repositories from the remote, add the ssh key to your gitlab account. You can find a short guide [to create and add a key on your pc](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) and [to add a key in github to your account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
+To allow git to access repositories from the remote, add the ssh key to your gitlab account. You can find a short guide [here](https://medium.com/devops-with-valentine/2021-how-to-your-ssh-key-for-gitlab-on-linux-1b94e2a3a49a).
 
 ### Clone the Repo
 To use your repository, clone it to your local device
@@ -88,7 +88,7 @@ There you can create your own packages. Just be careful not to alter code in the
 when downloading new versions of the common packages.
 
 ## Tutorials
-Example script: `robis_uarm/scripts/very_simple_action_client_example.py`
+Example script: `src/common/robis_uarm/scripts/very_simple_action_client_example.py`
 
 ### Useful Links
 - [Git Submodules](https://www.vogella.com/tutorials/GitSubmodules/article.html)
@@ -98,7 +98,7 @@ Example script: `robis_uarm/scripts/very_simple_action_client_example.py`
   - [ROS Tutorials](http://wiki.ros.org/ROS/Tutorials)
 
 
-## Manual  ROS Installation:
+## Manual ROS Installation:
 
 ### ROS
 Install ROS noetic desktop full!
