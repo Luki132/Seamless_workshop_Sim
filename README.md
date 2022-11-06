@@ -15,6 +15,8 @@ To use your repository, clone it to your local device
 
 ```bash
 cd ~
+```
+```bash
 git clone git@git.scc.kit.edu:seamless-engineering/se22/students/se22_a_ws.git
 ``` 
 Go to the root folder of your workspace (se22_a_ws).
@@ -38,6 +40,8 @@ This will clone all additional packages.
 The `common` directory contains utility shell scripts. To use them, you have to make them executable:
 ```bash
 cd ~/se22_a_ws/src/common/scripts
+```
+```bash
 chmod +x edit_bashrc.sh install_se_pkgs.sh
 ```
 
@@ -45,6 +49,8 @@ You can install the necessary packages via the `install_se_pkgs.sh` script, or m
 preinstalled on the provided OS sticks. To install via the script enter
 ```bash
 cd ~/se22_a_ws/src/common/scripts
+```
+```bash
 sudo ./install_se_pkgs.sh
 ```
 Manual install instructions are listed below.
@@ -54,6 +60,8 @@ To check if all packages were downloaded correctly, try to build the whole works
 common packages are compiled:
 ```bash
 cd ~/se22_a_ws/
+```
+```bash
 catkin_make
 ```
 
@@ -63,7 +71,11 @@ Then just run the script `edit_bashrc.sh`:
 
 ```bash
 cd ~/se22_a_ws/src/common/scripts
+```
+```bash
 chmod +x edit_bashrc.sh
+```
+```bash
 ./edit_bashrc.sh
 ```
 
