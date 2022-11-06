@@ -1,4 +1,4 @@
-# Seamless Engineering 2022 Workspace 🟩 Group A
+# Workspace Group 2 🔹Seamless Engineering 2022
 Project Workspace for the lecture "Seamless Engineering", winter term 2022/23.
 
 Feel free to alter this readme to help your team members to run your code.
@@ -17,11 +17,11 @@ To use your repository, clone it to your local device
 cd ~
 ```
 ```bash
-git clone git@git.scc.kit.edu:seamless-engineering/se22/students/se22_a_ws.git
+git clone git@git.scc.kit.edu:seamless-engineering/se22/students/group2_ws.git
 ``` 
-Go to the root folder of your workspace (se22_a_ws).
+Go to the root folder of your workspace (group2_ws).
 ```bash
-cd ~/se22_a_ws
+cd ~/group2_ws
 ```
 
 We provide you with additional packages in the `src/common` directory.
@@ -39,7 +39,7 @@ This will clone all additional packages.
 
 The `common` directory contains utility shell scripts. To use them, you have to make them executable:
 ```bash
-cd ~/se22_a_ws/src/common/scripts
+cd ~/group2_ws/src/common/scripts
 ```
 ```bash
 chmod +x edit_bashrc.sh install_se_pkgs.sh
@@ -48,7 +48,7 @@ chmod +x edit_bashrc.sh install_se_pkgs.sh
 You can install the necessary packages via the `install_se_pkgs.sh` script, or manually. These packages are already
 preinstalled on the provided OS sticks. To install via the script enter
 ```bash
-cd ~/se22_a_ws/src/common/scripts
+cd ~/group2_ws/src/common/scripts
 ```
 ```bash
 sudo ./install_se_pkgs.sh
@@ -59,7 +59,7 @@ Manual install instructions are listed below.
 To check if all packages were downloaded correctly, try to build the whole workspace and observe if all 
 common packages are compiled:
 ```bash
-cd ~/se22_a_ws/
+cd ~/group2_ws/
 ```
 ```bash
 catkin_make
@@ -70,7 +70,7 @@ Next , we'll tell ROS where to look for resources.
 Then just run the script `edit_bashrc.sh`:
 
 ```bash
-cd ~/se22_a_ws/src/common/scripts
+cd ~/group2_ws/src/common/scripts
 ```
 ```bash
 chmod +x edit_bashrc.sh
