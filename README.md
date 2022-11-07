@@ -1,4 +1,4 @@
-# Workspace Group 2 🔹Seamless Engineering 2022
+# Workspace Group 6 🔹 Seamless Engineering 2022
 Project Workspace for the lecture "Seamless Engineering", winter term 2022/23.
 
 Feel free to alter this readme to help your team members to run your code.
@@ -7,7 +7,7 @@ Feel free to alter this readme to help your team members to run your code.
 Please follow all steps in order.
 
 ### Add an SSH Key for Your Local Device.
-Before you can download and update this repository with the following commands, you need to create a ssh key.
+Before you can download and update this repository with the following commands, you need to create an ssh key.
 To allow git to access repositories from the remote, add the ssh key to your gitlab account. You can find a short guide [here](https://medium.com/devops-with-valentine/2021-how-to-your-ssh-key-for-gitlab-on-linux-1b94e2a3a49a).
 
 ### Clone the Repo
@@ -17,16 +17,16 @@ To use your repository, clone it to your local device
 cd ~
 ```
 ```bash
-git clone git@git.scc.kit.edu:seamless-engineering/se22/students/group2_ws.git
+git clone git@git.scc.kit.edu:seamless-engineering/se22/students/group6_ws.git
 ``` 
-Go to the root folder of your workspace (group2_ws).
+Go to the root folder of your workspace (group6_ws).
 ```bash
-cd ~/group2_ws
+cd ~/group6_ws
 ```
 
 We provide you with additional packages in the `src/common` directory.
 These additional packages are linked as submodules to this workspace.
-In order to retrieve these, you have to run an additional command before you continue.
+In order to retrieve them, you have to run an additional command before you continue.
 
 ```bash
 git submodule update --init --recursive --remote
@@ -39,7 +39,7 @@ This will clone all additional packages.
 
 The `common` directory contains utility shell scripts. To use them, you have to make them executable:
 ```bash
-cd ~/group2_ws/src/common/scripts
+cd ~/group6_ws/src/common/scripts
 ```
 ```bash
 chmod +x edit_bashrc.sh install_se_pkgs.sh
@@ -48,7 +48,7 @@ chmod +x edit_bashrc.sh install_se_pkgs.sh
 You can install the necessary packages via the `install_se_pkgs.sh` script, or manually. These packages are already
 preinstalled on the provided OS sticks. To install via the script enter
 ```bash
-cd ~/group2_ws/src/common/scripts
+cd ~/group6_ws/src/common/scripts
 ```
 ```bash
 sudo ./install_se_pkgs.sh
@@ -59,7 +59,7 @@ Manual install instructions are listed below.
 To check if all packages were downloaded correctly, try to build the whole workspace and observe if all 
 common packages are compiled:
 ```bash
-cd ~/group2_ws/
+cd ~/group6_ws/
 ```
 ```bash
 catkin_make
@@ -70,7 +70,7 @@ Next , we'll tell ROS where to look for resources.
 Then just run the script `edit_bashrc.sh`:
 
 ```bash
-cd ~/group2_ws/src/common/scripts
+cd ~/group6_ws/src/common/scripts
 ```
 ```bash
 chmod +x edit_bashrc.sh
