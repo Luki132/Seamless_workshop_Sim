@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/common/robis_cargo_handler/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/common/robis_core/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/robis_utils" />
+      <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/swift_api" />
+      <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/robis_uarm" />
+      <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/robis_cargo_handler" />
+      <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/robis_conveyor" />
+      <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/robis_slider" />
+      <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/robis_core" />
+    </content>
+    <content url="file:///opt/ros/noetic/lib/python3/dist-packages" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="PyDocumentationSettings">
+    <option name="format" value="GOOGLE" />
+    <option name="myDocStringFormat" value="Google" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="py.test" />
+  </component>
+</module>

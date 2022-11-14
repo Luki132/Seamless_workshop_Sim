@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/charuco_detector" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_cargo_handler" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_conveyor" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_core" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_environment" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_kinect" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_messages" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_slider" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_turtlebot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_turtlebot/src/turtlebot3" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_uarm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robis_uarm/src/swift_api" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/common/robot_state_publisher" vcs="Git" />
+  </component>
+</project>
