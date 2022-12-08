@@ -1,0 +1,101 @@
+<launch>
+  <!-- Launch arguments -->
+  <arg name="model" default="$(find robis_turtlebot)/urdf/model.urdf.xacro" />
+  <arg name="wait" default="" />
+  <!-- wait arg needs to look like: -wait NAME_REFERENCE -->
+  <arg name="name" default="turtlebot" />
+  <arg name="number" default="1" />
+  <arg name="x" default="1.0" />
+  <arg name="y" default="0.25" />
+  <arg name="z" default="0" />
+  <arg name="Y" default="0" />
+  <arg name="start_gazebo" default="false" />
+  <arg name="charuco_detector" default="true" />
+  <arg name="navigation" default="true" />
+  <arg name="reference_frame" default="world" />
+  <arg name="spawn" default="true" />
+  <arg name="map_file" default="$(find seamless_environment)/maps/seamless.yaml"/>
+
+  <!-- start gazebo if necessary -->
+  <group if="$(arg charuco_detector)">
+    <include file="$(find robis_turtlebot)/launch/se_charuco_detector.launch" />
+  </group>
+  <!-- start gazebo if necessary -->
+  <group if="$(arg start_gazebo)">
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="paused" value="false"/>
+      <arg name="headless" value="true"/>
+      <!--arg name="world_name" value="$(find robis_environment)/worlds/seamless.world"/-->
+    </include>
+  </group>
+
+  <group ns="$(arg name)$(arg number)/camera/image_charuco_detection" >
+    <rosparam param="disable_pub_plugins">
+      - 'image_transport/compressedDepth'
+      - 'image_transport/theora'
+      - 'image_transport/compressed'
+    </rosparam>
+  </group>
+
+
+  <group ns="$(arg name)$(arg number)/camera/image" >
+    <rosparam param="disable_pub_plugins">
+      - 'image_transport/compressedDepth'
+      - 'image_transport/theora'
+      - 'image_transport/compressed'
+      - 'dynamic_reconfigure/parameter_descriptions'
+      - 'dynamic_reconfigure/parameter_updates'
+    </rosparam>
+  </group>
+
+  <!-- Nodes and parameters related to the robot -->
+  <group ns="/$(arg name)$(arg number)">
+    <!-- TF prefix and xacro parameters -->
+    <param name="tf_prefix" value="$(arg name)$(arg number)" />
+    <param name="/$(arg name)$(arg number)/robot_description" command="$(find xacro)/xacro $(arg model)" />
+
+    <group if="$(arg spawn)">
+      <!-- Spawn model from URDF -->
+     <node name="urdf_spawner_$(arg name)$(arg number)" pkg="gazebo_ros" type="spawn_model" args="
+      -x $(arg x) -y $(arg y) -z $(arg z) -Y $(arg Y)
+      $(arg wait)
+      -urdf
+      -model $(arg name)$(arg number)
+      -reference_frame $(arg reference_frame)
+      -param robot_description" respawn="false" output="log">
+     </node>
+    </group>
+    <!-- start a ROS controller to actuate the joints of the turtlebot -->
+    <rosparam command="load" file="$(find robis_turtlebot)/config/model/joint_states.yaml" ns="joint_state" />
+
+    <node name="$(arg name)$(arg number)x_controller_spawner" pkg="controller_manager" type="spawner" args="
+            joint_state
+            --timeout 0" output="log" >
+    </node>
+
+    <!-- Publish joint states for RVIZ visualization -->
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher_$(arg name)$(arg number)">
+      <param name="publish_frequency" type="double" value="50.0" />
+    </node>
+  </group>
+
+  <!-- publishes tf in case move base navigation is not needed-->
+  <group if="$(eval arg('navigation') == false)">
+    <node pkg="tf" type="static_transform_publisher" name="$(arg name)$(arg number)_world_to_odom_broadcaster"
+          args="0 0 0 0 0 0 /world /$(arg name)$(arg number)/odom 50">
+    </node>
+  </group>
+
+  <!-- starts costum amcl and move base navigation -->
+  <group if="$(arg navigation)">
+    <include file="$(find robis_turtlebot)/launch/tb_navigation.launch">
+      <arg name="name" value="$(arg name)"/>
+      <arg name="number" value="$(arg number)"/>
+      <arg name="x" value="$(arg x)"/>
+      <arg name="y" value="$(arg y)"/>
+      <arg name="z" value="$(arg z)"/>
+      <arg name="Y" value="$(arg Y)"/>
+      <arg name="map_file" value="$(arg map_file)"/>
+    </include>
+  </group>
+</launch>
