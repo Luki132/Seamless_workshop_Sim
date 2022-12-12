@@ -1,0 +1,3 @@
+- se_world can now be launch within the group6_pkg. 
+- new local planner called TEB has been added. To use the new local planner its content needs to be first installed on your respective machine. Run sudo apt-get install ros-noetic-teb-local-planner
+- The yaml file containing the latest parameters can be found in the params folder. The yaml file can be loaded to the rqt_reconfigure GUI. To run the rqt_reconfigure, run rosrun rqt_reconfigure rqt_reconfigure in a separate terminal after launching the world. 
