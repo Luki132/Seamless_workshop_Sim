@@ -88,7 +88,7 @@
 
   <!-- starts costum amcl and move base navigation -->
   <group if="$(arg navigation)">
-    <include file="$(find robis_turtlebot)/launch/tb_navigation.launch">
+      <include file="$(find group6_pkg)/launch/tb_navigation.launch">
       <arg name="name" value="$(arg name)"/>
       <arg name="number" value="$(arg number)"/>
       <arg name="x" value="$(arg x)"/>
