@@ -1,0 +1,26 @@
+local_costmap:
+  global_frame: turtlebot1/odom
+  robot_base_frame: turtlebot1/base_footprint
+
+  update_frequency: 10.0
+  publish_frequency: 10.0
+  transform_tolerance: 0.5  
+
+  static_map: false  
+  rolling_window: true
+  width: 3
+  height: 3
+  resolution: 0.02
+
+  # plugins:
+  #     - {name: static_layer,  type: "costmap_2d::StaticLayer" }
+  #     - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+
+  # static_layer:
+  #       enabled: true  
+  #       map_topic: "/map"
+
+  # inflation_layer:
+  #       enabled: true
+  #       cost_scaling_factor: 2
+  #       inflation_radius: 0.3
