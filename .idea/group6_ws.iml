@@ -5,6 +5,9 @@
       <sourceFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/common/robis_cargo_handler/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/common/robis_core/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/common/robis_uarm/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/common/robis_turtlebot/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/nav_optimizer/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/robis_utils" />
       <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/swift_api" />
       <excludeFolder url="file://$MODULE_DIR$/devel/lib/python3/dist-packages/robis_uarm" />
