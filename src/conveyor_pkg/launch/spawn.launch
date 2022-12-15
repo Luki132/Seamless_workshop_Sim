@@ -1,0 +1,9 @@
+<launch>
+  <arg name="name" default="conveyor_controll" />
+  <arg name="number" default="1" />
+
+  <group ns="/$(arg name)$(arg number)">
+    <node pkg="conveyor_pkg" type="conveyor_controll_node" name="listener_node"/>
+  </group>
+</launch>
+    
