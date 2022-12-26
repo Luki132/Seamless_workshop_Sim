@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="uarm_pkg" type="move_uarm2_server" name="listener_node"/>
+</launch>
+    
