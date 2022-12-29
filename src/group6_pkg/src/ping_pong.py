@@ -7,52 +7,69 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
 from actionlib_msgs.msg import GoalStatusArray
 import time
-from math import dist
+from math import dist, sqrt, sin, cos, pi
+
+
+# right = 0
+# up = 90
+
+@dataclass
+class ORIENTATIONS_DEG:
+    RIGHT = 0
+    UP = 90
+    LEFT = 180
+    DOWN = -90
+
+
+def orientation_from_deg(deg:float):
+    rad = pi * deg / 180
+    return {
+        "x": 0.00,
+        "y": 0.00,
+        "z": sin(rad / 2),
+        "w": cos(rad / 2),
+    }
 
 
 poses = {
     "intermediary": {
         "position": {
-            "x": 0.88,
-            "y": 0.40,
-            "z": 0.0,
+            "x":  0.88,
+            "y":  0.45,
+            "z":  0.00,
         },
-        "orientation": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": 0.999860725648971,
-            "w": 0.016689197245918747,
-        },
+        "orientation": orientation_from_deg(ORIENTATIONS_DEG.LEFT)
     },
 
-    "bay": {
+    "bay-up": {
         "position": {
-            "x": 1.10,
-            "y": 0.80,
-            "z": 0.0,
+            "x":  1.05,
+            "y":  0.80,
+            "z":  0.00,
         },
-        "orientation": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": 0.9999875264803625,
-            "w": 0.004994685544291826,
+        "orientation": orientation_from_deg(ORIENTATIONS_DEG.DOWN)
+    },
+    "bay-left": {
+        "position": {
+            "x":  1.05,
+            "y":  0.80,
+            "z":  0.00,
         },
+        "orientation": orientation_from_deg(ORIENTATIONS_DEG.LEFT)
     },
 
     "conveyor": {
         "position": {
-            "x": 0.43,
-            "y": 0.32,
-            "z": 0.0,
+            "x":  0.43,
+            "y":  0.32,
+            "z":  0.00,
         },
-        "orientation": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": -0.9999948033926256,
-            "w": 0.0032238467308544866,
-        },
+        "orientation": orientation_from_deg(ORIENTATIONS_DEG.LEFT)
     },
 }
+
+
+poses_chain = ["bay-left", "bay-up", "intermediary", "conveyor"]
 
 
 def in_range(
@@ -157,9 +174,12 @@ def ping_pong():
     rospy.Subscriber("/turtlebot1/move_base/status", data_class=GoalStatusArray, callback=update_state)
     pose_dst = "bay"
     pose = "bay"
+    pose_index = 0
+    pose_dir = -1
+    pose = poses_chain[pose_index]
 
     # Publish one dummy pose because reasons.
-    publish_goal_pose(poses["bay"])
+    publish_goal_pose(poses["bay-left"])
 
     timeout = 20
 
@@ -180,14 +200,30 @@ def ping_pong():
         if other_reason:
             other_reason = False
             t0 = t1
-            if pose == "intermediary":
-                pose = pose_dst
-            else:
-                pose = "intermediary"
-                if pose_dst == "bay":
-                    pose_dst = "conveyor"
-                else:
-                    pose_dst = "bay"
+
+            # At either end of the chain, switch direction - and wait a few secs
+            if pose_index <= 0 or pose_index >= len(poses_chain) - 1:
+                time.sleep(5)
+                pose_dir *= -1
+            pose_index += pose_dir
+            print(pose_index, pose_dir)
+            pose = poses_chain[pose_index]
+
+            # if pose == "intermediary":
+            #     pose = pose_dst
+            # else:
+            #     # Actual goal reached. Wait for a few seconds.
+            #     time.sleep(5)
+            #     pose = "intermediary"
+            #     if pose_dst == "bay":
+            #         pose_dst = "conveyor"
+            #     else:
+            #         pose_dst = "bay"
+            # if pose == "bay":
+            #     pose = "conveyor"
+            # else:
+            #     pose = "bay"
+            # time.sleep(5)
             print("Heading towards", pose)
             publish_goal_pose(poses[pose])
 
