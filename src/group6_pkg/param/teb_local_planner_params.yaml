@@ -1,6 +1,6 @@
 TebLocalPlannerROS:
 
- odom_topic: turtlebot1/odom
+ odom_topic: /turtlebot1/odom
  map_frame: /turtlebot1/odom
     
  # Trajectory
