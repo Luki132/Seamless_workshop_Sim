@@ -22,5 +22,9 @@
     <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
     <param name="recovery_behavior_enabled" value="false"/>
     <param name="clearing_rotation_allowed" value="true"/>
+
+    <!-- Hand crafted navigation / teb local planner params /-->
+    <rosparam file="$(find group6_pkg)/param/2023-01-02-working-move_base-all.yaml" command="load" />
+
   </node>
 </launch>

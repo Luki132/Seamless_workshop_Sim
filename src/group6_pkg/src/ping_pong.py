@@ -3,15 +3,26 @@
 
 from dataclasses import dataclass
 import rospy
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from actionlib_msgs.msg import GoalStatusArray
 import time
 from math import dist, sqrt, sin, cos, pi
 
 
-# right = 0
-# up = 90
+def fix_start_pose():
+    start_pose_pub = rospy.Publisher('/turtlebot1/initialpose', data_class=PoseWithCovarianceStamped, queue_size=10)
+    start_pose = PoseWithCovarianceStamped()
+    start_pose.pose.pose.position.x = 1.268201
+    start_pose.pose.pose.position.y = 0.783632
+    start_pose.pose.pose.position.z = 0.000000
+    start_pose.pose.pose.orientation.x = 0.0
+    start_pose.pose.pose.orientation.y = 0.0
+    start_pose.pose.pose.orientation.z = 1.0
+    start_pose.pose.pose.orientation.w = 0.0
+    # covariance can remain all 0 as it is by default.
+    start_pose_pub.publish(start_pose)
+
 
 @dataclass
 class ORIENTATIONS_DEG:
@@ -32,7 +43,7 @@ def orientation_from_deg(deg:float):
 
 
 poses = {
-    "intermediary": {
+    "intermediary-down": {
         "position": {
             "x":  0.88,
             "y":  0.45,
@@ -40,10 +51,18 @@ poses = {
         },
         "orientation": orientation_from_deg(ORIENTATIONS_DEG.LEFT)
     },
+    "intermediary-up": {
+        "position": {
+            "x": 1.20,
+            "y": 0.48,
+            "z": 0.00,
+        },
+        "orientation": orientation_from_deg(ORIENTATIONS_DEG.UP)
+    },
 
     "bay-up": {
         "position": {
-            "x":  1.05,
+            "x":  1.1,
             "y":  0.80,
             "z":  0.00,
         },
@@ -51,25 +70,37 @@ poses = {
     },
     "bay-left": {
         "position": {
-            "x":  1.05,
+            "x":  1.1,
             "y":  0.80,
             "z":  0.00,
         },
         "orientation": orientation_from_deg(ORIENTATIONS_DEG.LEFT)
     },
 
-    "conveyor": {
+    "conveyor-left": {
         "position": {
-            "x":  0.43,
+            "x": 0.43,
+            "y": 0.32,
+            "z": 0.00,
+        },
+        "orientation": orientation_from_deg(ORIENTATIONS_DEG.LEFT)
+    },
+    "conveyor-right": {
+        "position": {
+            "x":  0.60,
             "y":  0.32,
             "z":  0.00,
         },
-        "orientation": orientation_from_deg(ORIENTATIONS_DEG.LEFT)
+        "orientation": orientation_from_deg(ORIENTATIONS_DEG.RIGHT)
     },
 }
 
 
-poses_chain = ["bay-left", "bay-up", "intermediary", "conveyor"]
+poses_chain = [
+    "bay-left", "pause",
+    "intermediary-down",
+    "conveyor-right", "pause",
+    "intermediary-up"]
 
 
 def in_range(
@@ -139,6 +170,7 @@ state_changed = True
 def update_state(data:GoalStatusArray):
     global state, state_changed
     new_state = data.status_list[0].status
+    #print("State:", state, {0:"idle", 1:"driving", 2:"cancelled", 3:"goal", 4:"osc"}.get(state, "unknown"))
     if new_state != state:
         state = new_state
         state_changed = True
@@ -167,11 +199,26 @@ def user_controlled_goal_pose():
             print("Available poses:", [p for p in poses.keys()])
 
 
+def startup_delay():
+    print("Starting in 3", end=" ")
+    time.sleep(1)
+    print("2", end=" ")
+    time.sleep(1)
+    print("1", end=" ")
+
+
 def ping_pong():
     global position, state, state_changed
     rospy.init_node('ping_pong')
     rospy.Subscriber("/turtlebot1/odom", data_class=Odometry, callback=pos_callback)
     rospy.Subscriber("/turtlebot1/move_base/status", data_class=GoalStatusArray, callback=update_state)
+
+    print("Fixing turtlebot position... ", end="")
+    fix_start_pose()
+    time.sleep(1) # because reasons
+    fix_start_pose()
+    print("Done.")
+
     pose_dst = "bay"
     pose = "bay"
     pose_index = 0
@@ -201,13 +248,23 @@ def ping_pong():
             other_reason = False
             t0 = t1
 
-            # At either end of the chain, switch direction - and wait a few secs
-            if pose_index <= 0 or pose_index >= len(poses_chain) - 1:
-                time.sleep(5)
-                pose_dir *= -1
-            pose_index += pose_dir
-            print(pose_index, pose_dir)
+            # # At either end of the chain, switch direction - and wait a few secs
+            # if pose_index <= 0 or pose_index >= len(poses_chain) - 1:
+            #     time.sleep(0.5)
+            #     pose_dir *= -1
+            # pose_index += pose_dir
+            # print(pose_index, pose_dir)
+            # pose = poses_chain[pose_index]
+
+            # Alternative variant: at the end of the chain, restart. Explicit pause markers
+            pose_index = (pose_index + 1) % len(poses_chain)
             pose = poses_chain[pose_index]
+            if pose == "pause":
+                pause_delay = 0.5
+                print(f"Pausing for {pause_delay:.1}s")
+                time.sleep(0.5)
+                other_reason = True
+                continue
 
             # if pose == "intermediary":
             #     pose = pose_dst
@@ -227,7 +284,7 @@ def ping_pong():
             print("Heading towards", pose)
             publish_goal_pose(poses[pose])
 
-        elif pose == "intermediary":
+        elif pose.startswith("intermediary"):
             ax = position.pose.pose.position.x
             ay = position.pose.pose.position.y
             bx = poses[pose]["position"]["x"]

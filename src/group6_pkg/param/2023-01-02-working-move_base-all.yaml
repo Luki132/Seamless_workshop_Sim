@@ -1,0 +1,221 @@
+TebLocalPlannerROS:
+  acc_lim_theta: 3.8
+  acc_lim_x: 2.5
+  acc_lim_y: 0.5
+  allo_init_with_backwards_motion: true
+  allow_init_with_backwards_motion: true
+  alternative_time_cost: false
+  cmd_angle_instead_rotvel: false
+  costmap_converter_plugin: ''
+  costmap_converter_rate: 5
+  costmap_converter_spin_thread: true
+  costmap_obstacles_behind_robot_dist: 0.4
+  dt_hysteresis: 0.03
+  dt_ref: 0.3
+  dynamic_obstacle_inflation_dist: 0.1
+  enable_homotopy_class_planning: true
+  enable_multithreading: true
+  exact_arc_length: false
+  feasibility_check_no_poses: 20
+  footprint_model:
+    front_offset: 0.2
+    front_radius: 0.2
+    line_end:
+    - 0.3
+    - 0.0
+    line_start:
+    - -0.3
+    - 0.0
+    radius: 0.15
+    rear_offset: 0.2
+    rear_radius: 0.2
+    type: polygon
+    vertices:
+    - - -0.19
+      - -0.04
+    - - -0.19
+      - 0.04
+    - - -0.03
+      - 0.09
+    - - 0.03
+      - 0.09
+    - - 0.03
+      - -0.09
+    - - -0.03
+      - -0.09
+  force_reinit_new_goal_angular: 0.78
+  force_reinit_new_goal_dist: 1.0
+  free_goal_vel: false
+  global_plan_overwrite_orientation: true
+  global_plan_viapoint_sep: -0.1
+  h_signature_prescaler: 0.5
+  h_signature_threshold: 0.1
+  include_costmap_obstacles: true
+  include_dynamic_obstacles: false
+  inflation_dist: 0.05
+  is_footprint_dynamic: false
+  legacy_obstacle_association: false
+  map_frame: /turtlebot1/odom
+  max_global_plan_lookahead_dist: 0.22
+  max_number_classes: 4
+  max_vel_theta: 5.5
+  max_vel_x: 0.22
+  max_vel_x_backwards: 0.22
+  max_vel_y: 0.0
+  min_obstacle_dist: 0.01
+  min_turning_radius: 0.0
+  no_inner_iterations: 6
+  no_outer_iterations: 5
+  obstacle_association_cutoff_factor: 8.0
+  obstacle_association_force_inclusion_factor: 3.0
+  obstacle_cost_exponent: 1.0
+  obstacle_heading_threshold: 0.45
+  obstacle_keypoint_offset: 0.1
+  obstacle_poses_affected: 30
+  odom_topic: /turtlebot1/odom
+  optimization_activate: true
+  optimization_verbose: false
+  oscillation_recovery: false
+  penalty_epsilon: 0.1
+  publish_feedback: false
+  roadmap_graph_area_length_scale: 1.0
+  roadmap_graph_area_width: 5.0
+  roadmap_graph_no_samples: 15
+  selection_alternative_time_cost: false
+  selection_cost_hysteresis: 1.0
+  selection_obst_cost_scale: 2.0
+  selection_prefer_initial_plan: 0.95
+  selection_viapoint_cost_scale: 1.0
+  shrink_horizon_backup: true
+  simple_exploration: false
+  switching_blocking_period: 0.0
+  teb_autosize: true
+  via_points_ordered: false
+  viapoints_all_candidates: true
+  visualize_hc_graph: true
+  visualize_with_time_as_z_axis_scale: 0.0
+  weight_acc_lim_theta: 1.0
+  weight_acc_lim_x: 1.0
+  weight_acc_lim_y: 1.0
+  weight_adapt_factor: 2.0
+  weight_dynamic_obstacle: 10.0
+  weight_dynamic_obstacle_inflation: 0.1
+  weight_inflation: 0.1
+  weight_kinematics_forward_drive: 1.0
+  weight_kinematics_nh: 1000.0
+  weight_kinematics_turning_radius: 1.0
+  weight_max_vel_theta: 80.0
+  weight_max_vel_x: 100.0
+  weight_max_vel_y: 2.0
+  weight_obstacle: 50.0
+  weight_optimaltime: 40.0
+  weight_shortest_path: 4.0
+  weight_viapoint: 1.0
+  wheelbase: 1.0
+  xy_goal_tolerance: 0.1
+  yaw_goal_tolerance: 0.08
+aggressive_reset:
+  reset_distance: 1.84
+base_global_planner: navfn/NavfnROS
+base_local_planner: teb_local_planner/TebLocalPlannerROS
+clearing_rotation_allowed: true
+conservative_reset:
+  reset_distance: 3.0
+conservative_reset_dist: 3.0
+controller_frequency: 10.0
+controller_patience: 15.0
+global_costmap:
+  footprint: '[[-0.19,-0.04],[-0.19,0.04],[-0.03,0.09],[0.03,0.09],[0.03,-0.09],[-0.03,-0.09]]'
+  footprint_padding: 0.01
+  global_frame: turtlebot1/map
+  height: 10
+  inflation_layer:
+    cost_scaling_factor: 30.0
+    enabled: true
+    inflate_unknown: false
+    inflation_radius: 0.1
+  map_type: costmap
+  obstacle_layer:
+    combination_method: 1
+    enabled: true
+    footprint_clearing_enabled: true
+    max_obstacle_height: 2.0
+    observation_sources: scan
+    obstacle_range: 3.0
+    raytrace_range: 3.5
+    scan:
+      clearing: true
+      data_type: LaserScan
+      marking: true
+      sensor_frame: turtlebot1/base_scan
+      topic: scan
+  origin_x: 0.0
+  origin_y: 0.0
+  plugins:
+  - name: static_layer
+    type: costmap_2d::StaticLayer
+  - name: obstacle_layer
+    type: costmap_2d::ObstacleLayer
+  - name: inflation_layer
+    type: costmap_2d::InflationLayer
+  publish_frequency: 10.0
+  resolution: 0.05
+  robot_base_frame: turtlebot1/base_footprint
+  robot_radius: 0.46
+  static_layer:
+    enabled: true
+  static_map: true
+  transform_tolerance: 0.5
+  update_frequency: 10.0
+  width: 10
+local_costmap:
+  footprint: '[[-0.19,-0.04],[-0.19,0.04],[-0.03,0.09],[0.03,0.09],[0.03,-0.09],[-0.03,-0.09]]'
+  footprint_padding: 0.01
+  global_frame: turtlebot1/odom
+  height: 3
+  inflation_layer:
+    cost_scaling_factor: 17.0
+    enabled: true
+    inflate_unknown: false
+    inflation_radius: 1.0
+  map_type: costmap
+  obstacle_layer:
+    combination_method: 1
+    enabled: true
+    footprint_clearing_enabled: true
+    max_obstacle_height: 4.5
+    observation_sources: scan
+    obstacle_range: 3.0
+    raytrace_range: 3.5
+    scan:
+      clearing: true
+      data_type: LaserScan
+      marking: true
+      sensor_frame: turtlebot1/base_scan
+      topic: scan
+  origin_x: 0.0
+  origin_y: 0.0
+  plugins:
+  - name: obstacle_layer
+    type: costmap_2d::ObstacleLayer
+  - name: inflation_layer
+    type: costmap_2d::InflationLayer
+  publish_frequency: 10.0
+  resolution: 0.02
+  robot_base_frame: turtlebot1/base_footprint
+  robot_radius: 0.46
+  rolling_window: true
+  static_map: false
+  transform_tolerance: 0.5
+  update_frequency: 10.0
+  width: 3
+make_plan_add_unreachable_goal: true
+make_plan_clear_costmap: true
+max_planning_retries: -1
+oscillation_distance: 0.2
+oscillation_timeout: 10.0
+planner_frequency: 5.0
+planner_patience: 5.0
+recovery_behavior_enabled: true
+restore_defaults: false
+shutdown_costmaps: false
