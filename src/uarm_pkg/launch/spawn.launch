@@ -1,4 +1,5 @@
 <launch>
-    <node pkg="uarm_pkg" type="move_uarm2_server" name="listener_node"/>
+    <node pkg="uarm_pkg" type="move_uarm3_server.py" name="Uarm3_server_node"/>
+    <node pkg="uarm_pkg" type="move_uarm2_server.py" name="Uarm2_server_node"/>
 </launch>
     

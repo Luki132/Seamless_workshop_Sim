@@ -160,8 +160,8 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  scripts/move_uarm2_server
-  scripts/move_uarm2_client
+  scripts/move_uarm3_server.py
+  scripts/move_uarm3_client.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
