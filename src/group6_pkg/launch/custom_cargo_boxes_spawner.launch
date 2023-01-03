@@ -1,0 +1,36 @@
+<launch>
+    <arg name="start_gazebo" default="false" />
+
+    <!-- start gazebo if necessary -->
+    <group if="$(arg start_gazebo)">
+    <include file="$(find robis_core)/launch/gazebo.launch">
+      <arg name="paused" value="true"/>
+      <arg name="headless" value="false"/>
+    </include>
+    </group>
+
+    <!-- NODES -->
+    <node pkg="robis_cargo_handler"  type="cargo_box_spawner" name="cargo_box_spawner" output="screen">
+        <!-- <param name="blue_small" type="String" value="size: small, color: blue, pos: 0.1 0.2 0.2, rpy: 0 0 0, frame: world" /> -->
+        <param name="blue_small" type="String" value="size: small, color: green, pos: 1.4 0.77 0.14, rpy: 0 0 0, frame: world" />
+        <param name="blue_small1" type="String" value="size: small, color: green, pos: 1.4 0.80 0.14, rpy: 0 0 0, frame: world" />
+        <param name="blue_large" type="String" value="size: large, color: green, pos: 1.44 0.77 0.14, rpy: 0 0 90, frame: world" />
+
+        <!-- <param name="blue1_small" type="String" value="size: small, color: blue, pos: 0.34 0.06 0.03, rpy: 0 0 0, frame: world" /> -->
+        <!-- <param name="blue2_small" type="String" value="size: small, color: blue, pos: 0.44 0.06 0.03, rpy: 0 0 0, frame: world" /> -->
+        <!-- <param name="blue3_small" type="String" value="size: small, color: red, pos: 0.245 0.0 0.03, rpy: 0 0 0, frame: world" /> -->
+        <!-- <param name="blue4_small" type="String" value="size: small, color: blue, pos: 0.64 0.06 0.03, rpy: 0 0 0, frame: world" />
+        <param name="blue5_small" type="String" value="size: small, color: blue, pos: 0.74 0.06 0.03, rpy: 0 0 0, frame: world" /> -->
+        <!-- <param name="blue_large" type="String" value="size: large, color: blue, pos: 1.84 0.502 0.03, rpy: 0 0 90, frame: world" /> -->
+        <param name="green_small" type="String" value="size: small, color: green, pos: 1.84 0.317 0.03, rpy: 0 0 0, frame: world" />
+        <param name="green_large" type="String" value="size: large, color: green, pos: 1.84 0.62 0.03, rpy: 0 0 90, frame: world" />
+        <param name="red_small" type="String" value="size: small, color: red, pos: 1.84 0.402 0.03, rpy: 0 0 0, frame: world" />
+        <param name="red_large" type="String" value="size: large, color: red, pos: 1.84 0.738 0.03, rpy: 0 0 90, frame: world" />
+    </node>
+    <!--node type="rviz" name="rviz" pkg="rviz"/-->
+
+    <include file="$(find robis_cargo_handler)/launch/cargo_handler.launch">
+
+    </include>
+
+</launch>

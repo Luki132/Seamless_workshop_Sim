@@ -6,8 +6,9 @@
   <arg name="headless" default="true"/>
   <arg name="debug" default="false"/>
   <arg name="open_rviz" default="true"/>
+  <arg name="use_navigation" default="false"/>
   <arg name="world_name" default="$(find seamless_environment)/worlds/seamless.world"/>
-  <arg name="map_file" default="$(find seamless_environment)/maps/seamless.yaml"/>
+  <arg name="map_file" default="$(find group6_pkg)/maps/seamless.yaml"/>
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -183,7 +184,7 @@
     <arg name="wait" value="-wait wooden_ground_plane"/>
     <arg name="spawn" value="true"/>
     <arg name="map_file" value="$(arg map_file)"/>
-    <arg name="navigation" value="true"/>
+    <arg name="navigation" value="$(arg use_navigation)"/>
   </include>
   <include file="$(find robis_environment)/launch/spawn_landmark_kit.launch">
     <arg name="number" value="1"/>
@@ -207,6 +208,6 @@
     <arg name="config" default="$(find seamless_environment)/rviz/se_rviz_config.rviz"/>
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(arg config)" />
   </group>
-  <include file="$(find robis_cargo_handler)/launch/all_cargo_boxes_spawner.launch"/>
+  <!-- <include file="$(find robis_cargo_handler)/launch/all_cargo_boxes_spawner.launch"/> -->
   </launch>
 
