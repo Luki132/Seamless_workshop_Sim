@@ -5,21 +5,24 @@ import tf
 from geometry_msgs.msg import Twist, Point, Pose, Quaternion
 from nav_msgs.msg import Odometry
 
-first_condition = False
-second_condition = False
-third_condition = False
-fourth_condition = False
-fifth_condition = False
-sixth_condition = False
-seventh_condition = False
-eighth_condition = False
-ninth_condition = False
-tenth_condition = False
-eleventh_condition = False
-twelfth_condition = False
-thirteenth_condition = False
-fourteenth_condition = False
-fifteenth_condition = False
+C1 = False
+C2 = False
+C3 = False
+C4 = False
+C5 = False
+C6 = False
+C7 = False
+C8 = False
+C9 = False
+C10 = False
+C11 = False
+C12 = False
+C13 = False
+C14 = False
+C15 = False
+C16 = False
+C17 = False
+C18 = False
 
 def euler_from_quaternion(x, y, z, w):
     t0 = +2.0 * (w * x + y * z)
@@ -38,121 +41,162 @@ def euler_from_quaternion(x, y, z, w):
     return roll_x, pitch_y, yaw_z # in radians
 
 def odom_callback(odom: Odometry):
-    global first_condition
-    global second_condition
-    global third_condition
-    global fourth_condition
-    global fifth_condition
-    global sixth_condition
-    global seventh_condition
-    global eighth_condition
-    global ninth_condition
-    global tenth_condition
-    global eleventh_condition
-    global twelfth_condition
-    global thirteenth_condition
-    global fourteenth_condition
-    global fifteenth_condition
+    global C1
+    global C2
+    global C3
+    global C4
+    global C5
+    global C6
+    global C7
+    global C8
+    global C9
+    global C10
+    global C11
+    global C12
+    global C13
+    global C14
+    global C15
+    global C16
+    global C17
+    global C18
 
     cmd = Twist()
     x_rad, y_rad, z_rad = euler_from_quaternion(odom.pose.pose.orientation.x, odom.pose.pose.orientation.y, odom.pose.pose.orientation.z, odom.pose.pose.orientation.w)
     z_degree = math.degrees(z_rad)
     print(z_degree)
     
-    if odom.pose.pose.position.x > 1.15 and odom.pose.pose.position.x < 1.3 and first_condition == False:
+    if odom.pose.pose.position.x > 1.15 and odom.pose.pose.position.x < 1.3 and C1 == False:
         rospy.loginfo("START.")
         cmd.linear.x = 0.22
         cmd.angular.z = 0.0
 
-    elif odom.pose.pose.position.x > 1.0 and odom.pose.pose.position.x < 1.16 and z_degree < -90 and second_condition == False:
+    elif odom.pose.pose.position.x > 1.0 and odom.pose.pose.position.x < 1.16 and z_degree < -90 and C2 == False:
         rospy.loginfo("First condition achieved.")
         cmd.linear.x = 0.0
-        cmd.angular.z = 0.3
-        first_condition = True
+        cmd.angular.z = 0.7
+        C1 = True
 
-    elif z_degree > -90 and third_condition == False:
+    elif z_degree > -90 and C1 == True and C3 == False:
         rospy.loginfo("Second condition achieved.")
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
-        second_condition = True
-        third_condition = True
-        rospy.sleep(1)
+        C2 = True
+        C3 = True
+        rospy.sleep(0.5)
 
-    elif odom.pose.pose.position.y > 0.5 and odom.pose.pose.position.y < 0.8 and z_degree > -95 and fourth_condition == False:
+    elif odom.pose.pose.position.y > 0.55 and odom.pose.pose.position.y < 0.8 and C3 == True and C4 == False:
         rospy.loginfo("Third condition achieved.")
-        cmd.linear.x = 0.1
+        cmd.linear.x = 0.22
         cmd.angular.z = 0.0
 
-    elif odom.pose.pose.position.y > 0.4 and odom.pose.pose.position.y < 0.51 and z_degree < 0 and z_degree > -95 and fifth_condition == False:
+    elif odom.pose.pose.position.y > 0.4 and odom.pose.pose.position.y < 0.6 and z_degree < 0 and C5 == False:
         rospy.loginfo("Fourth condition achieved.")
         cmd.linear.x = 0.0
-        cmd.angular.z = 0.3
-        fourth_condition = True
+        cmd.angular.z = 0.7
+        C4 = True
 
-    elif z_degree > 0 and sixth_condition == False:
+    elif z_degree > 0 and C4 == True and C6 == False:
         rospy.loginfo("Fifth condition achieved.")
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
-        fifth_condition = True
-        sixth_condition = True
-        rospy.sleep(1)
+        C5 = True
+        C6 = True
+        rospy.sleep(0.5)
 
-    elif z_degree > -10 and odom.pose.pose.position.x > 0.5 and seventh_condition == False:
+    elif odom.pose.pose.position.x > 0.51 and C6 == True and C7 == False:
         rospy.loginfo("Sixth condition achieved.")
-        cmd.linear.x = -0.2
+        cmd.linear.x = -0.22
         cmd.angular.z = 0.0
-        
-    elif odom.pose.pose.position.x < 0.5 and seventh_condition == False and eighth_condition == False:
-        rospy.loginfo("Seventh condition achieved. Waiting 10s.")
-        cmd.linear.x = 0.0
-        cmd.angular.z = 0.0
-        rospy.sleep(10)
-        seventh_condition = True
 
-    elif odom.pose.pose.position.x < 1.15 and seventh_condition == True and ninth_condition == False:
+    elif odom.pose.pose.position.x < 0.52 and z_degree < 90 and C7 == False:
+        rospy.loginfo("Seventh condition achieved.")
+        cmd.linear.x = 0.0
+        cmd.angular.z = 0.7
+
+    elif z_degree > 90 and C8 == False:
         rospy.loginfo("Eighth condition achieved.")
-        cmd.linear.x = 0.2
-        cmd.angular.z = 0.0
-        eighth_condition = True
-
-    elif odom.pose.pose.position.x > 1.15 and eighth_condition == True and ninth_condition == False and tenth_condition == False:
-        rospy.loginfo("Ninth condition achieved.")
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
-        ninth_condition = True
+        C7 = True
+        C8 = True
+        rospy.sleep(0.5)
 
-    elif z_degree > -90 and ninth_condition == True and eleventh_condition == False:
+    elif odom.pose.pose.position.y > 0.45 and C8 == True and C9 == False:
+        rospy.loginfo("Ninth condition achieved.")
+        cmd.linear.x = -0.22
+        cmd.angular.z = 0.0
+
+    elif odom.pose.pose.position.y < 0.45 and z_degree > 0 and C8 == True and C9 == False:
         rospy.loginfo("Tenth condition achieved.")
         cmd.linear.x = 0.0
         cmd.angular.z = -0.3
-        tenth_condition = True
 
-    elif z_degree < -90 and tenth_condition == True and twelfth_condition == False:
+    elif z_degree < 0 and C8 == True and C9 == False:
         rospy.loginfo("Eleventh condition achieved.")
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
-        eleventh_condition = True
-        twelfth_condition = True
-        rospy.sleep(1)
+        C9 = True
+        rospy.sleep(0.5)
 
-    elif odom.pose.pose.position.y < 0.78 and z_degree > -100 and twelfth_condition == True and fourteenth_condition == False:
-        rospy.loginfo("Twelfth condition achieved.")
+    #elif odom.pose.pose.position.x > 0.5 and C9 == True and C10 == False:
+     #   rospy.loginfo("Twelfth condition achieved.")
+      #  cmd.linear.x = -0.05
+       # cmd.angular.z = 0.0
+
+    elif odom.pose.pose.position.x < 0.52 and C9 == True and C10 == False:
+        rospy.loginfo("Thirteenth condition achieved. Waiting 10s.")
+        cmd.linear.x = 0.0
+        cmd.angular.z = 0.0
+        C10 = True
+        print("X = ", odom.pose.pose.position.x)
+        print("Y = ", odom.pose.pose.position.y)
+        print("Z_deg = ", z_degree)
+        rospy.sleep(10)
+
+    elif odom.pose.pose.position.x < 1.15 and C10 == True and C12 == False:
+        rospy.loginfo("Fourteenth condition achieved.")
+        cmd.linear.x = 0.22
+        cmd.angular.z = 0.0
+        C11 = True
+
+    elif odom.pose.pose.position.x > 1.15 and C11 == True and C12 == False:
+        rospy.loginfo("Fifteenth condition achieved.")
+        cmd.linear.x = 0.0
+        cmd.angular.z = 0.0
+        C12 = True
+
+    elif z_degree > -90 and C12 == True and C14 == False:
+        rospy.loginfo("Sixteenth condition achieved.")
+        cmd.linear.x = 0.0
+        cmd.angular.z = -0.7
+        C13 = True
+
+    elif z_degree < -90 and C13 == True and C15 == False:
+        rospy.loginfo("Seventeenth condition achieved.")
+        cmd.linear.x = 0.0
+        cmd.angular.z = 0.0
+        C14 = True
+        C15 = True
+        rospy.sleep(0.5)
+
+    elif odom.pose.pose.position.y < 0.78 and C15 == True and C17 == False:
+        rospy.loginfo("Eighteenth condition achieved.")
         cmd.linear.x = -0.05
         cmd.angular.z = 0.0
-        thirteenth_condition = True
+        C16 = True
 
-    elif odom.pose.pose.position.y > 0.75 and z_degree > -179 and thirteenth_condition == True and fifteenth_condition == False:
-        rospy.loginfo("Thirteenth condition achieved.")
+    elif odom.pose.pose.position.y > 0.75 and z_degree > -179 and C16 == True and C18 == False:
+        rospy.loginfo("Ninteenth condition achieved.")
         cmd.linear.x = 0.0
         cmd.angular.z = -0.3
-        fourteenth_condition = True
+        C17 = True
 
-    elif z_degree < -179 and fourteenth_condition == True:
+    elif (z_degree < -179 or z_degree > 179) and C17 == True:
         rospy.loginfo("STOP.")
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
-        fifteenth_condition = True
-        rospy.sleep(1)
+        C18 = True
+        rospy.sleep(0.5)
 
     else:
         rospy.loginfo("OUT OF DEFINED COORDINATES.")
