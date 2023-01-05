@@ -53,7 +53,7 @@ poses = {
     },
     "intermediary-up": {
         "position": {
-            "x": 1.20,
+            "x": 1.15,
             "y": 0.48,
             "z": 0.00,
         },
@@ -100,7 +100,8 @@ poses_chain = [
     "bay-left", "pause",
     "intermediary-down",
     "conveyor-right", "pause",
-    "intermediary-up"]
+    "intermediary-up",
+]
 
 
 def in_range(
@@ -289,7 +290,7 @@ def ping_pong():
             ay = position.pose.pose.position.y
             bx = poses[pose]["position"]["x"]
             by = poses[pose]["position"]["y"]
-            if in_range((ax, ay), (bx, by), 0.1):
+            if in_range((ax, ay), (bx, by), 0.12):
                 print("Close to intermediary")
                 other_reason = True
 
