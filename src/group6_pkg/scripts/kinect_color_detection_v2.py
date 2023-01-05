@@ -5,7 +5,7 @@ import numpy as np
 from sensor_msgs.msg import Image, CompressedImage
 bridge = CvBridge()
 
-x_offset = 0.24
+x_offset = 0.275
 cube_offset = 0.015
 x_to_world = [None, None, None]
 y_to_world = [None, None, None]
@@ -32,25 +32,28 @@ candidate_green = np.empty((1,6))
 blue_lower = np.array([100, 200 , 100], np.uint8)
 blue_upper = np.array([125, 255 , 255], np.uint8)
 
-red_lower = np.array([0, 200 , 100], np.uint8)
+red_lower = np.array([0, 200 , 200], np.uint8)
 red_upper = np.array([10, 255 , 255], np.uint8)
 
 green_lower = np.array([45, 100 , 200], np.uint8)
 green_upper = np.array([75, 255 , 255], np.uint8)
 
 def x_position(x):
-    y = 1.23/720*x - 1.23/720*70
+    # y = 1.23/720*x - 1.23/720*70
+    y = 1.02/720*x
     # print(y)
-    return(y + cube_offset)
+    return(y)
 
 def y_position(x):
-    y = 0.48/280*x 
+    # y = 0.48/280*x 
+    y = 0.375345/280*x
     # print(y + x_offset)
-    return(y + x_offset + cube_offset)
+    return(y + x_offset)
 
 def detect_blue_object(hsv_frame, blurred_image):
     global candidate_blue
     global test_blue
+    global blue_mask
     candidate_blue = np.empty((1,6))
     blue_mask = cv2.inRange(hsv_frame, blue_lower, blue_upper)
 
@@ -58,16 +61,16 @@ def detect_blue_object(hsv_frame, blurred_image):
     test_blue = np.empty((1,2))
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
-        print(count, area)
+        # print(count, area)
         if(area > 300 and area < 1500):
-            print("Bingo")
+            # print("Bingo")
             x, y, w, h = cv2.boundingRect(contour)
             info_blue = np.array([[x, y, w, h, area, 2]])
-            print("Hello", candidate_blue)
+            # print("Hello", candidate_blue)
             candidate_blue = np.append(candidate_blue, info_blue, axis=0)
             rect = cv2.minAreaRect(contour)
             box = cv2.boxPoints(rect)
-            print(np.column_stack((box, np.array([[1],[0],[0],[0]]))))
+            # print(np.column_stack((box, np.array([[1],[0],[0],[0]]))))
             test_blue = np.append(test_blue, box, axis = 0)
     test_blue = np.delete(test_blue, 0, 0)
     candidate_blue = np.delete(candidate_blue, 0, 0)
@@ -75,6 +78,8 @@ def detect_blue_object(hsv_frame, blurred_image):
 def detect_red_object(hsv_frame, blurred_image):
     global candidate_red
     global test_red
+    global red_mask
+
     candidate_red = np.empty((1,6))
     red_mask = cv2.inRange(hsv_frame, red_lower, red_upper)
 
@@ -82,16 +87,16 @@ def detect_red_object(hsv_frame, blurred_image):
     test_red = np.empty((1,2))
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
-        print(count, area)
+        # print(count, area)
         if(area > 300 and area < 1500):
-            print("Bingo")
+            # print("Bingo")
             x, y, w, h = cv2.boundingRect(contour)
             info_red = np.array([[x, y, w, h, area, 2]])
-            print("Hello", candidate_red)
+            # print("Hello", candidate_red)
             candidate_red = np.append(candidate_red, info_red, axis=0)
             rect = cv2.minAreaRect(contour)
             box = cv2.boxPoints(rect)
-            print(np.column_stack((box, np.array([[1],[0],[0],[0]]))))
+            # print(np.column_stack((box, np.array([[1],[0],[0],[0]]))))
             test_red = np.append(test_red, box, axis = 0)
     test_red = np.delete(test_red, 0, 0)
     candidate_red = np.delete(candidate_red, 0, 0)
@@ -102,6 +107,7 @@ def detect_red_object(hsv_frame, blurred_image):
 def detect_green_object(hsv_frame, blurred_image):
     global candidate_green
     global test_green
+    global green_mask
     candidate_green = np.empty((1,6))
     green_mask = cv2.inRange(hsv_frame, green_lower, green_upper)
 
@@ -109,23 +115,23 @@ def detect_green_object(hsv_frame, blurred_image):
     test_green = np.empty((1,2))
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
-        print(count, area)
+        # print(count, area)
         if(area > 300 and area < 1500):
-            print("Bingo")
+            # print("Bingo")
             x, y, w, h = cv2.boundingRect(contour)
             info_green = np.array([[x, y, w, h, area, 2]])
-            print("Hello", candidate_green)
+            # print("Hello", candidate_green)
             candidate_green = np.append(candidate_green, info_green, axis=0)
             rect = cv2.minAreaRect(contour)
             box = cv2.boxPoints(rect)
-            print(np.column_stack((box, np.array([[1],[0],[0],[0]]))))
+            # print(np.column_stack((box, np.array([[1],[0],[0],[0]]))))
             test_green = np.append(test_green, box, axis = 0)
     test_green = np.delete(test_green, 0, 0)
     candidate_green = np.delete(candidate_green, 0, 0)
 
-    print(test_green)
-    print(candidate_green)
-    print(test_green[0:3])
+    # print(test_green)
+    # print(candidate_green)
+    # print(test_green[0:3])
 
 
 def callback(data):
@@ -141,17 +147,19 @@ def callback(data):
     detect_red_object(hsvFrame, blurredFrame)
     detect_green_object(hsvFrame, blurredFrame)
 
-    print("blue", test_blue.shape[0]/4)
+    # print("blue", test_blue.shape[0]/4)
+    # print("red", test_red.shape[0]/4)
+    # print("green", test_green.shape[0]/4)
 
     for i in range(int(test_green.shape[0]/4)):
         num_of_objects = num_of_objects + 1
-        print(i*4, i*4+4)
+        # print(i*4, i*4+4)
         rectangle = test_green[i*4:i*4+4]
         rectangle = np.int0(rectangle)
-        print(rectangle)
+        # print(rectangle)
         cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
-        x_pos = int((rectangle[i*4][0] + rectangle[i*4 + 1][0] + rectangle[i*4 + 2][0] + rectangle[i*4 + 3 ][0])/4)
-        y_pos = int((rectangle[i*4][1] + rectangle[i*4 + 1][1] + rectangle[i*4 + 2][1] + rectangle[i*4 + 3 ][1])/4)
+        x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
+        y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
         cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
         x_to_world[i] = str(round(y_position(y_pos), 3))
         y_to_world[i] = str(round(x_position(x_pos), 3))
@@ -160,13 +168,11 @@ def callback(data):
 
     for i in range(int(test_red.shape[0]/4)):
         num_of_objects = num_of_objects + 1
-        print(i*4, i*4+4)
         rectangle = test_red[i*4:i*4+4]
         rectangle = np.int0(rectangle)
-        print(rectangle)
         cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
-        x_pos = int((rectangle[i*4][0] + rectangle[i*4 + 1][0] + rectangle[i*4 + 2][0] + rectangle[i*4 + 3 ][0])/4)
-        y_pos = int((rectangle[i*4][1] + rectangle[i*4 + 1][1] + rectangle[i*4 + 2][1] + rectangle[i*4 + 3 ][1])/4)
+        x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
+        y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
         cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
         x_to_world[i] = str(round(y_position(y_pos), 3))
         y_to_world[i] = str(round(x_position(x_pos), 3))
@@ -174,19 +180,20 @@ def callback(data):
 
     for i in range(int(test_blue.shape[0]/4)):
         num_of_objects = num_of_objects + 1
-        print(i*4, i*4+4)
         rectangle = test_blue[i*4:i*4+4]
         rectangle = np.int0(rectangle)
-        print(rectangle)
         cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
-        x_pos = int((rectangle[i*4][0] + rectangle[i*4 + 1][0] + rectangle[i*4 + 2][0] + rectangle[i*4 + 3 ][0])/4)
-        y_pos = int((rectangle[i*4][1] + rectangle[i*4 + 1][1] + rectangle[i*4 + 2][1] + rectangle[i*4 + 3 ][1])/4)
+        x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
+        y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
         cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
         x_to_world[i] = str(round(y_position(y_pos), 3))
         y_to_world[i] = str(round(x_position(x_pos), 3))
         cv2.putText(cv_image, "blue" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0))
 
     print("number of objects detected:", num_of_objects)
+    print("number of blue objects:", test_blue.shape[0]/4)
+    print("number of red objects:", test_red.shape[0]/4)
+    print("number of green objetcs:", test_green.shape[0]/4)
 
 
     # #Check if the candidates are valid candidates
@@ -240,7 +247,11 @@ def callback(data):
     # cv2.circle(cv_image, (round(u)+70, round(v)), 10, 10)
 
     #cv2.imshow('graycsale image',cv_image)
-    cv2.imshow('Match', cv_image)
+    cv2.imshow('Kinect Camera', cv_image)
+    cv2.imshow('Red', red_mask)
+    cv2.imshow('Blue', blue_mask)
+    cv2.imshow('Green',  green_mask)
+
 
     print(cv_image.shape) # [0] = 280, [1]=720
     cv2.waitKey(1)
