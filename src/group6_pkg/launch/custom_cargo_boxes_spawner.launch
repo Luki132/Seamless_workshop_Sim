@@ -13,8 +13,8 @@
     <node pkg="robis_cargo_handler"  type="cargo_box_spawner" name="cargo_box_spawner" output="screen">
         <!-- <param name="blue_small" type="String" value="size: small, color: blue, pos: 0.1 0.2 0.2, rpy: 0 0 0, frame: world" /> -->
         <param name="blue_small" type="String" value="size: small, color: green, pos: 1.4 0.77 0.14, rpy: 0 0 0, frame: world" />
-        <param name="blue_small1" type="String" value="size: small, color: green, pos: 1.4 0.80 0.14, rpy: 0 0 0, frame: world" />
-        <param name="blue_large" type="String" value="size: large, color: green, pos: 1.44 0.77 0.14, rpy: 0 0 90, frame: world" />
+        <param name="blue_small1" type="String" value="size: small, color: red, pos: 1.4 0.80 0.14, rpy: 0 0 0, frame: world" />
+        <param name="blue_large" type="String" value="size: large, color: blue, pos: 1.44 0.77 0.14, rpy: 0 0 90, frame: world" />
 
         <!-- <param name="blue1_small" type="String" value="size: small, color: blue, pos: 0.34 0.06 0.03, rpy: 0 0 0, frame: world" /> -->
         <!-- <param name="blue2_small" type="String" value="size: small, color: blue, pos: 0.44 0.06 0.03, rpy: 0 0 0, frame: world" /> -->

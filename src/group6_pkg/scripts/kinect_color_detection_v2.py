@@ -136,7 +136,7 @@ def detect_green_object(hsv_frame, blurred_image):
 
 def callback(data):
     overall_candidate = np.zeros((9,6))
-    rospy.loginfo('I heard data')
+    # rospy.loginfo('I heard data')
     num_of_objects = 0
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
     blurredFrame = cv2.GaussianBlur(cv_image, (11,11), 0)
@@ -245,6 +245,12 @@ def callback(data):
     # print(u, v)
 
     # cv2.circle(cv_image, (round(u)+70, round(v)), 10, 10)
+    cv2.putText(red_mask, "RED", (300, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
+    cv2.putText(blue_mask, "BLUE", (280, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
+    cv2.putText(green_mask, "GREEN", (260, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
+    cv2.rectangle(red_mask,(0,0),(720,280),(255,0,0),3)
+    cv2.rectangle(blue_mask,(0,0),(720,280),(255,0,0),3)
+    cv2.rectangle(green_mask,(0,0),(720,280),(255,0,0),3)
 
     #cv2.imshow('graycsale image',cv_image)
     cv2.imshow('Kinect Camera', cv_image)
