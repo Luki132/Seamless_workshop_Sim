@@ -49,9 +49,9 @@ def handle_move_uarm3(order):
     result = conveyor_client(goal)
     print("The result of the Service is: " + str(result))
 
-    #uarm2_client = rospy.ServiceProxy('uarm2_controll/move', store_cube)
-    #goal = store_cube._request_class(cube_pos=[75, 147, 58, 90])
-    #result = uarm2_client(goal)
+    uarm2_client = rospy.ServiceProxy('uarm2_controll/move', store_cube)
+    goal = store_cube._request_class(cube_pos=[25, 147, 58, 90])
+    result = uarm2_client(goal)
     
     return True
 
