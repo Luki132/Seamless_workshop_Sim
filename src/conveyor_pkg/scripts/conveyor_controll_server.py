@@ -40,3 +40,18 @@ if __name__ == '__main__':
     # create new Service server
     s = rospy.Service('conveyor_controll/move', move_int, handle_move_conveyor)
     rospy.spin()
+
+
+    """rostopic pub -1 /turtlebot1/initialpose geometry_msgs/PoseWithCovarianceStamped "header:
+  seq: 0
+  stamp:
+    secs: 0
+    nsecs: 0
+  frame_id: 'map'
+pose:
+  pose:
+    position: {x: 0.5, y: 0.44, z: 0.0}
+    orientation: {x: 3.141593, y: 0.0, z: 1.0, w: 0.0}
+  covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"""

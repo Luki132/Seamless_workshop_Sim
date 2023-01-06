@@ -25,7 +25,7 @@
     <arg name="spawn" value="false"/>
     <!--arg name="wait" value="-wait 1"/-->
   </include>
-  <!-- <include file="$(find robis_environment)/launch/spawn_storage_box.launch">
+  <include file="$(find robis_environment)/launch/spawn_storage_box.launch">
     <arg name="number" value="1"/>
     <arg name="x" value="0.19"/>
     <arg name="y" value="0.799"/>
@@ -144,7 +144,7 @@
     <arg name="slider_ns" value="slider1"/>
     <arg name="wait" value="-wait slider1"/>
     <arg name="spawn" value="true"/>
-  </include> -->
+  </include>
   <include file="$(find robis_conveyor)/launch/spawn.launch">
     <arg name="number" value="1"/>
     <arg name="x" value="0.1"/>
@@ -152,6 +152,7 @@
     <arg name="z" value="0.0"/>
     <arg name="Y" value="-1.5707"/>
     <arg name="spawn" value="true"/>
+    <arg name="wait" value="-wait uarm1"/>
   </include>
   <include file="$(find robis_uarm)/launch/spawn.launch">
     <arg name="number" value="3"/>
@@ -172,23 +173,23 @@
     <arg name="wait" value="-wait uarm3"/>
   </include>
 
-  <!-- <include file="$(find robis_turtlebot)/launch/spawn.launch">
+  <include file="$(find group6_pkg)/launch/spawn.launch">
     <arg name="number" value="1"/>
     <arg name="name" value="turtlebot"/>
-    <arg name="x" value="1.268201"/>
-    <arg name="y" value="0.783632"/>
+    <arg name="x" value="0.5"/>
+    <arg name="y" value="0.44"/>
     <arg name="z" value="0.0"/>
-    <arg name="Y" value="3.141593"/>
+    <arg name="Y" value="0.0"/>
     <arg name="wait" value="-wait wooden_ground_plane"/>
     <arg name="spawn" value="true"/>
     <arg name="map_file" value="$(arg map_file)"/>
     <arg name="navigation" value="true"/>
-  </include> -->
-  <!-- <include file="$(find robis_environment)/launch/spawn_landmark_kit.launch">
+  </include>
+  <include file="$(find robis_environment)/launch/spawn_landmark_kit.launch">
     <arg name="number" value="1"/>
     <arg name="x" value="0.7"/>
     <arg name="y" value="0.849"/>
-    <arg name="z" value="0"/>
+    <arg name="z" value="0.0"/>
     <arg name="Y" value="0.0"/>
     <arg name="spawn" value="false"/>
     <arg name="wait" value="-wait wooden_ground_plane"/>
@@ -201,10 +202,13 @@
     <arg name="Y" value="0"/>
     <arg name="spawn" value="false"/>
     <arg name="wait" value="-wait wooden_ground_plane"/>
-  </include> -->
+  </include>
   <group if="$(arg open_rviz)">
     <arg name="config" default="$(find seamless_environment)/rviz/se_rviz_config.rviz"/>
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(arg config)" />
   </group>
-  <include file="$(find robis_cargo_handler)/launch/all_cargo_boxes_spawner.launch"/>
+  <include file="$(find conveyor_pkg)/launch/spawn.launch"/>
+  <include file="$(find uarm_pkg)/launch/spawn.launch"/>
+  <!--include file="$(find robis_cargo_handler)/launch/all_cargo_boxes_spawner.launch"/-->
   </launch>
+
