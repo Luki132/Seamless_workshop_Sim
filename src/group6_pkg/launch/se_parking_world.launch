@@ -177,7 +177,7 @@
     <arg name="number" value="1"/>
     <arg name="name" value="turtlebot"/>
     <arg name="x" value="1.100"/>
-    <arg name="y" value="0.8"/>
+    <arg name="y" value="0.783632"/>
     <!--<arg name="y" value="0.73"/>-->
     <arg name="z" value="0.0"/>
     <arg name="Y" value="3.141593"/> 
