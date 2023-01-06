@@ -66,7 +66,7 @@ def charuco_detector_callback(park: PoseStamped):
     
     
 
-    if park.pose.position.x > 0.01 and park.pose.position.x < 0.04:
+    if park.pose.position.x > 0.01 and park.pose.position.x < 0.04 and park.pose.position.z > 0.15:
         rospy.loginfo("happy path towards marker.")
         cmd.linear.x = -0.15
         cmd.angular.z = 0.0
