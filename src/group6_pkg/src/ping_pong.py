@@ -202,9 +202,9 @@ def user_controlled_goal_pose():
 
 def startup_delay():
     print("Starting in 3", end=" ")
-    time.sleep(1)
+    rospy.sleep(1)
     print("2", end=" ")
-    time.sleep(1)
+    rospy.sleep(1)
     print("1", end=" ")
 
 
@@ -216,14 +216,11 @@ def ping_pong():
 
     print("Fixing turtlebot position... ", end="")
     fix_start_pose()
-    time.sleep(1) # because reasons
+    rospy.sleep(1)  # because reasons
     fix_start_pose()
     print("Done.")
 
-    pose_dst = "bay"
-    pose = "bay"
     pose_index = 0
-    pose_dir = -1
     pose = poses_chain[pose_index]
 
     # Publish one dummy pose because reasons.
@@ -231,57 +228,35 @@ def ping_pong():
 
     timeout = 20
 
-    t0 = time.time()
+    t0 = rospy.get_time()
 
     other_reason = True
 
     while not rospy.is_shutdown():
-        t1 = time.time()
+        t1 = rospy.get_time()
         if t1-t0 > timeout:
             other_reason = True
             print("Timeout")
 
-        if state_changed and state == NAV_STATES.GOAL_REACHED:
+        if state_changed:
             state_changed = False
-            other_reason = True
+            if state == NAV_STATES.GOAL_REACHED:
+                other_reason = True
 
         if other_reason:
             other_reason = False
             t0 = t1
 
-            # # At either end of the chain, switch direction - and wait a few secs
-            # if pose_index <= 0 or pose_index >= len(poses_chain) - 1:
-            #     time.sleep(0.5)
-            #     pose_dir *= -1
-            # pose_index += pose_dir
-            # print(pose_index, pose_dir)
-            # pose = poses_chain[pose_index]
-
-            # Alternative variant: at the end of the chain, restart. Explicit pause markers
+            # At the end of the chain, restart. Explicit pause markers
             pose_index = (pose_index + 1) % len(poses_chain)
             pose = poses_chain[pose_index]
             if pose == "pause":
                 pause_delay = 0.5
                 print(f"Pausing for {pause_delay:.1}s")
-                time.sleep(0.5)
+                rospy.sleep(pause_delay)
                 other_reason = True
                 continue
 
-            # if pose == "intermediary":
-            #     pose = pose_dst
-            # else:
-            #     # Actual goal reached. Wait for a few seconds.
-            #     time.sleep(5)
-            #     pose = "intermediary"
-            #     if pose_dst == "bay":
-            #         pose_dst = "conveyor"
-            #     else:
-            #         pose_dst = "bay"
-            # if pose == "bay":
-            #     pose = "conveyor"
-            # else:
-            #     pose = "bay"
-            # time.sleep(5)
             print("Heading towards", pose)
             publish_goal_pose(poses[pose])
 
