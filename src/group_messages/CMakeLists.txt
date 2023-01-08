@@ -64,6 +64,7 @@ add_service_files(
   order_cube1.srv
   move_int.srv
   store_cube.srv
+  move_uarm_test.srv
 )
 
 ## Generate actions in the 'action' folder

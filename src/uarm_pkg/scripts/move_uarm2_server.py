@@ -7,6 +7,7 @@ from std_msgs.msg import Float64
 import time
 
 pos_cube1 = []
+storage2 = [250, -40, 120, 90]
 
 def handle_move_uarm2(order):
     pos = order.cube_pos
@@ -17,7 +18,10 @@ def handle_move_uarm2(order):
     #time.sleep(1)
     move_uarm2([pos[0], pos[1], pos[2]+80, pos[3]])
     move_uarm2([pos[0] + 80, pos[1]-50, pos[2]+80, pos[3]])
-    # time.sleep(1)
+    move_uarm2(storage2)
+    grip_uarm2(False)
+    time.sleep(1)
+    move_uarm2([pos[0] + 80, pos[1]-50, pos[2]+80, pos[3]])
     #move_uarm2(order.cube_pos)
     #time.sleep(1)
     #grip_uarm2(False)

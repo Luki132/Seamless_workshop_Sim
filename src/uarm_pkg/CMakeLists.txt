@@ -163,6 +163,7 @@ catkin_install_python(PROGRAMS
   scripts/move_uarm3_server.py
   scripts/move_uarm3_client.py
   scripts/move_uarm2_server.py
+  scripts/move_for_testing.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
