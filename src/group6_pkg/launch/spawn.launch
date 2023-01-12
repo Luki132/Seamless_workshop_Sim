@@ -13,8 +13,10 @@
   <arg name="charuco_detector" default="true" />
   <arg name="navigation" default="true" />
   <arg name="reference_frame" default="world" />
-  <arg name="spawn" default="true" />
+  <arg name="spawn" default="false" />
   <arg name="map_file" default="$(find seamless_environment)/maps/seamless.yaml"/>
+  <!-- <arg name="open_rviz" default="true"/> -->
+
 
   <!-- start gazebo if necessary -->
   <group if="$(arg charuco_detector)">
@@ -85,6 +87,11 @@
           args="0 0 0 0 0 0 /world /$(arg name)$(arg number)/odom 50">
     </node>
   </group>
+
+  <!-- <group if="$(arg open_rviz)">
+    <arg name="config" default="$(find seamless_environment)/rviz/se_rviz_config.rviz"/>
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(arg config)" />
+  </group> -->
 
   <!-- starts costum amcl and move base navigation -->
   <group if="$(arg navigation)">
