@@ -13,14 +13,15 @@ def handle_move_uarm2(order):
     pos = order.cube_pos
     move_uarm2([pos[0], pos[1], pos[2]+20, pos[3]])
     move_uarm2([pos[0], pos[1], pos[2], pos[3]])
-
     grip_uarm2(True)
     #time.sleep(1)
     move_uarm2([pos[0], pos[1], pos[2]+80, pos[3]])
     move_uarm2([pos[0] + 80, pos[1]-50, pos[2]+80, pos[3]])
-    move_uarm2(storage2)
+    time.sleep(2)
+    move_uarm2([pos[0], pos[1], pos[2]+20, pos[3]])
+    move_uarm2([pos[0], pos[1], pos[2], pos[3]])
     grip_uarm2(False)
-    time.sleep(1)
+    move_uarm2([pos[0], pos[1], pos[2]+20, pos[3]])
     move_uarm2([pos[0] + 80, pos[1]-50, pos[2]+80, pos[3]])
     #move_uarm2(order.cube_pos)
     #time.sleep(1)
@@ -130,7 +131,7 @@ def grip_uarm2(grab):
 if __name__ == '__main__':
     # Starts a new node
     rospy.init_node('handle_uarm2_server')
-    rospy.loginfo("I heard TEst")
+    rospy.loginfo("starting handle_uarm2_server")
     # create new Service server
     s = rospy.Service('uarm2_controll/move', store_cube, handle_move_uarm2)
     rospy.spin()

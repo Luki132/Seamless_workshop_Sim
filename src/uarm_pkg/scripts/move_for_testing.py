@@ -59,6 +59,7 @@ def handle_move_uarm(order):
 if __name__ == '__main__':
     # Starts a new node
     rospy.init_node('handle_uarm_movement')
+    rospy.loginfo("uarm movement handler started")
     # create new Service server
     s = rospy.Service('uarm_testcontroll/move', move_uarm_test, handle_move_uarm)
     rospy.spin()
