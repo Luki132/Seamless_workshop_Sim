@@ -1,4 +1,6 @@
 # !/usr/bin/env python
+
+
 import os
 import time
 from math import dist, sqrt, sin, cos, pi
@@ -13,6 +15,7 @@ def fix_pycharm_env():
     #os.system("export ROS_MASTER_URI=http://192.168.50.11:11311")
     #os.system("export ROS_IP=192.168.50.16")
     return
+
 
 def fix_start_pose():
     start_pose_pub = rospy.Publisher('/turtlebot1/initialpose', data_class=PoseWithCovarianceStamped, queue_size=10)
