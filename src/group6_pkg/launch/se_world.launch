@@ -2,7 +2,7 @@
 <launch>
   <arg name="paused" default="false"/>
   <arg name="use_sim_time" default="true"/>
-  <arg name="gui" default="true"/>
+  <arg name="gui" default="false"/>
   <arg name="headless" default="true"/>
   <arg name="debug" default="false"/>
   <arg name="open_rviz" default="true"/>
@@ -134,14 +134,21 @@
   </include>
   <include file="$(find robis_uarm)/launch/spawn.launch">
     <arg name="number" value="1"/>
-    <arg name="x" value="0."/>
+    <arg name="x" value="0.0"/>
+    <arg name="y" value="0.0"/>
+    <arg name="z" value="0.0"/>
+    <arg name="Y" value="1.5707"/>
+    <arg name="reference_frame" value="slider1::wagen"/>
+    <arg name="tf_reference" value="slider1/wagen"/>
+
+    <!-- <arg name="x" value="0."/>
     <arg name="y" value="0.135"/>
     <arg name="z" value="0.071"/>
     <arg name="Y" value="1.5707"/>
     <arg name="reference_frame" value="slider1::rail"/>
-    <arg name="tf_reference" value="slider1/rail"/>
-    <arg name="slider" value="1"/>
-    <arg name="slider_ns" value="slider1"/>
+    <arg name="tf_reference" value="slider1/rail"/> -->
+    <!-- <arg name="slider" value="1"/>
+    <arg name="slider_ns" value="slider1"/> -->
     <arg name="wait" value="-wait slider1"/>
     <arg name="spawn" value="true"/>
   </include>

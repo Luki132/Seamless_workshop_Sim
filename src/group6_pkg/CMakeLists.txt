@@ -161,6 +161,8 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   src/ping_pong.py
+  scripts/ping_pong_adjusted.py
+  scripts/very_simple_action_client_example.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
