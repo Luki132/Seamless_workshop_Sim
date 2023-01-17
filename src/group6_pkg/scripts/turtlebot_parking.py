@@ -16,6 +16,12 @@ angular_z = 0.1
 #     cmd.linear.x = 0.0
 #     cmd.angular.z = 0.0  
 
+
+def log_pub(c):
+    print(c)
+    pub.publish(c)
+
+
 def euler_from_quaternion(x, y, z, w):
     t0 = +2.0 * (w * x + y * z)
     t1 = +1.0 - 2.0 * (x * x + y * y)
@@ -77,13 +83,13 @@ def charuco_detector_callback(park: PoseStamped):
         angular_z = angular_z*(-1)
         cmd.angular.z = angular_z
 
-    if park.pose.position.z < 0.1:
+    if park.pose.position.z < 0.2:
         print("BINGO")
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
             
     # print(park.pose.position.z)  
-    pub.publish(cmd)
+    log_pub(cmd)
 
 # def odom_callback(data: Odometry):
 #     global cmd
