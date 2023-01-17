@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from robis_messages.msg import MoveAction, MoveGoal
 from group_messages.srv import move_int

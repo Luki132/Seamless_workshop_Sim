@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from robis_messages.msg import MoveAction, MoveGoal, GraspAction, GraspGoal
 from group_messages.srv import order_cube1, move_int, store_cube
