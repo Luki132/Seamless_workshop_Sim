@@ -1,0 +1,6 @@
+# grip Uarm
+float32 uarm
+bool grip
+
+---
+bool result
