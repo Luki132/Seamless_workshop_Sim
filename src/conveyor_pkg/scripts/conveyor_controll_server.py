@@ -1,9 +1,31 @@
 #!/usr/bin/env python3
 import rospy
 from robis_messages.msg import MoveAction, MoveGoal
+from group_messages.srv import store_cube
 from group_messages.srv import move_int
 import actionlib
 import time
+
+
+def move_conveyor_callback(data):
+  while True:
+    if rospy.has_param('/Uarm2_took_cube_from_conv') and rospy.get_param('/Uarm2_took_cube_from_conv'):
+      handle_move_conveyor(data)
+      rospy.set_param('/Uarm2_took_cube_from_conv', False)
+      uarm2_client = rospy.ServiceProxy('uarm2_controll/move', store_cube)
+      uarm2_client.wait_for_service()
+      goal = store_cube._request_class(cube_pos=[96, 159, 60, 90])
+      result = uarm2_client(goal)
+      # uarm2_publisher = rospy.Publisher('uarm2_controll/move', store_cube
+      # goal = store_cube._request_class(cube_pos=[108, 167, 46, 90])
+      # uarm2_publisher.publish(goal)
+      return True
+    else:
+      time.sleep(2)
+
+
+
+
 
 def handle_move_conveyor(data):
     # create ROS action client:
@@ -38,7 +60,7 @@ if __name__ == '__main__':
     rospy.init_node('conveyor_server')
     rospy.loginfo("I heard TEst")
     # create new Service server
-    s = rospy.Service('conveyor_controll/move', move_int, handle_move_conveyor)
+    s = rospy.Service('conveyor_controll/move', move_int, move_conveyor_callback)
     rospy.spin()
 
 

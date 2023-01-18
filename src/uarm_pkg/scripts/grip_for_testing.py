@@ -34,7 +34,7 @@ def handle_grip_uarm(order):
         grip_client3.wait_for_server()
         print("connected")
         # Creates a goal to send to the action server.
-        goal = GraspGoal(grab=order.pos)
+        goal = GraspGoal(grab=order.grip)
         print("goal defined")
         # Sends the goal to the action server.
         grip_client3.send_goal(goal)
@@ -46,7 +46,7 @@ def handle_grip_uarm(order):
         # gets the result of the task
         return grip_client3.get_result()
 
-    return True
+    return False
 
 
 

@@ -6,8 +6,10 @@ import actionlib
 from std_msgs.msg import Float64
 import time
 
-pos_cube3_on_conv = [200, 159, 46, 90]
-po_onTur1 = [150, -120, 141, 90]
+pos_cube3_on_conv = [200, 159, 60, 90]
+pos_onTur1 = [169, -83, 141, 90]
+pos_onTur2 = [150, -120, 141, 90]
+pos_onTur3 = [187, -120, 141, 90]
 
 def handle_move_uarm3_sim(order):
     rospy.loginfo("I heard %s", order.storage1)
@@ -26,29 +28,28 @@ def handle_move_uarm3_sim(order):
             time.sleep(1)
             grip_uarm3(True)
             time.sleep(1)
-            move_uarm3([pos[0], pos[1], pos[2]+30, pos[3]])
-            move_uarm3([pos[0]-50, pos[1], pos[2]+30, pos[3]])
-            move_uarm3([pos[0]-50, pos[1]+80, pos[2]+30, pos[3]])
+            move_uarm3([pos[0], pos[1], pos[2]+60, pos[3]])
+            move_uarm3([pos[0], pos[1]+ 100, pos[2]+60, pos[3]])
+            move_uarm3([pos[0], pos[1]+100, pos[2], pos[3]])
             #time.sleep(1)
-            move_uarm3([pos_cube3_on_conv[0], pos_cube3_on_conv[1], pos_cube3_on_conv[2]+100, pos_cube3_on_conv[3]])
+            move_uarm3([pos_cube3_on_conv[0], pos_cube3_on_conv[1], pos_cube3_on_conv[2]+70, pos_cube3_on_conv[3]])
             move_uarm3(pos_cube3_on_conv)
             #time.sleep(1)
             grip_uarm3(False)
             #time.sleep(1)
             move_uarm3([pos_cube3_on_conv[0], pos_cube3_on_conv[1], pos_cube3_on_conv[2]+50, pos_cube3_on_conv[3]])
             time.sleep(1)
+
+            rospy.wait_for_service('conveyor_controll/move')
+            conveyor_client = rospy.ServiceProxy('conveyor_controll/move', move_int)
+            goal = move_int._request_class(length=-250)
+            result = conveyor_client(goal)
+            print("The result of the Service is: " + str(result))
+
+
         else:
             # move uarm to turtelbot and take the stone and put it on the conveyor
             pass
-    rospy.wait_for_service('conveyor_controll/move')
-    conveyor_client = rospy.ServiceProxy('conveyor_controll/move', move_int)
-    goal = move_int._request_class(length=-300)
-    result = conveyor_client(goal)
-    print("The result of the Service is: " + str(result))
-
-    uarm2_client = rospy.ServiceProxy('uarm2_controll/move', store_cube)
-    goal = store_cube._request_class(cube_pos=[25, 147, 58, 90])
-    result = uarm2_client(goal)
     
     return True
 
@@ -89,13 +90,6 @@ def handle_move_uarm3_real_hardware(order):
         goal = move_int._request_class(length=220)
         result = conveyor_client(goal)
         print("The result of the Service is: " + str(result))
-
-        uarm2_client = rospy.ServiceProxy('uarm2_controll/move', store_cube)
-        goal = store_cube._request_class(cube_pos=[108, 167, 46, 90])
-        result = uarm2_client(goal)
-
-        goal = move_int._request_class(length=-220)
-        result = conveyor_client(goal)
     
     return True
 
@@ -208,5 +202,5 @@ if __name__ == '__main__':
     rospy.init_node('handle_uarm3_server')
     rospy.loginfo("I heard TEst")
     # create new Service server
-    s = rospy.Service('uarm3_controll/move', order_cube1, handle_move_uarm3_real_hardware)
+    s = rospy.Service('uarm3_controll/move', order_cube1, handle_move_uarm3_sim)
     rospy.spin()

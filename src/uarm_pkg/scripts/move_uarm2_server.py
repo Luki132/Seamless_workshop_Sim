@@ -3,32 +3,26 @@ import rospy
 from robis_messages.msg import MoveAction, MoveGoal, GraspAction, GraspGoal
 from group_messages.srv import store_cube, move_int
 import actionlib
-from std_msgs.msg import Float64
+# from std_msgs.msg import Float64, bool
 import time
 
 pos_cube1 = []
 storage2 = [250, -40, 120, 90]
 
 def handle_move_uarm2(order):
+    rospy.set_param('/Uarm2_took_cube_from_conv', False)
     pos = order.cube_pos
     move_uarm2([pos[0], pos[1], pos[2]+20, pos[3]])
     move_uarm2([pos[0], pos[1], pos[2], pos[3]])
     grip_uarm2(True)
     #time.sleep(1)
-    move_uarm2([pos[0], pos[1], pos[2]+80, pos[3]])
+    move_uarm2([pos[0], pos[1], pos[2]+50, pos[3]])
+    rospy.set_param('/Uarm2_took_cube_from_conv', True)
     move_uarm2([pos[0] + 80, pos[1]-50, pos[2]+80, pos[3]])
-    time.sleep(2)
-    move_uarm2([pos[0], pos[1], pos[2]+20, pos[3]])
-    move_uarm2([pos[0], pos[1], pos[2], pos[3]])
+    move_uarm2(storage2)
     grip_uarm2(False)
-    move_uarm2([pos[0], pos[1], pos[2]+20, pos[3]])
-    move_uarm2([pos[0] + 80, pos[1]-50, pos[2]+80, pos[3]])
-    #move_uarm2(order.cube_pos)
-    #time.sleep(1)
-    #grip_uarm2(False)
-    #time.sleep(1)
-    #move_uarm2([75, 147, 150, 90])
-    #time.sleep(1)
+    time.sleep(1)
+    move_uarm2([pos[0], pos[1], pos[2]+50, pos[3]])
 
     return True
 
@@ -133,5 +127,7 @@ if __name__ == '__main__':
     rospy.init_node('handle_uarm2_server')
     rospy.loginfo("starting handle_uarm2_server")
     # create new Service server
+    # s = rospy.Subscriber('uarm2_controll/move', store_cube, handle_move_uarm2)
     s = rospy.Service('uarm2_controll/move', store_cube, handle_move_uarm2)
+    rospy.set_param('/Uarm2_took_cube_from_conv', True)
     rospy.spin()
