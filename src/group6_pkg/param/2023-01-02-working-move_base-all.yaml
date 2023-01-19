@@ -122,7 +122,7 @@ clearing_rotation_allowed: true
 conservative_reset:
   reset_distance: 3.0
 conservative_reset_dist: 3.0
-controller_frequency: 10.0
+controller_frequency: 5.0
 controller_patience: 15.0
 global_costmap:
   footprint: '[[-0.19,-0.04],[-0.19,0.04],[-0.03,0.09],[0.03,0.09],[0.03,-0.09],[-0.03,-0.09]]'
@@ -141,8 +141,8 @@ global_costmap:
     footprint_clearing_enabled: true
     max_obstacle_height: 2.0
     observation_sources: scan
-    obstacle_range: 3.0
-    raytrace_range: 3.5
+    obstacle_range: 1.0
+    raytrace_range: 1.5
     scan:
       clearing: true
       data_type: LaserScan
@@ -158,7 +158,7 @@ global_costmap:
     type: costmap_2d::ObstacleLayer
   - name: inflation_layer
     type: costmap_2d::InflationLayer
-  publish_frequency: 10.0
+  publish_frequency: 5.0
   resolution: 0.05
   robot_base_frame: turtlebot1/base_footprint
   robot_radius: 0.46
@@ -166,7 +166,7 @@ global_costmap:
     enabled: true
   static_map: true
   transform_tolerance: 0.5
-  update_frequency: 10.0
+  update_frequency: 5.0
   width: 10
 local_costmap:
   footprint: '[[-0.19,-0.04],[-0.19,0.04],[-0.03,0.09],[0.03,0.09],[0.03,-0.09],[-0.03,-0.09]]'
@@ -185,8 +185,8 @@ local_costmap:
     footprint_clearing_enabled: true
     max_obstacle_height: 4.5
     observation_sources: scan
-    obstacle_range: 3.0
-    raytrace_range: 3.5
+    obstacle_range: 1.0
+    raytrace_range: 1.5
     scan:
       clearing: true
       data_type: LaserScan
@@ -200,14 +200,14 @@ local_costmap:
     type: costmap_2d::ObstacleLayer
   - name: inflation_layer
     type: costmap_2d::InflationLayer
-  publish_frequency: 10.0
+  publish_frequency: 5.0
   resolution: 0.02
   robot_base_frame: turtlebot1/base_footprint
   robot_radius: 0.46
   rolling_window: true
   static_map: false
   transform_tolerance: 0.5
-  update_frequency: 10.0
+  update_frequency: 5.0
   width: 3
 make_plan_add_unreachable_goal: true
 make_plan_clear_costmap: true
