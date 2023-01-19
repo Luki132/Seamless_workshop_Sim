@@ -143,57 +143,57 @@ def callback(data):
 
     hsvFrame = cv2.cvtColor(blurredFrame, cv2.COLOR_BGR2HSV)
     
-    detect_blue_object(hsvFrame, blurredFrame)
-    detect_red_object(hsvFrame, blurredFrame)
-    detect_green_object(hsvFrame, blurredFrame)
+    # detect_blue_object(hsvFrame, blurredFrame)
+    # detect_red_object(hsvFrame, blurredFrame)
+    # detect_green_object(hsvFrame, blurredFrame)
 
     # print("blue", test_blue.shape[0]/4)
     # print("red", test_red.shape[0]/4)
     # print("green", test_green.shape[0]/4)
 
-    for i in range(int(test_green.shape[0]/4)):
-        num_of_objects = num_of_objects + 1
-        # print(i*4, i*4+4)
-        rectangle = test_green[i*4:i*4+4]
-        rectangle = np.int0(rectangle)
-        # print(rectangle)
-        cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
-        x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
-        y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
-        cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
-        x_to_world[i] = str(round(y_position(y_pos), 3))
-        y_to_world[i] = str(round(x_position(x_pos), 3))
-        cv2.putText(cv_image, "green" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0))
+    # for i in range(int(test_green.shape[0]/4)):
+    #     num_of_objects = num_of_objects + 1
+    #     # print(i*4, i*4+4)
+    #     rectangle = test_green[i*4:i*4+4]
+    #     rectangle = np.int0(rectangle)
+    #     # print(rectangle)
+    #     cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
+    #     x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
+    #     y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
+    #     cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
+    #     x_to_world[i] = str(round(y_position(y_pos), 3))
+    #     y_to_world[i] = str(round(x_position(x_pos), 3))
+    #     cv2.putText(cv_image, "green" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0))
     
 
-    for i in range(int(test_red.shape[0]/4)):
-        num_of_objects = num_of_objects + 1
-        rectangle = test_red[i*4:i*4+4]
-        rectangle = np.int0(rectangle)
-        cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
-        x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
-        y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
-        cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
-        x_to_world[i] = str(round(y_position(y_pos), 3))
-        y_to_world[i] = str(round(x_position(x_pos), 3))
-        cv2.putText(cv_image, "red" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255))
+    # for i in range(int(test_red.shape[0]/4)):
+    #     num_of_objects = num_of_objects + 1
+    #     rectangle = test_red[i*4:i*4+4]
+    #     rectangle = np.int0(rectangle)
+    #     cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
+    #     x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
+    #     y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
+    #     cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
+    #     x_to_world[i] = str(round(y_position(y_pos), 3))
+    #     y_to_world[i] = str(round(x_position(x_pos), 3))
+    #     cv2.putText(cv_image, "red" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255))
 
-    for i in range(int(test_blue.shape[0]/4)):
-        num_of_objects = num_of_objects + 1
-        rectangle = test_blue[i*4:i*4+4]
-        rectangle = np.int0(rectangle)
-        cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
-        x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
-        y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
-        cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
-        x_to_world[i] = str(round(y_position(y_pos), 3))
-        y_to_world[i] = str(round(x_position(x_pos), 3))
-        cv2.putText(cv_image, "blue" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0))
+    # for i in range(int(test_blue.shape[0]/4)):
+    #     num_of_objects = num_of_objects + 1
+    #     rectangle = test_blue[i*4:i*4+4]
+    #     rectangle = np.int0(rectangle)
+    #     cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
+    #     x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
+    #     y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
+    #     cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
+    #     x_to_world[i] = str(round(y_position(y_pos), 3))
+    #     y_to_world[i] = str(round(x_position(x_pos), 3))
+    #     cv2.putText(cv_image, "blue" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0))
 
-    print("number of objects detected:", num_of_objects)
-    print("number of blue objects:", test_blue.shape[0]/4)
-    print("number of red objects:", test_red.shape[0]/4)
-    print("number of green objetcs:", test_green.shape[0]/4)
+    # print("number of objects detected:", num_of_objects)
+    # print("number of blue objects:", test_blue.shape[0]/4)
+    # print("number of red objects:", test_red.shape[0]/4)
+    # print("number of green objetcs:", test_green.shape[0]/4)
 
 
     # #Check if the candidates are valid candidates
@@ -245,18 +245,19 @@ def callback(data):
     # print(u, v)
 
     # cv2.circle(cv_image, (round(u)+70, round(v)), 10, 10)
-    cv2.putText(red_mask, "RED", (300, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
-    cv2.putText(blue_mask, "BLUE", (280, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
-    cv2.putText(green_mask, "GREEN", (260, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
-    cv2.rectangle(red_mask,(0,0),(720,280),(255,0,0),3)
-    cv2.rectangle(blue_mask,(0,0),(720,280),(255,0,0),3)
-    cv2.rectangle(green_mask,(0,0),(720,280),(255,0,0),3)
+    # cv2.putText(red_mask, "RED", (300, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
+    # cv2.putText(blue_mask, "BLUE", (280, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
+    # cv2.putText(green_mask, "GREEN", (260, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
+    # cv2.rectangle(red_mask,(0,0),(720,280),(255,0,0),3)
+    # cv2.rectangle(blue_mask,(0,0),(720,280),(255,0,0),3)
+    # cv2.rectangle(green_mask,(0,0),(720,280),(255,0,0),3)
 
     #cv2.imshow('graycsale image',cv_image)
     cv2.imshow('Kinect Camera', cv_image)
-    cv2.imshow('Red', red_mask)
-    cv2.imshow('Blue', blue_mask)
-    cv2.imshow('Green',  green_mask)
+    
+    # cv2.imshow('Red', red_mask)
+    # cv2.imshow('Blue', blue_mask)
+    # cv2.imshow('Green',  green_mask)
 
 
     print(cv_image.shape) # [0] = 280, [1]=720

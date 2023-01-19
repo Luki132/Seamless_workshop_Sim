@@ -8,17 +8,20 @@ bridge = CvBridge()
 
 def callback(data):
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
+    hsvFrame = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
+    hsvFrame[:,2,2] = 255
+    cv_image = cv2.cvtColor(hsvFrame, cv2.COLOR_HSV2BGR)
     # blurredFrame = cv2.GaussianBlur(cv_image, (11,11), 0)
 
     # hsvFrame = cv2.cvtColor(blurredFrame, cv2.COLOR_BGR2HSV)
 
     #cv2.imshow('graycsale image',cv_image)
-    cv2.imshow('Kinect Camera', cv_image)
+    cv2.imshow('Kinect Camera', hsvFrame)
 
 
     # print(cv_image.shape) # [0] = 280, [1]=720
     cv2.waitKey(1)
-    cv2.imwrite('/home/robis/cv_image2.jpg', cv_image)
+    cv2.imwrite('/home/robis/cv_image_with_updated_HSV.jpg', cv_image)
     print("Bingo!")
 
 def listener():

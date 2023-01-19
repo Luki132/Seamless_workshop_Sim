@@ -5,7 +5,7 @@ def nothing(x):
     pass
 
 # Load image
-image = cv2.imread('/home/robis/cv_image3.jpg')
+image = cv2.imread('/home/robis/cv_image_with_updated_HSV.jpg')
 
 # Create a window
 cv2.namedWindow('image')
@@ -43,6 +43,7 @@ while(1):
 
     # Convert to HSV format and color threshold
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv[:,2,2] = 255
     mask = cv2.inRange(hsv, lower, upper)
     result = cv2.bitwise_and(image, image, mask=mask)
 
