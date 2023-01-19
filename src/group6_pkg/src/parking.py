@@ -88,7 +88,7 @@ def charuco_detector_callback(park: PoseStamped):
         #     angular_z = angular_z*(-1)
         #     cmd.angular.z = angular_z
 
-        if park.pose.position.z < 0.15 and stop1 == False:
+        if park.pose.position.z < 0.18 and stop1 == False:
             print("BINGO")
             stop = True
             stop1 = True
@@ -99,6 +99,7 @@ def charuco_detector_callback(park: PoseStamped):
         z_info = park.pose.position.z 
         # print(park.pose.position.z)  
         log_pub(cmd)
+        print("Executing")
 
 # def odom_callback(data: Odometry):
 #     global cmd
@@ -152,9 +153,11 @@ if __name__ == '__main__':
     sub1 = rospy.Subscriber("/turtlebot1/camera/image_charuco_pose", PoseStamped,callback=charuco_detector_callback)
     rospy.loginfo("Node has been started.")
     cmd = Twist()
+    print("Start")
 
 
     while(True):
+        pub.publish(cmd)
         if stop == True: 
             time.sleep(3)
             z_stop = z_info-0.08
