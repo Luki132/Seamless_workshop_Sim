@@ -65,7 +65,7 @@ poses = {
             "y": 0.48,
             "z": 0.00,
         },
-        "orientation": orientation_from_deg(ORIENTATIONS_DEG.UP)
+        "orientation": orientation_from_deg(135)
     },
 
     "bay-up": {
@@ -95,7 +95,7 @@ poses = {
     },
     "conveyor-right": {
         "position": {
-            "x":  0.60,
+            "x":  0.65,
             "y":  0.32,
             "z":  0.00,
         },
@@ -230,19 +230,23 @@ def ping_pong():
     fix_start_pose()
     print("Done.")
 
-    pose_index = 0
+    pose_index = -1
     pose = poses_chain[pose_index]
 
     # Publish one dummy pose because reasons.
     publish_goal_pose(poses["bay-left"])
 
-    timeout = 20
+    timeout = 30
+    timeout_intermediate = 3
 
     t0 = rospy.get_time()
+
+    t_intermediate = t0
 
     other_reason = True
 
     while not rospy.is_shutdown():
+        rospy.sleep(0.05)
         t1 = rospy.get_time()
         if t1-t0 > timeout:
             other_reason = True
@@ -266,11 +270,20 @@ def ping_pong():
                 rospy.sleep(pause_delay)
                 other_reason = True
                 continue
+            elif pose.startswith("intermediary"):
+                t_intermediate = t1
 
             print("Heading towards", pose)
             publish_goal_pose(poses[pose])
 
         elif pose.startswith("intermediary"):
+            ## Time based intermediate detection
+            #if t1 - t_intermediate > timeout_intermediate:
+            #     print(f"Probably close to intermediate ({timeout_intermediate}s timeout).")
+            #     other_reason = True
+
+
+            ### Odom based intermediate detection
             ax = position.pose.pose.position.x
             ay = position.pose.pose.position.y
             bx = poses[pose]["position"]["x"]
