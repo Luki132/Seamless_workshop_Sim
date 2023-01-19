@@ -28,28 +28,28 @@ if __name__=='__main__':
 
         ret, thresh = cv2.threshold(grayFrame, 100, 255, cv2.THRESH_BINARY)
         erodeFrame = cv2.erode(thresh, kernel, iterations=1)
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         
         # detect circles in the image
-        circles = cv2.HoughCircles(grayFrame,cv2.HOUGH_GRADIENT,1,20, param1=50,param2=30,minRadius=0)
-        # ensure at least some circles were found
-        if circles is not None:
-            print("CIRCLE")
-            # print(circles[0, 0])
-            # convert the (x, y) coordinates and radius of the circles to integers
-            circles = np.round(circles[0, :]).astype("int")
-            # loop over the (x, y) coordinates and radius of the circles
-            # print(circles)
-            for (x, y, r) in circles:
-            # draw the circle in the output image, then draw a rectangle
-            # corresponding to the center of the circle
-                cv2.circle(cv_image, (x, y), r, (0, 255, 0), 4)
-                cv2.rectangle(cv_image, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+        # circles = cv2.HoughCircles(grayFrame,cv2.HOUGH_GRADIENT,1,20, param1=50,param2=30,minRadius=0)
+        # # ensure at least some circles were found
+        # if circles is not None:
+        #     print("CIRCLE")
+        #     # print(circles[0, 0])
+        #     # convert the (x, y) coordinates and radius of the circles to integers
+        #     circles = np.round(circles[0, :]).astype("int")
+        #     # loop over the (x, y) coordinates and radius of the circles
+        #     # print(circles)
+        #     for (x, y, r) in circles:
+        #     # draw the circle in the output image, then draw a rectangle
+        #     # corresponding to the center of the circle
+        #         cv2.circle(cv_image, (x, y), r, (0, 255, 0), 4)
+        #         cv2.rectangle(cv_image, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 
         for count, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             print(count, area)
-            if(area > 20000 and area < 40000):
+            if(area > 0 and area < 40000):
                 # print("Bingo")
                 x, y, w, h = cv2.boundingRect(contour)
                 info_green = np.array([[x, y, w, h, area, 2]])
@@ -60,9 +60,9 @@ if __name__=='__main__':
                 # if box[0]
                 print(box)
                 rectangle = np.int0(box)
-                cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
+                cv2.drawContours(cv_image,[rectangle],0,(0,0,0),thickness = -1)
                 test_green = np.append(test_green, box, axis = 0)
-        test_green = np.delete(test_green, 0, 0)
+        # test_green = np.delete(test_green, 0, 0)
         # print(test_green)
 
 
