@@ -9,7 +9,7 @@ test_green = np.empty((1,2))
 bias = 50
 
 # HSV Color for color detection
-white_lower = np.array([0, 0 , 200], np.uint8)
+white_lower = np.array([0, 0 , 210], np.uint8)
 white_upper = np.array([255, 255 , 255], np.uint8)
 
 blue_lower = np.array([90, 100 , 90], np.uint8)
@@ -33,7 +33,7 @@ if __name__=='__main__':
 
         overall_candidate = np.zeros((9,6))
         # cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
-        cv_image = cv2.imread('/home/robis/cv_image2.jpg')
+        cv_image = cv2.imread('/home/robis/cv_image8.jpg')
         hsv_frame = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
 
         edges = cv2.Canny(cv_image, threshold1= 100, threshold2=255)
@@ -77,7 +77,7 @@ if __name__=='__main__':
 
             overall_candidate = np.zeros((9,6))
             # cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
-            cv_image = cv2.imread('/home/robis/cv_image2jpg')
+            cv_image = cv2.imread('/home/robis/cv_image8.jpg')
             hsv_frame = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
 
             edges = cv2.Canny(cv_image, threshold1= 100, threshold2=255)
