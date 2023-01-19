@@ -20,11 +20,26 @@ def callback(data):
     blurredFrame = cv2.GaussianBlur(cv_image, (11,11), 0)
     grayFrame = cv2.cvtColor(blurredFrame, cv2.COLOR_BGR2GRAY)
 
-    edges = cv2.Canny(grayFrame, 100, 200)
+    edges = cv2.Canny(grayFrame, threshold1= 100, threshold2=250)
 
     ret, thresh = cv2.threshold(grayFrame, 100, 255, cv2.THRESH_BINARY)
     erodeFrame = cv2.erode(thresh, kernel, iterations=1)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    
+    # detect circles in the image
+    circles = cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,1,20,
+                            param1=50,param2=30,minRadius=0)
+    # ensure at least some circles were found
+    if circles is not None:
+        print("CIRCLE")
+	    # convert the (x, y) coordinates and radius of the circles to integers
+        circles = np.round(circles[0, :]).astype("int")
+	    # loop over the (x, y) coordinates and radius of the circles
+        for (x, y, r) in circles:
+		# draw the circle in the output image, then draw a rectangle
+		# corresponding to the center of the circle
+            cv2.circle(cv_image, (x, y), r, (0, 255, 0), 4)
+            cv2.rectangle(cv_image, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
@@ -45,16 +60,12 @@ def callback(data):
     test_green = np.delete(test_green, 0, 0)
     # print(test_green)
 
-    cv2.circle(cv_image, (850, 280), 10, 10)
-    cv2.circle(cv_image, (500, 62), 10, 10)
-    cv2.circle(cv_image, (600, 205), 10, 10)
-
 
     
 
     cv2.imshow('Kinect Camera', cv_image)
     cv2.imshow('Binary', thresh)
-    cv2.imshow('Erode', erodeFrame)
+    cv2.imshow('Erode', edges)
 
 
     print("Bingo")
