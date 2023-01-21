@@ -12,6 +12,8 @@ from nav_msgs.msg import Odometry
 from actionlib_msgs.msg import GoalStatusArray
 
 
+# Handles orientations in both Euler and Quaternion form and provides conversion between both.
+# Supports Euler in degrees and radians.
 class QOrientation:
     # https://stackoverflow.com/questions/53033620/how-to-convert-euler-angles-to-quaternions-and-get-the-same-euler-angles-back-fr
 
@@ -44,27 +46,34 @@ class QOrientation:
             self.z = 0.00
 
         def __repr__(self):
-            return f"Euler: x={self.x:.03} y={self.y:.03} z={self.z:.03} [rad]"
+            x, y, z = self.get_deg()
+            return f"Euler: x={x:.03} y={y:.03} z={z:.03} [deg]"
 
         def set_quaternion(self, x, y, z, w):
             t0 = +2.0 * (w * x + y * z)
             t1 = +1.0 - 2.0 * (x * x + y * y)
-            self.x = math.degrees(math.atan2(t0, t1))
+            self.x = math.atan2(t0, t1)
 
             t2 = +2.0 * (w * y - z * x)
             t2 = +1.0 if t2 > +1.0 else t2
             t2 = -1.0 if t2 < -1.0 else t2
-            self.y = math.degrees(math.asin(t2))
+            self.y = math.asin(t2)
 
             t3 = +2.0 * (w * z + x * y)
             t4 = +1.0 - 2.0 * (y * y + z * z)
-            self.z = math.degrees(math.atan2(t3, t4))
+            self.z = math.atan2(t3, t4)
+
+        def get_deg(self):
+            x = math.degrees(self.x)
+            y = math.degrees(self.y)
+            z = math.degrees(self.z)
+            return x, y, z
+
+        def get_rad(self):
+            return self.x, self.y, self.z
 
     def __init__(self):
-        # Quaternion
         self.q = QOrientation.Quaternion()
-
-        # Euler
         self.e = QOrientation.Euler()
 
     def __repr__(self):
@@ -100,40 +109,108 @@ class QOrientation:
         )
 
     def get_euler_deg(self):
-        x = math.radians(self.x)
-        y = math.radians(self.y)
-        z = math.radians(self.z)
-        return x, y, z
+        return self.e.get_deg()
 
     def get_euler_rad(self):
-        return self.e.x, self.e.y, self.e.z
+        return self.e.get_rad()
 
     def get_quaternion(self):
         return self.q.x, self.q.y, self.q.z, self.q.w
 
 
-def publish_reliable_odom(pos, orientation):
+class Position:
+    def __int__(self):
+        self.x = 0.0
+        self.y = 0.0
+        self.z = 0.0
+
+
+class Pose:
+    def __int__(self):
+        self.position = Position()
+        self.orientation = QOrientation()
+        self.last_update = 0
+
+
+# Values represent priorities. Since they're also used to distinguish them,
+# each source must have a unique value/priority
+@dataclass
+class POSE_SOURCES:
+    NONE    = 0
+    ODOM    = 1
+    AMCL    = 2
+    CHARUCO = 3
+    KINECT  = 4
+
+
+# Global Variables
+pose_best_source = POSE_SOURCES.NONE
+
+pose_odom    = Pose()
+pose_amcl    = Pose()
+pose_charuco = Pose()
+pose_kinect  = Pose()
+
+
+def pub_reliable_pose(source):
+    global pose_best_source, pose_odom, pose_amcl, pose_charuco, pose_kinect
+
+    # Less reliable, don't use
+    if source < pose_best_source:
+        return
+
+    pose_best_source = source
+
+    if pose_best_source == POSE_SOURCES.KINECT:
+        pose_source = pose_kinect
+    elif pose_best_source == POSE_SOURCES.CHARUCO:
+        pose_source = pose_charuco
+    elif pose_best_source == POSE_SOURCES.AMCL:
+        pose_source = pose_amcl
+    else: # pose_best_source == POSE_SOURCES.ODOM:
+        pose_source = pose_odom
+
+    reliable_pose = PoseStamped()
+    reliable_pose.header.frame_id = "map"
+    reliable_pose.pose.position.x = pose_source.position.x
+    reliable_pose.pose.position.y = pose_source.position.y
+    reliable_pose.pose.position.z = pose_source.position.z
+    reliable_pose.pose.orientation.x = pose_source.orientation.q.x
+    reliable_pose.pose.orientation.y = pose_source.orientation.q.y
+    reliable_pose.pose.orientation.z = pose_source.orientation.q.z
+    reliable_pose.pose.orientation.w = pose_source.orientation.q.w
+
+    publisher = rospy.Publisher('/group6/reliable_pose', data_class=PoseStamped, queue_size=10)
+    publisher.publish(reliable_pose)
 
 
 
 def cb_pos_in_odom(p):
-
-    return
+    global pose_best_source, pose_odom
+    pose_odom.last_update = rospy.get_time()
+    pose_odom = p
+    pub_reliable_pose(POSE_SOURCES.ODOM)
 
 
 def cb_pos_in_amcl(p):
-
-    return
+    global pose_best_source, pose_amcl
+    pose_amcl.last_update = rospy.get_time()
+    pose_amcl = p
+    pub_reliable_pose(POSE_SOURCES.AMCL)
 
 
 def cb_pos_in_charuco(p):
-
-    return
+    global pose_best_source, pose_charuco
+    pose_charuco.last_update = rospy.get_time()
+    pose_charuco = p
+    pub_reliable_pose(POSE_SOURCES.CHARUCO)
 
 
 def cb_pos_in_kinect(p):
-
-    return
+    global pose_best_source, pose_kinect
+    pose_kinect.last_update = rospy.get_time()
+    pose_kinect = p
+    pub_reliable_pose(POSE_SOURCES.KINECT)
 
 
 def main():
@@ -149,8 +226,7 @@ def main():
 
 
 if __name__ == '__main__':
-    os.system("cd ~/jetson_ws/src/jetson/scripts && python3 switch_workstation.py A")
     try:
-        ping_pong()
+        main()
     except rospy.ROSInterruptException:
         pass
