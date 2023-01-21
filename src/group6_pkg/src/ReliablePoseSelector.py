@@ -1,15 +1,11 @@
 # !/usr/bin/env python
 
 
-import os
-import time
 import math
-# from math import dist, sqrt, sin, cos, pi
 from dataclasses import dataclass
 import rospy
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
-from actionlib_msgs.msg import GoalStatusArray
 
 
 # Enhanced version of the built-in dict class that allows
@@ -139,6 +135,7 @@ class QOrientation:
         return self.q.x, self.q.y, self.q.z, self.q.w
 
 
+# Not much to see here...
 class Position:
     def __int__(self):
         self.x = 0.0
@@ -157,8 +154,13 @@ class Pose:
         CHARUCO = 3
         KINECT = 4
 
-    # "Static" class variables
+    # Map the numbers back to the names without having to redefine the list explicitly.
+    # F.ex.: SOURCES_LOOKUP[0] == "NONE"
+    SOURCES_LOOKUP = {v: k for k, v in SOURCES.__dict__.items()}
+
+    # "Static" class variables (Like global vars but without the need to declare them as global in every function)
     best_source = SOURCES.NONE
+    last_source = SOURCES.NONE
     reliable_pose_publisher = rospy.Publisher('/group6/reliable_pose', data_class=PoseStamped, queue_size=10)
 
     def __init__(self, priority=0, timeout=1.0):
@@ -189,6 +191,13 @@ class Pose:
             return
 
         Pose.best_source = self.priority
+
+        if Pose.best_source != Pose.last_source:
+            print(
+                f"Switching source from {Pose.SOURCES_LOOKUP[Pose.last_source].lower()}"
+                f"to {Pose.SOURCES_LOOKUP[Pose.best_source].lower()}."
+            )
+            Pose.last_source = Pose.best_source
 
         reliable_pose = PoseStamped()
         reliable_pose.header.frame_id = "map"
@@ -229,26 +238,42 @@ def check_source_timeout():
     global poses
 
     t = rospy.get_time()
-    for pose in poses.values():
-        pose: Pose
-        if pose.last_update >= pose.timeout:
-            pose.available = False
+    for name, source in poses.items():
+        source: Pose
+        if not source.available:
+            continue
+        delta_t = t - source.last_update
+        if delta_t >= source.timeout:
+            print(
+                f"Timeout on source {name}! "
+                f"Last update: {source.last_update}, "
+                f"elapsed time: {delta_t}, "
+                f"timeout: {source.timeout}"
+            )
+            source.available = False
     new_best_source = Pose.SOURCES.NONE
-    for pose in poses.values():
-        if pose.available and pose.priority > new_best_source:
-            new_best_source = pose.priority
+    for source in poses.values():
+        if source.available and source.priority > new_best_source:
+            new_best_source = source.priority
+    Pose.best_source = new_best_source
 
 
 def main():
     rospy.init_node('ReliablePose')
+
     rospy.Subscriber("/turtlebot1/odom", data_class=Odometry, callback=cb_pos_in_odom)
     rospy.Subscriber("/turtlebot1/move_base/amcl_pose", data_class=PoseWithCovarianceStamped, callback=cb_pos_in_amcl)
     rospy.Subscriber("/turtlebot1/camera/image_charuco_pose", PoseStamped, callback=cb_pos_in_charuco)
     rospy.Subscriber("/group6/kinect_pose", PoseStamped, callback=cb_pos_in_kinect)
 
+    # Timer for checking source timeouts
+    source_timeout_timer = rospy.Timer(period=0.05, callback=check_source_timeout)
+
     while not rospy.is_shutdown():
-        rospy.sleep(0.05)
-        check_source_timeout()
+        # ATM nothing todo
+        break
+
+    rospy.spin()
 
 
 if __name__ == '__main__':
