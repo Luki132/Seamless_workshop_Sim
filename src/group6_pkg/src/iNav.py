@@ -12,6 +12,27 @@ from nav_msgs.msg import Odometry
 from actionlib_msgs.msg import GoalStatusArray
 
 
+# Enhanced version of the built-in dict class that allows
+# access to elements using .name syntax:
+#   od["something"] == od.something
+# Source: https://goodcode.io/articles/python-dict-object/
+class ObjectDict(dict):
+    def __getattr__(self, name):
+        if name in self:
+            return self[name]
+        else:
+            raise AttributeError("No such attribute: " + name)
+
+    def __setattr__(self, name, value):
+        self[name] = value
+
+    def __delattr__(self, name):
+        if name in self:
+            del self[name]
+        else:
+            raise AttributeError("No such attribute: " + name)
+
+
 # Handles orientations in both Euler and Quaternion form and provides conversion between both.
 # Supports Euler in degrees and radians.
 class QOrientation:
@@ -126,91 +147,96 @@ class Position:
 
 
 class Pose:
-    def __int__(self):
+    # Values represent priorities. Since they're also used to distinguish them,
+    # each source must have a unique value/priority
+    @dataclass
+    class SOURCES:
+        NONE = 0
+        ODOM = 1
+        AMCL = 2
+        CHARUCO = 3
+        KINECT = 4
+
+    # "Static" class variables
+    best_source = SOURCES.NONE
+    reliable_pose_publisher = rospy.Publisher('/group6/reliable_pose', data_class=PoseStamped, queue_size=10)
+
+    def __init__(self, priority=0, timeout=1.0):
+        # Self-explanatory
         self.position = Position()
         self.orientation = QOrientation()
-        self.last_update = 0
+        self.last_update = 0.0
+        self.timeout = timeout
+
+        # Low priority data is not published if higher-priority data is available
+        self.priority = priority
+
+        # Timeout can cause this to go to false. Automatically set to true if new data is published.
+        self.available = False
+
+    def update(self, position=Position(), orientation=QOrientation.Quaternion()):
+        # This works for all objects that have the right parameters (x,y,z - x,y,z,w)
+        # TODO: Think about error handling.
+        self.position.__dict__.update(position.__dict__)
+        self.orientation.__dict__.update(orientation.__dict__)
+        self.last_update = rospy.get_time()
+        self.available = True
+        self.pub_reliable_pose()
+
+    def pub_reliable_pose(self):
+        # Less reliable, don't use
+        if self.priority < Pose.best_source:
+            return
+
+        Pose.best_source = self.priority
+
+        reliable_pose = PoseStamped()
+        reliable_pose.header.frame_id = "map"
+        reliable_pose.pose.position.__dict__.update(self.position.__dict__)
+        reliable_pose.pose.orientation.__dict__.update(self.orientation.q.__dict__)
+
+        self.reliable_pose_publisher.publish(reliable_pose)
 
 
-# Values represent priorities. Since they're also used to distinguish them,
-# each source must have a unique value/priority
-@dataclass
-class POSE_SOURCES:
-    NONE    = 0
-    ODOM    = 1
-    AMCL    = 2
-    CHARUCO = 3
-    KINECT  = 4
+poses = ObjectDict()
+poses.odom    = Pose(priority=Pose.SOURCES.ODOM)
+poses.amcl    = Pose(priority=Pose.SOURCES.AMCL)
+poses.charuco = Pose(priority=Pose.SOURCES.CHARUCO)
+poses.kinect  = Pose(priority=Pose.SOURCES.KINECT)
 
 
-# Global Variables
-pose_best_source = POSE_SOURCES.NONE
-
-pose_odom    = Pose()
-pose_amcl    = Pose()
-pose_charuco = Pose()
-pose_kinect  = Pose()
+def cb_pos_in_odom(p: Odometry):
+    global poses
+    poses.odom.update(position=p.pose.pose.position, orientation=p.pose.pose.orientation)
 
 
-def pub_reliable_pose(source):
-    global pose_best_source, pose_odom, pose_amcl, pose_charuco, pose_kinect
-
-    # Less reliable, don't use
-    if source < pose_best_source:
-        return
-
-    pose_best_source = source
-
-    if pose_best_source == POSE_SOURCES.KINECT:
-        pose_source = pose_kinect
-    elif pose_best_source == POSE_SOURCES.CHARUCO:
-        pose_source = pose_charuco
-    elif pose_best_source == POSE_SOURCES.AMCL:
-        pose_source = pose_amcl
-    else: # pose_best_source == POSE_SOURCES.ODOM:
-        pose_source = pose_odom
-
-    reliable_pose = PoseStamped()
-    reliable_pose.header.frame_id = "map"
-    reliable_pose.pose.position.x = pose_source.position.x
-    reliable_pose.pose.position.y = pose_source.position.y
-    reliable_pose.pose.position.z = pose_source.position.z
-    reliable_pose.pose.orientation.x = pose_source.orientation.q.x
-    reliable_pose.pose.orientation.y = pose_source.orientation.q.y
-    reliable_pose.pose.orientation.z = pose_source.orientation.q.z
-    reliable_pose.pose.orientation.w = pose_source.orientation.q.w
-
-    publisher = rospy.Publisher('/group6/reliable_pose', data_class=PoseStamped, queue_size=10)
-    publisher.publish(reliable_pose)
+def cb_pos_in_amcl(p: PoseWithCovarianceStamped):
+    global poses
+    poses.amcl.update(position=p.pose.pose.position, orientation=p.pose.pose.orientation)
 
 
-
-def cb_pos_in_odom(p):
-    global pose_best_source, pose_odom
-    pose_odom.last_update = rospy.get_time()
-    pose_odom = p
-    pub_reliable_pose(POSE_SOURCES.ODOM)
+def cb_pos_in_charuco(p: PoseStamped):
+    global poses
+    poses.charuco.update(position=p.pose.position, orientation=p.pose.orientation)
 
 
-def cb_pos_in_amcl(p):
-    global pose_best_source, pose_amcl
-    pose_amcl.last_update = rospy.get_time()
-    pose_amcl = p
-    pub_reliable_pose(POSE_SOURCES.AMCL)
+def cb_pos_in_kinect(p: PoseStamped):
+    global poses
+    poses.kinect.update(position=p.pose.position, orientation=p.pose.orientation)
 
 
-def cb_pos_in_charuco(p):
-    global pose_best_source, pose_charuco
-    pose_charuco.last_update = rospy.get_time()
-    pose_charuco = p
-    pub_reliable_pose(POSE_SOURCES.CHARUCO)
+def check_source_timeout():
+    global poses
 
-
-def cb_pos_in_kinect(p):
-    global pose_best_source, pose_kinect
-    pose_kinect.last_update = rospy.get_time()
-    pose_kinect = p
-    pub_reliable_pose(POSE_SOURCES.KINECT)
+    t = rospy.get_time()
+    for pose in poses.values():
+        pose: Pose
+        if pose.last_update >= pose.timeout:
+            pose.available = False
+    new_best_source = Pose.SOURCES.NONE
+    for pose in poses.values():
+        if pose.available and pose.priority > new_best_source:
+            new_best_source = pose.priority
 
 
 def main():
@@ -222,7 +248,7 @@ def main():
 
     while not rospy.is_shutdown():
         rospy.sleep(0.05)
-        # do something
+        check_source_timeout()
 
 
 if __name__ == '__main__':
