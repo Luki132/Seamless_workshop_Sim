@@ -4,6 +4,8 @@
 import math
 from dataclasses import dataclass
 import rospy
+import tf2_ros
+from tf2_geometry_msgs import PoseStamped
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 
@@ -147,11 +149,11 @@ class Pose:
     # Values represent priorities. Since they're also used to distinguish them,
     # each source must have a unique value/priority
     SOURCES = ObjectDict()
-    SOURCES.NONE = 0
-    SOURCES.ODOM = 1
-    SOURCES.AMCL = 2
+    SOURCES.NONE    = 0
+    SOURCES.ODOM    = 1
+    SOURCES.AMCL    = 2
     SOURCES.CHARUCO = 3
-    SOURCES.KINECT = 4
+    SOURCES.KINECT  = 4
 
     # Map the numbers back to the names without having to redefine the list explicitly.
     # F.ex.: SOURCES_LOOKUP[0] == "NONE"
@@ -161,29 +163,46 @@ class Pose:
     best_source = SOURCES.NONE
     last_source = SOURCES.NONE
     reliable_pose_publisher = rospy.Publisher('/group6/reliable_pose', data_class=PoseStamped, queue_size=10)
+    reliable_pose_frame = "map"
+    # Requires listener!! (Cannot be here because it needs to happen hafter the ros node init in main()
+    tfBuffer = tf2_ros.Buffer(cache_time=rospy.Duration(10))
 
     def __init__(self, priority=0, timeout=1.0):
         # Self-explanatory
         self.position = Position()
         self.orientation = QOrientation()
         self.last_update = 0.0
-        self.timeout = timeout
+        self.timeout = float(timeout)
 
         # Low priority data is not published if higher-priority data is available
-        self.priority = priority
+        self.priority = int(priority)
 
         # Timeout can cause this to go to false. Automatically set to true if new data is published.
         self.available = False
 
-    def update(self, position=Position(), orientation=QOrientation.Quaternion()):
-        self.position.x = position.x
-        self.position.y = position.y
-        self.position.z = position.z
+    def update(self, pose: PoseStamped):
+        # Transform the given pose to the desired target frame
+        if pose.header.frame_id != Pose.reliable_pose_frame:
+            try:
+                pose = Pose.tfBuffer.transform(
+                    object_stamped=pose,
+                    target_frame=Pose.reliable_pose_frame,
+                    timeout=rospy.Duration(0.0)
+                )
+            except Exception as e:
+                logmsg = f"TF Error: {e}"
+                print("Warning:", logmsg)
+                rospy.logwarn(logmsg)
+                return
+
+        self.position.x = pose.pose.position.x
+        self.position.y = pose.pose.position.y
+        self.position.z = pose.pose.position.z
         self.orientation.set_quaternion(
-            x=orientation.x,
-            y=orientation.y,
-            z=orientation.z,
-            w=orientation.w,
+            x=pose.pose.orientation.x,
+            y=pose.pose.orientation.y,
+            z=pose.pose.orientation.z,
+            w=pose.pose.orientation.w,
         )
         self.last_update = rospy.get_time()
         self.available = True
@@ -197,17 +216,18 @@ class Pose:
         Pose.best_source = self.priority
 
         if Pose.best_source != Pose.last_source:
-            print(
-                f"Switching source from {Pose.SOURCES_LOOKUP[Pose.last_source]} "
-                f"to {Pose.SOURCES_LOOKUP[Pose.best_source]}. "
-            )
+            logmsg = f"Switching source from {Pose.SOURCES_LOOKUP[Pose.last_source]} " \
+                     f"to {Pose.SOURCES_LOOKUP[Pose.best_source]}. "
+            print("Info:", logmsg)
+            rospy.loginfo(logmsg)
             Pose.last_source = Pose.best_source
 
         reliable_pose = PoseStamped()
-        reliable_pose.header.frame_id = "map"
-        reliable_pose.pose.position.x =    self.position.x
-        reliable_pose.pose.position.y =    self.position.y
-        reliable_pose.pose.position.z =    self.position.z
+        reliable_pose.header.frame_id    = Pose.reliable_pose_frame
+        reliable_pose.header.stamp       = rospy.Time.from_sec(self.last_update)
+        reliable_pose.pose.position.x    = self.position.x
+        reliable_pose.pose.position.y    = self.position.y
+        reliable_pose.pose.position.z    = self.position.z
         reliable_pose.pose.orientation.x = self.orientation.q.x
         reliable_pose.pose.orientation.y = self.orientation.q.y
         reliable_pose.pose.orientation.z = self.orientation.q.z
@@ -217,30 +237,36 @@ class Pose:
 
 
 poses = ObjectDict()
-poses.odom    = Pose(priority=Pose.SOURCES.ODOM)
-poses.amcl    = Pose(priority=Pose.SOURCES.AMCL)
-poses.charuco = Pose(priority=Pose.SOURCES.CHARUCO)
-poses.kinect  = Pose(priority=Pose.SOURCES.KINECT)
+poses.odom    = Pose(priority=Pose.SOURCES.ODOM,    timeout=1)
+poses.amcl    = Pose(priority=Pose.SOURCES.AMCL,    timeout=3)
+poses.charuco = Pose(priority=Pose.SOURCES.CHARUCO, timeout=3)
+poses.kinect  = Pose(priority=Pose.SOURCES.KINECT,  timeout=2)
 
 
 def cb_pos_in_odom(p: Odometry):
     global poses
-    poses.odom.update(position=p.pose.pose.position, orientation=p.pose.pose.orientation)
+    pose = PoseStamped()
+    pose.header = p.header
+    pose.pose = p.pose.pose
+    poses.odom.update(pose)
 
 
 def cb_pos_in_amcl(p: PoseWithCovarianceStamped):
     global poses
-    poses.amcl.update(position=p.pose.pose.position, orientation=p.pose.pose.orientation)
+    pose = PoseStamped()
+    pose.header = p.header
+    pose.pose = p.pose.pose
+    poses.amcl.update(pose)
 
 
 def cb_pos_in_charuco(p: PoseStamped):
     global poses
-    poses.charuco.update(position=p.pose.position, orientation=p.pose.orientation)
+    poses.charuco.update(p)
 
 
 def cb_pos_in_kinect(p: PoseStamped):
     global poses
-    poses.kinect.update(position=p.pose.position, orientation=p.pose.orientation)
+    poses.kinect.update(p)
 
 
 def check_source_timeout(event_info: rospy.timer.TimerEvent):
@@ -253,12 +279,12 @@ def check_source_timeout(event_info: rospy.timer.TimerEvent):
             continue
         delta_t = t - source.last_update
         if delta_t >= source.timeout:
-            print(
-                f"Timeout on source {name.upper()}! "
-                f"Last update: {int(source.last_update)}, "
-                f"elapsed time: {delta_t:.03}, "
-                f"timeout: {source.timeout:.03}"
-            )
+            logmsg = f"Timeout on source {name.upper()}! " \
+                     f"Last update: {int(source.last_update)}, " \
+                     f"elapsed time: {delta_t:.03}, " \
+                     f"timeout: {source.timeout:.03}"
+            print("Info:", logmsg)
+            rospy.loginfo(logmsg)
             source.available = False
     new_best_source = Pose.SOURCES.NONE
     for source in poses.values():
@@ -269,6 +295,9 @@ def check_source_timeout(event_info: rospy.timer.TimerEvent):
 
 def main():
     rospy.init_node('ReliablePose')
+
+    # Must be here because it needs to happen after the node init.
+    tfListener = tf2_ros.TransformListener(Pose.tfBuffer)
 
     rospy.Subscriber("/turtlebot1/odom", data_class=Odometry, callback=cb_pos_in_odom)
     rospy.Subscriber("/turtlebot1/amcl_pose", data_class=PoseWithCovarianceStamped, callback=cb_pos_in_amcl)
