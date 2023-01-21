@@ -146,17 +146,16 @@ class Position:
 class Pose:
     # Values represent priorities. Since they're also used to distinguish them,
     # each source must have a unique value/priority
-    @dataclass
-    class SOURCES:
-        NONE = 0
-        ODOM = 1
-        AMCL = 2
-        CHARUCO = 3
-        KINECT = 4
+    SOURCES = ObjectDict()
+    SOURCES.NONE = 0
+    SOURCES.ODOM = 1
+    SOURCES.AMCL = 2
+    SOURCES.CHARUCO = 3
+    SOURCES.KINECT = 4
 
     # Map the numbers back to the names without having to redefine the list explicitly.
     # F.ex.: SOURCES_LOOKUP[0] == "NONE"
-    SOURCES_LOOKUP = {v: k for k, v in SOURCES.__dict__.items()}
+    SOURCES_LOOKUP = {v: k for k, v in SOURCES.items()}
 
     # "Static" class variables (Like global vars but without the need to declare them as global in every function)
     best_source = SOURCES.NONE
@@ -177,10 +176,15 @@ class Pose:
         self.available = False
 
     def update(self, position=Position(), orientation=QOrientation.Quaternion()):
-        # This works for all objects that have the right parameters (x,y,z - x,y,z,w)
-        # TODO: Think about error handling.
-        self.position.__dict__.update(position.__dict__)
-        self.orientation.__dict__.update(orientation.__dict__)
+        self.position.x = position.x
+        self.position.y = position.y
+        self.position.z = position.z
+        self.orientation.set_quaternion(
+            x=orientation.x,
+            y=orientation.y,
+            z=orientation.z,
+            w=orientation.w,
+        )
         self.last_update = rospy.get_time()
         self.available = True
         self.pub_reliable_pose()
@@ -194,15 +198,20 @@ class Pose:
 
         if Pose.best_source != Pose.last_source:
             print(
-                f"Switching source from {Pose.SOURCES_LOOKUP[Pose.last_source].lower()}"
-                f"to {Pose.SOURCES_LOOKUP[Pose.best_source].lower()}."
+                f"Switching source from {Pose.SOURCES_LOOKUP[Pose.last_source]} "
+                f"to {Pose.SOURCES_LOOKUP[Pose.best_source]}. "
             )
             Pose.last_source = Pose.best_source
 
         reliable_pose = PoseStamped()
         reliable_pose.header.frame_id = "map"
-        reliable_pose.pose.position.__dict__.update(self.position.__dict__)
-        reliable_pose.pose.orientation.__dict__.update(self.orientation.q.__dict__)
+        reliable_pose.pose.position.x =    self.position.x
+        reliable_pose.pose.position.y =    self.position.y
+        reliable_pose.pose.position.z =    self.position.z
+        reliable_pose.pose.orientation.x = self.orientation.q.x
+        reliable_pose.pose.orientation.y = self.orientation.q.y
+        reliable_pose.pose.orientation.z = self.orientation.q.z
+        reliable_pose.pose.orientation.w = self.orientation.q.w
 
         self.reliable_pose_publisher.publish(reliable_pose)
 
@@ -234,10 +243,10 @@ def cb_pos_in_kinect(p: PoseStamped):
     poses.kinect.update(position=p.pose.position, orientation=p.pose.orientation)
 
 
-def check_source_timeout():
+def check_source_timeout(event_info: rospy.timer.TimerEvent):
     global poses
 
-    t = rospy.get_time()
+    t = event_info.current_real.to_sec()
     for name, source in poses.items():
         source: Pose
         if not source.available:
@@ -245,10 +254,10 @@ def check_source_timeout():
         delta_t = t - source.last_update
         if delta_t >= source.timeout:
             print(
-                f"Timeout on source {name}! "
-                f"Last update: {source.last_update}, "
-                f"elapsed time: {delta_t}, "
-                f"timeout: {source.timeout}"
+                f"Timeout on source {name.upper()}! "
+                f"Last update: {int(source.last_update)}, "
+                f"elapsed time: {delta_t:.03}, "
+                f"timeout: {source.timeout:.03}"
             )
             source.available = False
     new_best_source = Pose.SOURCES.NONE
@@ -262,15 +271,15 @@ def main():
     rospy.init_node('ReliablePose')
 
     rospy.Subscriber("/turtlebot1/odom", data_class=Odometry, callback=cb_pos_in_odom)
-    rospy.Subscriber("/turtlebot1/move_base/amcl_pose", data_class=PoseWithCovarianceStamped, callback=cb_pos_in_amcl)
+    rospy.Subscriber("/turtlebot1/amcl_pose", data_class=PoseWithCovarianceStamped, callback=cb_pos_in_amcl)
     rospy.Subscriber("/turtlebot1/camera/image_charuco_pose", PoseStamped, callback=cb_pos_in_charuco)
     rospy.Subscriber("/group6/kinect_pose", PoseStamped, callback=cb_pos_in_kinect)
 
     # Timer for checking source timeouts
-    source_timeout_timer = rospy.Timer(period=0.05, callback=check_source_timeout)
+    source_timeout_timer = rospy.Timer(period=rospy.Duration(0.05), callback=check_source_timeout)
 
     while not rospy.is_shutdown():
-        # ATM nothing todo
+        # ATM nothing to do
         break
 
     rospy.spin()
