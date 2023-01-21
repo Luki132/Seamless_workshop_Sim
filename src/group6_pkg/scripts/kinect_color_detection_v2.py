@@ -2,18 +2,25 @@ from cv_bridge import CvBridge
 import rospy
 import cv2
 import numpy as np
-from sensor_msgs.msg import Image, CompressedImage
+from sensor_msgs.msg import Image, CompressedImage, CameraInfo
 bridge = CvBridge()
+from image_geometry import PinholeCameraModel
+from geometry_msgs.msg import Pose, PoseArray, Point
+
 
 x_offset = 0.275
 cube_offset = 0.015
 x_to_world = [None, None, None]
 y_to_world = [None, None, None]
+x_to_world_float = [None, None, None]
+y_to_world_float = [None, None, None]
 x_prev = 0
 x_start = False
 test_green = np.empty((1,2))
 test_red = np.empty((1,2))
 test_blue = np.empty((1,2))
+
+z_diff = 0.6104 - 0.158
 
 # K_matrix = np.array([[395.33, 0.0, 360.5], [0.0, 395.33, 140.5], [0.0, 0.0, 1.0]])
 # Rt_matrix = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0]])
@@ -37,6 +44,8 @@ red_upper = np.array([10, 255 , 255], np.uint8)
 
 green_lower = np.array([45, 100 , 200], np.uint8)
 green_upper = np.array([75, 255 , 255], np.uint8)
+
+
 
 def x_position(x):
     # y = 1.23/720*x - 1.23/720*70
@@ -135,6 +144,7 @@ def detect_green_object(hsv_frame, blurred_image):
 
 
 def callback(data):
+    coordinates = PoseArray()
     overall_candidate = np.zeros((9,6))
     # rospy.loginfo('I heard data')
     num_of_objects = 0
@@ -161,8 +171,14 @@ def callback(data):
         x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
         y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
         cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
-        x_to_world[i] = str(round(y_position(y_pos), 3))
-        y_to_world[i] = str(round(x_position(x_pos), 3))
+        # x_to_world[i] = str(round(y_position(y_pos), 3))
+        # y_to_world[i] = str(round(x_position(x_pos), 3))
+        y_old, x_old, z_old = camera.projectPixelTo3dRay((x_pos,y_pos)) ## Keep in mind that the pixel here is flip
+        x_to_world_float[i] = round(z_diff/z_old*x_old + 0.465, 3)
+        y_to_world_float[i] = round(z_diff/z_old*y_old + 0.5, 3)
+
+        x_to_world[i] = str(round(z_diff/z_old*x_old + 0.465, 3))
+        y_to_world[i] = str(round(z_diff/z_old*y_old + 0.5, 3))
         cv2.putText(cv_image, "green" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0))
     
 
@@ -174,8 +190,15 @@ def callback(data):
         x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
         y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
         cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
-        x_to_world[i] = str(round(y_position(y_pos), 3))
-        y_to_world[i] = str(round(x_position(x_pos), 3))
+        # x_to_world[i] = str(round(y_position(y_pos), 3))
+        # y_to_world[i] = str(round(x_position(x_pos), 3))
+
+        y_old, x_old, z_old = camera.projectPixelTo3dRay((x_pos,y_pos)) ## Keep in mind that the pixel here is flip
+        x_to_world_float[i] = round(z_diff/z_old*x_old + 0.465, 3)
+        y_to_world_float[i] = round(z_diff/z_old*y_old + 0.5, 3)
+
+        x_to_world[i] = str(round(z_diff/z_old*x_old + 0.465, 3))
+        y_to_world[i] = str(round(z_diff/z_old*y_old + 0.5, 3))
         cv2.putText(cv_image, "red" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255))
 
     for i in range(int(test_blue.shape[0]/4)):
@@ -186,8 +209,14 @@ def callback(data):
         x_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
         y_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
         cv2.circle(cv_image, (x_pos, y_pos), 2, 2)
-        x_to_world[i] = str(round(y_position(y_pos), 3))
-        y_to_world[i] = str(round(x_position(x_pos), 3))
+        # x_to_world[i] = str(round(y_position(y_pos), 3))
+        # y_to_world[i] = str(round(x_position(x_pos), 3))
+        y_old, x_old, z_old = camera.projectPixelTo3dRay((x_pos,y_pos)) ## Keep in mind that the pixel here is flip
+        x_to_world_float[i] = round(z_diff/z_old*x_old + 0.465, 3)
+        y_to_world_float[i] = round(z_diff/z_old*y_old + 0.5, 3)
+
+        x_to_world[i] = str(round(z_diff/z_old*x_old + 0.465, 3))
+        y_to_world[i] = str(round(z_diff/z_old*y_old + 0.5, 3))
         cv2.putText(cv_image, "blue" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0))
 
     print("number of objects detected:", num_of_objects)
@@ -245,6 +274,17 @@ def callback(data):
     # print(u, v)
 
     # cv2.circle(cv_image, (round(u)+70, round(v)), 10, 10)
+
+    coord1 = Pose(position=Point(x=x_to_world_float[0], y=y_to_world_float[0], z=0.158))
+    coord2 = Pose(position=Point(x=x_to_world_float[1], y=y_to_world_float[1], z=0.158))
+    coord3 = Pose(position=Point(x=x_to_world_float[2], y=y_to_world_float[2], z=0.158))
+
+    coordinates.poses.append(coord1)
+    coordinates.poses.append(coord2)
+    coordinates.poses.append(coord3)
+
+    coordinate_publisher.publish(coordinates)
+
     cv2.putText(red_mask, "RED", (300, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
     cv2.putText(blue_mask, "BLUE", (280, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
     cv2.putText(green_mask, "GREEN", (260, 60), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255,0,0))
@@ -262,10 +302,34 @@ def callback(data):
     print(cv_image.shape) # [0] = 280, [1]=720
     cv2.waitKey(1)
 
-def listener():
-    rospy.init_node('listener', anonymous=True)
-    rospy.Subscriber("/kinect1/rgb_camera/image_raw", Image, callback)
-    rospy.spin()
+# def listener():
+#     global camera
+#     rospy.init_node('listener', anonymous=True)
+#     camera_info_msg = rospy.wait_for_message("/kinect1/rgb_camera/camera_info", CameraInfo)
+#     camera = PinholeCameraModel()
+#     camera.fromCameraInfo(camera_info_msg)
+#     # x_old, y_old, z_old = camera.projectPixelTo3dRay((1280/2,720/2))
+#     # x_old, y_old, z_old = camera.projectPixelTo3dRay((1280/2,720/2))
+
+
+#     # y_new = 0.518/z_old*x_old + 0.54
+#     # x_new = 0.518/z_old*y_old + 0.48
+#     rospy.Subscriber("/kinect1/rgb_camera/image_raw", Image, callback)
+#     coordinate_publisher = rospy.Publisher("/cargo_position", PoseArray, queue_size=10 )
+#     rospy.spin()
 
 if __name__=='__main__':
-    listener()
+    global camera
+    rospy.init_node('listener', anonymous=True)
+    camera_info_msg = rospy.wait_for_message("/kinect1/rgb_camera/camera_info", CameraInfo)
+    camera = PinholeCameraModel()
+    camera.fromCameraInfo(camera_info_msg)
+    # x_old, y_old, z_old = camera.projectPixelTo3dRay((1280/2,720/2))
+    # x_old, y_old, z_old = camera.projectPixelTo3dRay((1280/2,720/2))
+
+
+    # y_new = 0.518/z_old*x_old + 0.54
+    # x_new = 0.518/z_old*y_old + 0.48
+    rospy.Subscriber("/kinect1/rgb_camera/image_raw", Image, callback)
+    coordinate_publisher = rospy.Publisher("/cargo_position", PoseArray, queue_size=10 )
+    rospy.spin()

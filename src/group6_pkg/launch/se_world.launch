@@ -6,7 +6,7 @@
   <arg name="headless" default="true"/>
   <arg name="debug" default="false"/>
   <arg name="open_rviz" default="true"/>
-  <arg name="use_navigation" default="true"/>
+  <arg name="use_navigation" default="false"/>
   <arg name="world_name" default="$(find seamless_environment)/worlds/seamless.world"/>
   <arg name="map_file" default="$(find seamless_environment)/maps/seamless.yaml"/>
 
