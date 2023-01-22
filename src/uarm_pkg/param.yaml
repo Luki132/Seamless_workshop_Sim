@@ -1,0 +1,6 @@
+# YAML param file
+
+dictionary: {
+    pos_1: [50, 150, 100, 90],
+    pos_2: [50, 150, 150, 90],
+}

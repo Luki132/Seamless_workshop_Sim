@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="conveyor_pkg" type="conveyor_controll_server.py" name="conveyor_controll_server"/>
+</launch>
+    
