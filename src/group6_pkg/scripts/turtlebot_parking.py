@@ -15,7 +15,7 @@ angular_z = 0.1
 #     rospy.loginfo("STOP.")
 #     cmd.linear.x = 0.0
 #     cmd.angular.z = 0.0  
-
+stop = False
 
 def log_pub(c):
     print(c)
@@ -42,7 +42,7 @@ def euler_from_quaternion(x, y, z, w):
 def charuco_detector_callback(park: PoseStamped):
     # pass
     global cmd
-    global angular_z
+    global angular_z, stop
     cmd = Twist()
     x_rad, y_rad, z_rad = euler_from_quaternion(park.pose.orientation.x, park.pose.orientation.y, park.pose.orientation.z, park.pose.orientation.w)
     x_degree = math.degrees(x_rad)
@@ -76,20 +76,22 @@ def charuco_detector_callback(park: PoseStamped):
 
     if park.pose.position.x > 0.01 and park.pose.position.x < 0.04 and park.pose.position.z > 0.15:
         rospy.loginfo("happy path towards marker.")
-        cmd.linear.x = -0.05
+        cmd.linear.x = -0.1
         cmd.angular.z = 0.0
-    elif park.pose.position.z < 0.15:
-        cmd.linear.x = -0.0005
+    elif park.pose.position.z < 0.15 and stop == False:
+        cmd.linear.x = -0.1
         angular_z = angular_z*(-1)
         cmd.angular.z = angular_z
 
-    if park.pose.position.z < 0.2:
+    if park.pose.position.z < 0.085:
         print("BINGO")
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
+        stop = True
             
     # print(park.pose.position.z)  
-    log_pub(cmd)
+    # log_pub(cmd)
+    pub.publish(cmd)
 
 # def odom_callback(data: Odometry):
 #     global cmd
