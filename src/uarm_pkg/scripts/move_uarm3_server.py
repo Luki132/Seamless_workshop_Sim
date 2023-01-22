@@ -83,9 +83,9 @@ class get_turtle_pos:
         self.pos_of_turtle = [x*1000, y*1000]
 
     def callback_cargo_pos(self, coordinates):
-        pos2 = [coordinates.poses[1].position.x*1000-250, coordinates.poses[1].position.y*1000-270]
-        pos3 = [coordinates.poses[2].position.x*1000-250, coordinates.poses[2].position.y*1000-270]
-        pos1 = [coordinates.poses[0].position.x*1000-250, coordinates.poses[0].position.y*1000-270]
+        pos2 = [coordinates.poses[1].position.x*1000-260, coordinates.poses[1].position.y*1000-280]
+        pos3 = [coordinates.poses[2].position.x*1000-260, coordinates.poses[2].position.y*1000-280]
+        pos1 = [coordinates.poses[0].position.x*1000-260, coordinates.poses[0].position.y*1000-280]
         self.pos_onTur1 = [pos1[1], -pos1[0], 141, 90]
         self.pos_onTur2 = [pos2[1], -pos2[0], 141, 90]
         self.pos_onTur3 = [pos3[1], -pos3[0], 141, 90]
