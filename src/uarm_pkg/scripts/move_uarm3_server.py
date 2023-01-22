@@ -83,12 +83,12 @@ class get_turtle_pos:
         self.pos_of_turtle = [x*1000, y*1000]
 
     def callback_cargo_pos(self, coordinates):
-        pos1 = [coordinates.poses[0].position.x, coordinates.poses[0].position.y]
-        pos2 = [coordinates.poses[1].position.x, coordinates.poses[1].position.y]
-        pos3 = [coordinates.poses[2].position.x, coordinates.poses[2].position.y]
-        self.pos_onTur1 = [pos1[0], pos1[1], 141, 90]
-        self.pos_onTur2 = [pos2[0], pos2[1], 141, 90]
-        self.pos_onTur3 = [pos3[0], pos3[1], 141, 90]
+        pos2 = [coordinates.poses[1].position.x*1000-270, coordinates.poses[1].position.y*1000-250]
+        pos3 = [coordinates.poses[2].position.x*1000-270, coordinates.poses[2].position.y*1000-250]
+        pos1 = [coordinates.poses[0].position.x*1000-270, coordinates.poses[0].position.y*1000-250]
+        self.pos_onTur1 = [pos1[0], -pos1[1], 141, 90]
+        self.pos_onTur2 = [pos2[0], -pos2[1], 141, 90]
+        self.pos_onTur3 = [pos3[0], -pos3[1], 141, 90]
 
 
     def handle_move_uarm3_sim(self, order):
