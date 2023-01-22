@@ -1,0 +1,22 @@
+{
+	"Navigation": {
+		"PoseSources": {
+			"odom": {
+				"priority": 1,
+				"timeout": 1
+			},
+			"amcl": {
+				"priority": 2,
+				"timeout": 3
+			},
+			"charuco": {
+				"priority": 3,
+				"timeout": 3
+			},
+			"kinect": {
+				"priority": 4,
+				"timeout": 2
+			}
+		}
+	}
+}

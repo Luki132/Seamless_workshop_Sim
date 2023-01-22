@@ -1,6 +1,7 @@
 # !/usr/bin/env python
 
 
+import json
 import math
 from dataclasses import dataclass
 import rospy
@@ -9,6 +10,7 @@ from tf2_geometry_msgs import PoseStamped
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 
+from pathlib import Path
 
 # Enhanced version of the built-in dict class that allows
 # access to elements using .name syntax:
@@ -145,23 +147,21 @@ class Position:
         self.z = 0.0
 
 
+# Values represent priorities. Since they're also used to distinguish them,
+# each source must have a unique value/priority
+# Values provided by config file
+sources = ObjectDict()
+sources.none = 0
+
+# Map the numbers back to the names without having to redefine the list explicitly.
+# F.ex.: SOURCES_LOOKUP[0] == "NONE"
+sources_lookup = {v: k for k, v in sources.items()}
+
+
 class Pose:
-    # Values represent priorities. Since they're also used to distinguish them,
-    # each source must have a unique value/priority
-    SOURCES = ObjectDict()
-    SOURCES.NONE    = 0
-    SOURCES.ODOM    = 1
-    SOURCES.AMCL    = 2
-    SOURCES.CHARUCO = 3
-    SOURCES.KINECT  = 4
-
-    # Map the numbers back to the names without having to redefine the list explicitly.
-    # F.ex.: SOURCES_LOOKUP[0] == "NONE"
-    SOURCES_LOOKUP = {v: k for k, v in SOURCES.items()}
-
     # "Static" class variables (Like global vars but without the need to declare them as global in every function)
-    best_source = SOURCES.NONE
-    last_source = SOURCES.NONE
+    best_source = sources.none
+    last_source = sources.none
     reliable_pose_publisher = rospy.Publisher('/group6/reliable_pose', data_class=PoseStamped, queue_size=10)
     reliable_pose_frame = "map"
     # Requires listener!! (Cannot be here because it needs to happen hafter the ros node init in main()
@@ -216,8 +216,8 @@ class Pose:
         Pose.best_source = self.priority
 
         if Pose.best_source != Pose.last_source:
-            logmsg = f"Switching source from {Pose.SOURCES_LOOKUP[Pose.last_source]} " \
-                     f"to {Pose.SOURCES_LOOKUP[Pose.best_source]}. "
+            logmsg = f"Switching source from {sources_lookup[Pose.last_source].upper()} " \
+                     f"to {sources_lookup[Pose.best_source].upper()}. "
             print("Info:", logmsg)
             rospy.loginfo(logmsg)
             Pose.last_source = Pose.best_source
@@ -236,11 +236,40 @@ class Pose:
         self.reliable_pose_publisher.publish(reliable_pose)
 
 
+# So far these are "empty" poses, their properties are loaded in load_settings()
+# Still, they're all listed here because they need to match the ones provided in
+# load_settings, otherwise either this source or the settings file needs adjustment.
 poses = ObjectDict()
-poses.odom    = Pose(priority=Pose.SOURCES.ODOM,    timeout=1)
-poses.amcl    = Pose(priority=Pose.SOURCES.AMCL,    timeout=3)
-poses.charuco = Pose(priority=Pose.SOURCES.CHARUCO, timeout=3)
-poses.kinect  = Pose(priority=Pose.SOURCES.KINECT,  timeout=2)
+poses.odom = Pose()
+poses.amcl = Pose()
+poses.charuco = Pose()
+poses.kinect = Pose()
+
+
+def load_settings():
+    global poses, sources, sources_lookup
+    path = Path("./group6_params.json").resolve()  #"../param/group6_params.json"
+    with open(path) as f:
+        settings = json.load(f)
+    settings = settings["Navigation"]
+
+    # Check if settings for all poses are provided
+    poses_code = set(poses.keys())
+    poses_settings = set(settings["PoseSources"].keys())
+
+    poses_code, poses_settings = poses_code - poses_settings, poses_settings - poses_code
+
+    if poses_code:
+        raise KeyError(f"No settings provided for pose(s) '{poses_code}' (Settings file: '{path}')")
+    if poses_settings:
+        raise KeyError(f"Unknown pose(s) '{poses_settings}' specified in settings file. (Settings file: '{path}')")
+
+    for src, properties in settings["PoseSources"].items():
+        priority = properties["priority"]
+        timeout = properties["timeout"]
+        poses[src] = Pose(priority=priority, timeout=timeout)
+        sources[src] = priority
+        sources_lookup[priority] = src
 
 
 def cb_pos_in_odom(p: Odometry):
@@ -286,7 +315,7 @@ def check_source_timeout(event_info: rospy.timer.TimerEvent):
             print("Info:", logmsg)
             rospy.loginfo(logmsg)
             source.available = False
-    new_best_source = Pose.SOURCES.NONE
+    new_best_source = sources.none
     for source in poses.values():
         if source.available and source.priority > new_best_source:
             new_best_source = source.priority
