@@ -5,6 +5,7 @@ import tf
 from geometry_msgs.msg import Twist, Point, Pose, Quaternion
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool
+from group_messages.srv import order_cube1
 
 
 C1 = False
@@ -40,6 +41,12 @@ def callback_go_to_conveyor(p: Bool):
 def callback_go_to_slider(p: Bool):
     global go_to_slider
     go_to_slider = p.data
+
+
+def unload_tb():
+    conveyor_client = rospy.ServiceProxy("uarm3_controll/move", service_class=order_cube1)
+    goal = order_cube1._request_class(storage1=True, storage2=True, storage3=True)
+    result = conveyor_client(goal)
 
 
 def euler_from_quaternion(x, y, z, w):
@@ -78,14 +85,14 @@ def odom_callback(odom: Odometry):
     global C17
     global C18
     global forward_speed
-    global go_to_conveyor, go_to_slider
+    global go_to_conveyor
 
     cmd = Twist()
     x_rad, y_rad, z_rad = euler_from_quaternion(odom.pose.pose.orientation.x, odom.pose.pose.orientation.y, odom.pose.pose.orientation.z, odom.pose.pose.orientation.w)
     z_degree = math.degrees(z_rad)
-    print(z_degree)
+    print(f"x: {odom.pose.pose.position.x}, y: {odom.pose.pose.position.y}, zdeg: {z_degree}")
 
-    if not go_to_conveyor and not go_to_slider:
+    if not go_to_conveyor:
         return
 
     if go_to_conveyor and odom.pose.pose.position.x > 1.15 and odom.pose.pose.position.x < 1.3 and C1 == False:
@@ -93,7 +100,7 @@ def odom_callback(odom: Odometry):
         cmd.linear.x = 0.1
         cmd.angular.z = 0.0
 
-    elif odom.pose.pose.position.x > 1.0 and odom.pose.pose.position.x < 1.16 and z_degree < -90 and C2 == False:
+    elif odom.pose.pose.position.x > 1.0 and odom.pose.pose.position.x < 1.16 and (z_degree < -90 or z_degree > 90) and C2 == False:
         rospy.loginfo("First condition achieved.")
         cmd.linear.x = 0.0
         cmd.angular.z = 0.5
@@ -144,7 +151,7 @@ def odom_callback(odom: Odometry):
         C7 = True
 
     elif odom.pose.pose.position.x < 0.51 and C7 == True and C10 == False:
-        rospy.loginfo("Eighth condition achieved. Waiting 10s.")
+        rospy.loginfo("Eighth condition achieved. Unloading turtlebot.")
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
         C10 = True
@@ -152,9 +159,9 @@ def odom_callback(odom: Odometry):
         print("Y = ", odom.pose.pose.position.y)
         print("Z_deg = ", z_degree)
         # TODO notify Lukas
-        go_to_conveyor = False
+        unload_tb()
 
-    elif go_to_slider and odom.pose.pose.position.x < 1.15 and C10 == True and C12 == False:
+    elif odom.pose.pose.position.x < 1.15 and C10 == True and C12 == False:
         rospy.loginfo("Ninth condition achieved.")
         cmd.linear.x = 0.18
         cmd.angular.z = 0.0
@@ -197,22 +204,47 @@ def odom_callback(odom: Odometry):
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
         C18 = True
-        go_to_slider = False
+
+        # Prepare for next roundtrip
+        go_to_conveyor = False
+        C1 = False
+        C2 = False
+        C3 = False
+        C4 = False
+        C5 = False
+        C6 = False
+        C7 = False
+        C8 = False
+        C9 = False
+        C10 = False
+        C11 = False
+        C12 = False
+        C13 = False
+        C14 = False
+        C15 = False
+        C16 = False
+        C17 = False
+        C18 = False
         # TODO notify Raksha
+        msg = Bool()
+        msg.data = True
+        pub_parking.publish(msg)
 
     else:
-        rospy.loginfo("OUT OF DEFINED COORDINATES.")
+        conds = "".join(["1" if c else "0" for c in [C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18]])
+
+        rospy.loginfo(f"OUT OF DEFINED COORDINATES: " + conds)
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
-        
 
     pub.publish(cmd)
 
 
 if __name__ == '__main__':
     try:
-        rospy.init_node("turtlebot_controller")
+        rospy.init_node("group6_manual_navigation")
         pub = rospy.Publisher("/turtlebot1/cmd_vel", Twist, queue_size=10)
+        pub_parking = rospy.Publisher("/ready_for_parking", Bool, queue_size=10)
         sub = rospy.Subscriber("/turtlebot1/odom", Odometry,
                                callback=odom_callback)
         rospy.Subscriber("/cargo_ready", Bool, callback=callback_go_to_conveyor)

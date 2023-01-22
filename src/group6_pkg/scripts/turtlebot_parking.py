@@ -2,8 +2,10 @@
 import rospy
 import tf
 from geometry_msgs.msg import Twist, Point, Pose, Quaternion, PoseStamped
+from std_msgs.msg import Bool
 from nav_msgs.msg import Odometry
 import math
+
 
 # max linear speed is 0.22 m/s
 # max angular speed is 2.84rad/sec
@@ -15,11 +17,18 @@ angular_z = 0.1
 #     rospy.loginfo("STOP.")
 #     cmd.linear.x = 0.0
 #     cmd.angular.z = 0.0  
-stop = False
+stop = True
+
 
 def log_pub(c):
     print(c)
     pub.publish(c)
+
+
+def cb_initiate_parking(msg:Bool):
+    global stop
+    if msg.data:
+        stop = False
 
 
 def euler_from_quaternion(x, y, z, w):
@@ -47,6 +56,9 @@ def charuco_detector_callback(park: PoseStamped):
     x_rad, y_rad, z_rad = euler_from_quaternion(park.pose.orientation.x, park.pose.orientation.y, park.pose.orientation.z, park.pose.orientation.w)
     x_degree = math.degrees(x_rad)
     # print(x_degree)
+
+    if stop:
+        return
 
     if park.pose.position.x < 0.01 and park.pose.position.z > 0.15:
         rospy.loginfo("too far to right")
@@ -78,7 +90,7 @@ def charuco_detector_callback(park: PoseStamped):
         rospy.loginfo("happy path towards marker.")
         cmd.linear.x = -0.1
         cmd.angular.z = 0.0
-    elif park.pose.position.z < 0.15 and stop == False:
+    elif park.pose.position.z < 0.15:
         cmd.linear.x = -0.1
         angular_z = angular_z*(-1)
         cmd.angular.z = angular_z
@@ -139,10 +151,11 @@ def charuco_detector_callback(park: PoseStamped):
     # pub.publish(cmd)
 
 if __name__ == '__main__':
-    rospy.init_node("turtlebot_controller")
+    rospy.init_node("group6_charuco_parking")
     pub = rospy.Publisher("/turtlebot1/cmd_vel", Twist, queue_size=10)
     # sub = rospy.Subscriber("/turtlebot1/odom", Odometry,callback=odom_callback)
-    sub1 = rospy.Subscriber("/turtlebot1/camera/image_charuco_pose", PoseStamped,callback=charuco_detector_callback)
+    sub1 = rospy.Subscriber("/turtlebot1/camera/image_charuco_pose", PoseStamped, callback=charuco_detector_callback)
+    sub_start = rospy.Subscriber("/ready_for_parking", Bool, callback=cb_initiate_parking)
     rospy.loginfo("Node has been started.")
 
     rospy.spin()
