@@ -28,7 +28,7 @@ class get_turtle_pos:
         # rospy.Subscriber("/turtlebot1/odom", Odometry, self.callback_odom)
         s = rospy.Service('uarm3_controll/move', order_cube1, self.handle_move_uarm3_sim)
         rospy.Subscriber("/uarm3_move_odom/move", Float64, self.callback_move_uarm3_odom)
-        rospy.Subscriber("/cargo/position", PoseArray, self.callback_cargo_pos)
+        rospy.Subscriber("/cargo_position", PoseArray, self.callback_cargo_pos)
 
     def callback_move_uarm3_odom(self, data):
         # pos = self.get_turtle_pos()
@@ -47,6 +47,7 @@ class get_turtle_pos:
         elif cube_nr == 2:
             pos_get = self.pos_onTur3
         
+        self.move_uarm3([pos_get[0], -pos_get[1] + 50 ,pos_get[2] + 60, pos_get[3]])
         self.move_uarm3([pos_get[0], -pos_get[1],pos_get[2] + 60, pos_get[3]])
         self.move_uarm3([pos_get[0], -pos_get[1], pos_get[2], pos_get[3]])
         return True
@@ -92,11 +93,10 @@ class get_turtle_pos:
 
     def handle_move_uarm3_sim(self, order):
         rospy.logdebug("I heard %s", order.storage2)
-        rospy.loginfo("I heard %s", order.storage1)
         print("data: " + str(order.storage1) + " " + str(order.storage2) + " " + str(order.storage3))
     
         storage = [order.storage1, order.storage2, order.storage3]
-        positions = [order.pos1, order.pos2, order.pos3]
+        positions = [self.pos_onTur1, self.pos_onTur2, self.pos_onTur3]
         for cube in range(3):
             if storage[cube]:
                 rospy.loginfo("Getting Cube Nr. %s out of 3", cube)
