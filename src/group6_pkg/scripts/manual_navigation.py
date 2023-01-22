@@ -4,6 +4,8 @@ import rospy
 import tf
 from geometry_msgs.msg import Twist, Point, Pose, Quaternion
 from nav_msgs.msg import Odometry
+from std_msgs.msg import Bool
+
 
 C1 = False
 C2 = False
@@ -25,6 +27,20 @@ C17 = False
 C18 = False
 
 forward_speed = -0.1
+
+go_to_conveyor = False
+go_to_slider = False
+
+
+def callback_go_to_conveyor(p: Bool):
+    global go_to_conveyor
+    go_to_conveyor = p.data
+
+
+def callback_go_to_slider(p: Bool):
+    global go_to_slider
+    go_to_slider = p.data
+
 
 def euler_from_quaternion(x, y, z, w):
     t0 = +2.0 * (w * x + y * z)
@@ -62,13 +78,17 @@ def odom_callback(odom: Odometry):
     global C17
     global C18
     global forward_speed
+    global go_to_conveyor, go_to_slider
 
     cmd = Twist()
     x_rad, y_rad, z_rad = euler_from_quaternion(odom.pose.pose.orientation.x, odom.pose.pose.orientation.y, odom.pose.pose.orientation.z, odom.pose.pose.orientation.w)
     z_degree = math.degrees(z_rad)
     print(z_degree)
-    
-    if odom.pose.pose.position.x > 1.15 and odom.pose.pose.position.x < 1.3 and C1 == False:
+
+    if not go_to_conveyor and not go_to_slider:
+        return
+
+    if go_to_conveyor and odom.pose.pose.position.x > 1.15 and odom.pose.pose.position.x < 1.3 and C1 == False:
         rospy.loginfo("START.")
         cmd.linear.x = 0.1
         cmd.angular.z = 0.0
@@ -131,9 +151,10 @@ def odom_callback(odom: Odometry):
         print("X = ", odom.pose.pose.position.x)
         print("Y = ", odom.pose.pose.position.y)
         print("Z_deg = ", z_degree)
-        rospy.sleep(10)
+        # TODO notify Lukas
+        go_to_conveyor = False
 
-    elif odom.pose.pose.position.x < 1.15 and C10 == True and C12 == False:
+    elif go_to_slider and odom.pose.pose.position.x < 1.15 and C10 == True and C12 == False:
         rospy.loginfo("Ninth condition achieved.")
         cmd.linear.x = 0.18
         cmd.angular.z = 0.0
@@ -176,7 +197,8 @@ def odom_callback(odom: Odometry):
         cmd.linear.x = 0.0
         cmd.angular.z = 0.0
         C18 = True
-        #rospy.sleep(0.5)
+        go_to_slider = False
+        # TODO notify Raksha
 
     else:
         rospy.loginfo("OUT OF DEFINED COORDINATES.")
@@ -188,11 +210,17 @@ def odom_callback(odom: Odometry):
 
 
 if __name__ == '__main__':
-    rospy.init_node("turtlebot_controller")
-    pub = rospy.Publisher("/turtlebot1/cmd_vel", Twist, queue_size=10)
-    sub = rospy.Subscriber("/turtlebot1/odom", Odometry,
-                           callback=odom_callback)
-    rospy.loginfo("Node has been started.")
-    rate = rospy.Rate(50)
-    rospy.spin()
+    try:
+        rospy.init_node("turtlebot_controller")
+        pub = rospy.Publisher("/turtlebot1/cmd_vel", Twist, queue_size=10)
+        sub = rospy.Subscriber("/turtlebot1/odom", Odometry,
+                               callback=odom_callback)
+        rospy.Subscriber("/cargo_ready", Bool, callback=callback_go_to_conveyor)
+
+        rospy.loginfo("Node has been started.")
+        rospy.spin()
+
+    except rospy.ROSInterruptException:
+        pass
+
 
