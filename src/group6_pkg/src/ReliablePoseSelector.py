@@ -11,6 +11,24 @@ from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 
 
+# Combined logging for PYthon and ROs.
+def pyrolog(level, msg):
+    ros_loggers = {
+        "debug": rospy.logdebug,
+        "info": rospy.loginfo,
+        "warning": rospy.logwarn,
+        "error": rospy.logerr,
+    }
+
+    level = level.lower()
+    if level not in ros_loggers:
+        pyrolog("Error",
+                f"Unknown log level (case insensitive): {level}. Log message: {msg}")
+
+    print(f"{level.title()}: {msg}")
+    ros_loggers[level](msg)
+
+
 # Enhanced version of the built-in dict class that allows
 # access to elements using .name syntax:
 #   od["something"] == od.something
@@ -189,9 +207,7 @@ class Pose:
                     timeout=rospy.Duration(0.0)
                 )
             except Exception as e:
-                logmsg = f"TF Error: {e}"
-                print("Warning:", logmsg)
-                rospy.logwarn(logmsg)
+                pyrolog("warning", f"TF Error: {e}")
                 return
 
         self.position.x = pose.pose.position.x
@@ -215,10 +231,9 @@ class Pose:
         Pose.best_source = self.priority
 
         if Pose.best_source != Pose.last_source:
-            logmsg = f"Switching source from {sources_lookup[Pose.last_source].upper()} " \
-                     f"to {sources_lookup[Pose.best_source].upper()}. "
-            print("Info:", logmsg)
-            rospy.loginfo(logmsg)
+            pyrolog("info",
+                    f"Switching source from {sources_lookup[Pose.last_source].upper()} "
+                    f"to {sources_lookup[Pose.best_source].upper()}. ")
             Pose.last_source = Pose.best_source
 
         reliable_pose = PoseStamped()
@@ -307,12 +322,11 @@ def check_source_timeout(event_info: rospy.timer.TimerEvent):
             continue
         delta_t = t - source.last_update
         if delta_t >= source.timeout:
-            logmsg = f"Timeout on source {name.upper()}! " \
-                     f"Last update: {int(source.last_update)}, " \
-                     f"elapsed time: {delta_t:.03}, " \
-                     f"timeout: {source.timeout:.03}"
-            print("Info:", logmsg)
-            rospy.loginfo(logmsg)
+            pyrolog("info",
+                    f"Timeout on source {name.upper()}! "
+                    f"Last update: {int(source.last_update)}, "
+                    f"elapsed time: {delta_t:.03}, "
+                    f"timeout: {source.timeout:.03}")
             source.available = False
     new_best_source = sources.none
     for source in poses.values():
