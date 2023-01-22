@@ -3,14 +3,13 @@
 
 import json
 import math
-from dataclasses import dataclass
+from pathlib import Path
 import rospy
 import tf2_ros
-from tf2_geometry_msgs import PoseStamped
+from tf2_geometry_msgs import PoseStamped  # Not used but the import runs some necessary background code.
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 
-from pathlib import Path
 
 # Enhanced version of the built-in dict class that allows
 # access to elements using .name syntax:
@@ -248,7 +247,7 @@ poses.kinect = Pose()
 
 def load_settings():
     global poses, sources, sources_lookup
-    path = Path("./group6_params.json").resolve()  #"../param/group6_params.json"
+    path = Path("../param/group6_params.json").resolve()
     with open(path) as f:
         settings = json.load(f)
     settings = settings["Navigation"]

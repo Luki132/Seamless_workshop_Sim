@@ -3,19 +3,19 @@
 		"PoseSources": {
 			"odom": {
 				"priority": 1,
-				"timeout": 1
+				"timeout": 1.0
 			},
 			"amcl": {
 				"priority": 2,
-				"timeout": 3
+				"timeout": 3.0
 			},
 			"charuco": {
 				"priority": 3,
-				"timeout": 3
+				"timeout": 3.0
 			},
 			"kinect": {
 				"priority": 4,
-				"timeout": 2
+				"timeout": 2.0
 			}
 		}
 	}
