@@ -13,6 +13,8 @@ rospy.init_node("coordinate_subscriber")
 
 def coordinate_callback(coordinates):
     print("first coordinate: x = {}, y = {}, z = {}".format(coordinates.poses[0].position.x, coordinates.poses[0].position.y,coordinates.poses[0].position.z))
+    print("second coordinate: x = {}, y = {}, z = {}".format(coordinates.poses[1].position.x, coordinates.poses[1].position.y,coordinates.poses[1].position.z))
+    print("third coordinate: x = {}, y = {}, z = {}".format(coordinates.poses[2].position.x, coordinates.poses[2].position.y,coordinates.poses[2].position.z))
 
 #### Lukas, read this please ######
 """ Position of the first cargo: coordinates.poses[0].position.x, coordinates.poses[0].position.y, coordinates.poses[0].position.z 

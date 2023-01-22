@@ -34,7 +34,7 @@ candidate_blue = np.empty((1,6))
 candidate_red = np.empty((1,6))
 candidate_green = np.empty((1,6))
 
-
+counter = 0
 # HSV Color for color detection
 blue_lower = np.array([100, 200 , 100], np.uint8)
 blue_upper = np.array([125, 255 , 255], np.uint8)
@@ -144,9 +144,11 @@ def detect_green_object(hsv_frame, blurred_image):
 
 
 def callback(data):
+    global counter
     coordinates = PoseArray()
     overall_candidate = np.zeros((9,6))
     # rospy.loginfo('I heard data')
+    counter = 0
     num_of_objects = 0
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
     blurredFrame = cv2.GaussianBlur(cv_image, (11,11), 0)
@@ -174,13 +176,13 @@ def callback(data):
         # x_to_world[i] = str(round(y_position(y_pos), 3))
         # y_to_world[i] = str(round(x_position(x_pos), 3))
         y_old, x_old, z_old = camera.projectPixelTo3dRay((x_pos,y_pos)) ## Keep in mind that the pixel here is flip
-        x_to_world_float[i] = round(z_diff/z_old*x_old + 0.465, 3)
-        y_to_world_float[i] = round(z_diff/z_old*y_old + 0.5, 3)
+        x_to_world_float[counter] = round(z_diff/z_old*x_old + 0.465, 3)
+        y_to_world_float[counter] = round(z_diff/z_old*y_old + 0.5, 3)
 
         x_to_world[i] = str(round(z_diff/z_old*x_old + 0.465, 3))
         y_to_world[i] = str(round(z_diff/z_old*y_old + 0.5, 3))
         cv2.putText(cv_image, "green" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0))
-    
+        counter = counter + 1
 
     for i in range(int(test_red.shape[0]/4)):
         num_of_objects = num_of_objects + 1
@@ -194,12 +196,14 @@ def callback(data):
         # y_to_world[i] = str(round(x_position(x_pos), 3))
 
         y_old, x_old, z_old = camera.projectPixelTo3dRay((x_pos,y_pos)) ## Keep in mind that the pixel here is flip
-        x_to_world_float[i] = round(z_diff/z_old*x_old + 0.465, 3)
-        y_to_world_float[i] = round(z_diff/z_old*y_old + 0.5, 3)
+        x_to_world_float[counter] = round(z_diff/z_old*x_old + 0.465, 3)
+        y_to_world_float[counter] = round(z_diff/z_old*y_old + 0.5, 3)
 
         x_to_world[i] = str(round(z_diff/z_old*x_old + 0.465, 3))
         y_to_world[i] = str(round(z_diff/z_old*y_old + 0.5, 3))
         cv2.putText(cv_image, "red" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255))
+        counter = counter + 1
+
 
     for i in range(int(test_blue.shape[0]/4)):
         num_of_objects = num_of_objects + 1
@@ -212,12 +216,13 @@ def callback(data):
         # x_to_world[i] = str(round(y_position(y_pos), 3))
         # y_to_world[i] = str(round(x_position(x_pos), 3))
         y_old, x_old, z_old = camera.projectPixelTo3dRay((x_pos,y_pos)) ## Keep in mind that the pixel here is flip
-        x_to_world_float[i] = round(z_diff/z_old*x_old + 0.465, 3)
-        y_to_world_float[i] = round(z_diff/z_old*y_old + 0.5, 3)
+        x_to_world_float[counter] = round(z_diff/z_old*x_old + 0.465, 3)
+        y_to_world_float[counter] = round(z_diff/z_old*y_old + 0.5, 3)
 
         x_to_world[i] = str(round(z_diff/z_old*x_old + 0.465, 3))
         y_to_world[i] = str(round(z_diff/z_old*y_old + 0.5, 3))
         cv2.putText(cv_image, "blue" + "(" + x_to_world[i] + "," + y_to_world[i] + ")", (10, 250 - 20*(num_of_objects-1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0))
+        counter = counter + 1
 
     print("number of objects detected:", num_of_objects)
     print("number of blue objects:", test_blue.shape[0]/4)

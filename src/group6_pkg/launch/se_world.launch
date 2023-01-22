@@ -190,7 +190,7 @@
     <arg name="wait" value="-wait wooden_ground_plane"/>
     <arg name="spawn" value="true"/>
     <arg name="map_file" value="$(arg map_file)"/>
-    <arg name="navigation" value="true"/>
+    <arg name="navigation" value="false"/>
   </include>
   <include file="$(find robis_environment)/launch/spawn_landmark_kit.launch">
     <arg name="number" value="1"/>
