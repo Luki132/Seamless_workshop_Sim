@@ -325,6 +325,8 @@ def check_source_timeout(event_info: rospy.timer.TimerEvent):
 def main():
     rospy.init_node('ReliablePose')
 
+    load_settings()
+
     # Must be here because it needs to happen after the node init.
     tfListener = tf2_ros.TransformListener(Pose.tfBuffer)
 
