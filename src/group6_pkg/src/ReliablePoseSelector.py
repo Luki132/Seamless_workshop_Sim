@@ -5,6 +5,7 @@ import json
 import math
 from pathlib import Path
 import rospy
+import tf2_geometry_msgs
 import tf2_ros
 from tf2_geometry_msgs import PoseStamped  # Not used but the import runs some necessary background code.
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
@@ -201,11 +202,18 @@ class Pose:
         # Transform the given pose to the desired target frame
         if pose.header.frame_id != Pose.reliable_pose_frame:
             try:
-                pose = Pose.tfBuffer.transform(
-                    object_stamped=pose,
+                transform = Pose.tfBuffer.lookup_transform(
                     target_frame=Pose.reliable_pose_frame,
-                    timeout=rospy.Duration(0.0)
+                    source_frame=pose.header.frame_id,
+                    time=rospy.Time(0),
+                    timeout=rospy.Duration(0.1)
                 )
+                pose = tf2_geometry_msgs.do_transform_pose(pose, transform)
+                # pose = Pose.tfBuffer.transform(
+                #     object_stamped=pose,
+                #     target_frame=Pose.reliable_pose_frame,
+                #     timeout=rospy.Duration(0.1)
+                # )
             except Exception as e:
                 pyrolog("warning", f"TF Error: {e}")
                 return
@@ -304,6 +312,15 @@ def cb_pos_in_amcl(p: PoseWithCovarianceStamped):
 
 def cb_pos_in_charuco(p: PoseStamped):
     global poses
+
+    # The pose published here actually points from the turtlebot to the
+    # fixed (!) charuco marker. To get the position of the turtlebot,
+    # set it to 0 (origin = picamera on the turtlebot).
+
+    p.pose.position.x = 0
+    p.pose.position.y = 0
+    p.pose.position.z = 0
+
     poses.charuco.update(p)
 
 
