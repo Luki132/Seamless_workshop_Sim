@@ -1,22 +1,25 @@
 {
-	"Navigation": {
-		"ReliablePoseFrame": "world",
-		"PoseSources": {
-			"odom": {
-				"priority": 1,
-				"timeout": 0.5
-			},
-			"amcl": {
-				"priority": 2,
-				"timeout": 1.0
-			},
-			"charuco": {
-				"priority": 3,
-				"timeout": 2.0
-			},
-			"kinect": {
-				"priority": 4,
-				"timeout": 1.0
+	"navigation": {
+		"reliable_pose": {
+			"topic": "/group6/reliable_pose",
+			"target_frame": "world",
+			"sources": {
+				"odom": {
+					"priority": 1,
+					"timeout": 0.5
+				},
+				"amcl": {
+					"priority": 2,
+					"timeout": 1.0
+				},
+				"charuco": {
+					"priority": 3,
+					"timeout": 2.0
+				},
+				"kinect": {
+					"priority": 4,
+					"timeout": 1.0
+				}
 			}
 		}
 	}

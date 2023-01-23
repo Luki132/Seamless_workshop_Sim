@@ -10,7 +10,7 @@ import tf2_ros
 from tf2_geometry_msgs import PoseStamped  # Not used but the import runs some necessary background code.
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
-
+import group6_pkg.msg
 
 # Combined logging for PYthon and ROs.
 def pyrolog(level, msg):
@@ -176,12 +176,12 @@ sources.none = 0
 sources_lookup = {v: k for k, v in sources.items()}
 
 
-class Pose:
+class ReliablePose:
     # "Static" class variables (Like global vars but without the need to declare them as global in every function)
     best_source = sources.none
     last_source = sources.none
-    reliable_pose_publisher = rospy.Publisher('/group6/reliable_pose', data_class=PoseStamped, queue_size=10)
-    reliable_pose_frame = "map"
+    publisher: rospy.Publisher
+    target_frame = "map"
     # Requires listener!! (Cannot be here because it needs to happen hafter the ros node init in main()
     tfBuffer = tf2_ros.Buffer(cache_time=rospy.Duration(10))
 
@@ -200,18 +200,18 @@ class Pose:
 
     def update(self, pose: PoseStamped):
         # Transform the given pose to the desired target frame
-        if pose.header.frame_id != Pose.reliable_pose_frame:
+        if pose.header.frame_id != ReliablePose.target_frame:
             try:
-                transform = Pose.tfBuffer.lookup_transform(
-                    target_frame=Pose.reliable_pose_frame,
+                transform = ReliablePose.tfBuffer.lookup_transform(
+                    target_frame=ReliablePose.target_frame,
                     source_frame=pose.header.frame_id,
                     time=rospy.Time(0),
                     timeout=rospy.Duration(0.1)
                 )
                 pose = tf2_geometry_msgs.do_transform_pose(pose, transform)
-                # pose = Pose.tfBuffer.transform(
+                # pose = ReliablePose.tfBuffer.transform(
                 #     object_stamped=pose,
-                #     target_frame=Pose.reliable_pose_frame,
+                #     target_frame=ReliablePose.target_frame,
                 #     timeout=rospy.Duration(0.1)
                 # )
             except Exception as e:
@@ -229,43 +229,45 @@ class Pose:
         )
         self.last_update = rospy.get_time()
         self.available = True
-        self.pub_reliable_pose()
+        self.publish()
 
-    def pub_reliable_pose(self):
+    def publish(self):
         # Less reliable, don't use
-        if self.priority < Pose.best_source:
+        if self.priority < ReliablePose.best_source:
             return
 
-        Pose.best_source = self.priority
+        ReliablePose.best_source = self.priority
 
-        if Pose.best_source != Pose.last_source:
+        if ReliablePose.best_source != ReliablePose.last_source:
             pyrolog("info",
-                    f"Switching source from {sources_lookup[Pose.last_source].upper()} "
-                    f"to {sources_lookup[Pose.best_source].upper()}. ")
-            Pose.last_source = Pose.best_source
+                    f"Switching source from {sources_lookup[ReliablePose.last_source].upper()} "
+                    f"to {sources_lookup[ReliablePose.best_source].upper()}. ")
+            ReliablePose.last_source = ReliablePose.best_source
 
-        reliable_pose = PoseStamped()
-        reliable_pose.header.frame_id    = Pose.reliable_pose_frame
-        reliable_pose.header.stamp       = rospy.Time.from_sec(self.last_update)
-        reliable_pose.pose.position.x    = self.position.x
-        reliable_pose.pose.position.y    = self.position.y
-        reliable_pose.pose.position.z    = self.position.z
-        reliable_pose.pose.orientation.x = self.orientation.q.x
-        reliable_pose.pose.orientation.y = self.orientation.q.y
-        reliable_pose.pose.orientation.z = self.orientation.q.z
-        reliable_pose.pose.orientation.w = self.orientation.q.w
+        pose = group6_pkg.msg.ReliablePoseStamped()
+        pose.header.frame_id    = ReliablePose.target_frame
+        pose.header.stamp       = rospy.Time.from_sec(self.last_update)
+        pose.pose.timeout       = self.timeout
+        pose.pose.source        = sources_lookup[self.priority]
+        
+        pose.pose.position.x    = self.position.x
+        pose.pose.position.y    = self.position.y
+        pose.pose.position.z    = self.position.z
+        pose.pose.orientation.x = self.orientation.e.x
+        pose.pose.orientation.y = self.orientation.e.y
+        pose.pose.orientation.z = self.orientation.e.z
 
-        self.reliable_pose_publisher.publish(reliable_pose)
+        ReliablePose.publisher.publish(pose)
 
 
 # So far these are "empty" poses, their properties are loaded in load_settings()
 # Still, they're all listed here because they need to match the ones provided in
 # load_settings, otherwise either this source or the settings file needs adjustment.
 poses = ObjectDict()
-poses.odom = Pose()
-poses.amcl = Pose()
-poses.charuco = Pose()
-poses.kinect = Pose()
+poses.odom = ReliablePose()
+poses.amcl = ReliablePose()
+poses.charuco = ReliablePose()
+poses.kinect = ReliablePose()
 
 
 def load_settings():
@@ -273,9 +275,14 @@ def load_settings():
     path = Path("../param/group6_params.json").resolve()
     with open(path) as f:
         settings = json.load(f)
-    settings = settings["Navigation"]
+    settings = settings["navigation"]["reliable_pose"]
 
-    Pose.reliable_pose_frame = settings["ReliablePoseFrame"]
+    ReliablePose.target_frame = settings["target_frame"]
+    ReliablePose.publisher = rospy.Publisher(
+        name=settings["topic"],
+        data_class=group6_pkg.msg.ReliablePoseStamped,
+        queue_size=10
+    )
 
     # Check if settings for all poses are provided
     poses_code = set(poses.keys())
@@ -291,7 +298,7 @@ def load_settings():
     for src, properties in settings["PoseSources"].items():
         priority = properties["priority"]
         timeout = properties["timeout"]
-        poses[src] = Pose(priority=priority, timeout=timeout)
+        poses[src] = ReliablePose(priority=priority, timeout=timeout)
         sources[src] = priority
         sources_lookup[priority] = src
 
@@ -336,7 +343,7 @@ def check_source_timeout(event_info: rospy.timer.TimerEvent):
 
     t = event_info.current_real.to_sec()
     for name, source in poses.items():
-        source: Pose
+        source: ReliablePose
         if not source.available:
             continue
         delta_t = t - source.last_update
@@ -351,7 +358,7 @@ def check_source_timeout(event_info: rospy.timer.TimerEvent):
     for source in poses.values():
         if source.available and source.priority > new_best_source:
             new_best_source = source.priority
-    Pose.best_source = new_best_source
+    ReliablePose.best_source = new_best_source
 
 
 def main():
@@ -360,7 +367,7 @@ def main():
     load_settings()
 
     # Must be here because it needs to happen after the node init.
-    tfListener = tf2_ros.TransformListener(Pose.tfBuffer)
+    tfListener = tf2_ros.TransformListener(ReliablePose.tfBuffer)
 
     rospy.Subscriber("/turtlebot1/odom", data_class=Odometry, callback=cb_pos_in_odom)
     rospy.Subscriber("/turtlebot1/amcl_pose", data_class=PoseWithCovarianceStamped, callback=cb_pos_in_amcl)
