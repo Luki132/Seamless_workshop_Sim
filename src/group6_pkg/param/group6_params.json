@@ -1,4 +1,24 @@
 {
+	"workstations": {
+		"active": "sim",
+		"sim": {
+			"positions": {
+				"charuco": {
+					"position": {
+						"x": 1.4632950131930702,
+						"y": 0.756079438584469,
+						"z": 0.030369171446464564
+					},
+					"orientation": {
+						"x": 0.00,
+						"y": 0.7071067811865476,
+						"z": 0.00,
+						"w": -0.7071067811865476
+					}
+				}
+			}
+		}
+	},
 	"navigation": {
 		"reliable_pose": {
 			"topic": "/group6/reliable_pose",
