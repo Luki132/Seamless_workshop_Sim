@@ -1,5 +1,6 @@
 {
 	"Navigation": {
+		"ReliablePoseFrame": "world",
 		"PoseSources": {
 			"odom": {
 				"priority": 1,

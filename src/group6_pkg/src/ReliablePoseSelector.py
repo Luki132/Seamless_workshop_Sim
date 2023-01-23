@@ -275,6 +275,8 @@ def load_settings():
         settings = json.load(f)
     settings = settings["Navigation"]
 
+    Pose.reliable_pose_frame = settings["ReliablePoseFrame"]
+
     # Check if settings for all poses are provided
     poses_code = set(poses.keys())
     poses_settings = set(settings["PoseSources"].keys())
