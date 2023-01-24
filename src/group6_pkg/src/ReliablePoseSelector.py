@@ -279,7 +279,7 @@ class ReliablePose:
         pose.pose.source        = sources_lookup[self.priority]
 
         copy_trio(src=self.position, dst=pose.pose.position)
-        copy_quat(src=self.orientation.get_euler_deg(), dst=pose.pose.orientation)
+        copy_trio(src=self.orientation.get_euler_deg(), dst=pose.pose.orientation)
 
         ReliablePose.publisher.publish(pose)
 
