@@ -5,6 +5,7 @@ import json
 import math
 from pathlib import Path
 import rospy
+from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 import tf2_ros
 import tf2_geometry_msgs
@@ -66,6 +67,10 @@ class Navigation:
             return
 
         target_angle = math.atan2(diff.y, diff.x)
+
+        if Navigation.target.dir < 0:
+            target_angle += 180
+
         adist = target_angle - new_pose.pose.orientation.z
         if adist <= -180:
             adist += 360
@@ -73,25 +78,49 @@ class Navigation:
             adist -= 360
         Navigation.adist = adist
 
-        Navigation.vel = min(Navigation.dist / new_pose.pose.timeout, settings.navigation.max_vel)
-        Navigation.avel = min(Navigation.adist / new_pose.pose.timeout, settings.navigation.max_vel_angular)
+        if adist >= 10:
+            # Angle too far off; don't drive into the wrong direction. 
+            vel = 0.0
+        else:
+            vel = Navigation.dist / (new_pose.pose.timeout * Navigation.target.min_updates)
+        avel = Navigation.adist / (new_pose.pose.timeout * Navigation.target.min_updates)
+
+        Navigation.vel = min(vel, settings.navigation.max_vel) * Navigation.target.dir
+        Navigation.avel = min(avel, settings.navigation.max_vel_angular)
 
     @staticmethod
-    def accel_controller(event_info: rospy.timer.TimerEvent):
-        time_to_goal = Navigation.dist / Navigation.vel
+    def accel_controller(target_vel, actual_vel, max_vel, min_vel, max_acc, dist_to_goal, delta_t):
+        # Desired speed:
+        vel = target_vel
 
-        # Acceleration from current speed to desired speed as well as the
-        # necessary slowdown from desired speed to 0
-        acceleration_time = (abs(Navigation.actual_vel - Navigation.vel) + Navigation.vel) \
-                            / settings.navigation.max_acc
-        
+        # Distance required to slow down to 0.
+        stop_dist = (actual_vel ** 2) / (2 * max_acc)
 
-        cmd = Twist()
+        # Some safety margin
+        stop_dist *= 1.05
 
-        cmd.linear = Navigation.vel
-        cmd.angular = math.radians(Navigation.avel)
+        # Time to slow down
+        if dist_to_goal <= stop_dist:
+            vel = 0
 
-        Navigation.pub.publish(cmd)
+        # Accelerate in discrete steps whose size is determined by the call frequency of this function
+        delta_v = delta_t * max_acc
+
+        if actual_vel > vel:
+            actual_vel += delta_v
+        else:
+            actual_vel -= delta_v
+
+        # Maintain a minimum speed til the goal is reached. Minimum speed is expected
+        # to allow "instantaneous" stopping without controlling the acceleration.
+        if abs(actual_vel) <= min_vel:
+            if actual_vel < 0:
+                actual_vel = -min_vel
+            else:
+                actual_vel = min_vel
+
+        return actual_vel
+
 
     @staticmethod
     def next_target():
@@ -109,8 +138,32 @@ class Navigation:
         return False
 
 
-def cb_steering():
-    pass
+def cb_accel_control(event_info: rospy.timer.TimerEvent):
+    cmd = Twist()
+
+    cmd.linear = Navigation.accel_controller(
+        target_vel=Navigation.vel,
+        actual_vel=Navigation.actual_vel,
+        max_vel=settings.navigation.max_vel,
+        min_vel=settings.navigation.min_vel,
+        max_acc=settings.navigation.max_acc,
+        dist_to_goal=Navigation.dist,
+        delta_t=(event_info.current_real-event_info.last_real),
+    )
+
+    cmd.angular = Navigation.accel_controller(
+        target_vel=Navigation.avel,
+        actual_vel=Navigation.actual_avel,
+        max_vel=settings.navigation.max_vel_angular,
+        min_vel=settings.navigation.min_vel_angular,
+        max_acc=settings.navigation.max_acc_angular,
+        dist_to_goal=Navigation.adist,
+        delta_t=(event_info.current_real-event_info.last_real),
+    )
+
+    cmd.angular = math.radians(cmd.angular)
+
+    Navigation.pub.publish(cmd)
 
 
 def cb_reliable_pose(p: ReliablePoseStamped):
@@ -123,6 +176,13 @@ def cb_stop(data="dontcare"):
     stop.linear = 0
     stop.angular = 0
     Navigation.pub.publish(stop)
+
+
+def cb_path(data: String):
+    if data.data in settings.navigation.paths:
+        Navigation.ordered_path = data.data
+    else:
+        raise IndexError(f"Desired path '{data.data}' unknown. ")
 
 
 def load_settings():
@@ -150,6 +210,7 @@ def main():
     tfListener = tf2_ros.TransformListener(tfBuffer)
 
     rospy.Subscriber("/group6/reliable_pose", data_class=ReliablePoseStamped, callback=cb_reliable_pose)
+    rospy.Subscriber("/group6/tb_path", data_class=String, callback=cb_path)
     Navigation.pub = rospy.Publisher("/turtlebot1/cmd_vel", data_class=Twist, queue_size=10)
 
     # Timer for controlling the acceleration of the turtlebot
