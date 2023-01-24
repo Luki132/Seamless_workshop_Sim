@@ -30,6 +30,12 @@ def euler_from_quaternion(x, y, z, w):
      
     return roll_x, pitch_y, yaw_z
 
+def angle_to_rotate(a,b):
+    a1 = math.atan(b/a)
+    a2 = 180 - (90+a1)
+
+    return a2
+
 
 def log_pub(c):
     pub.publish(c)
@@ -39,9 +45,17 @@ def log_pub(c):
 
 def charuco_detector_callback(park: PoseStamped):
     global z_info, cmd, angular_z, stop, stop1, stop2, x_ang, access, callback_denied
-    print(park.pose.position.z)
-    x_ang, y_ang, z_ang = euler_from_quaternion(park.pose.orientation.x, park.pose.orientation.y, park.pose.orientation.z, park.pose.orientation.w)
+    #print(park.pose.position.z)
+    #x_ang, y_ang, z_ang = euler_from_quaternion(park.pose.orientation.x, park.pose.orientation.y, park.pose.orientation.z, park.pose.orientation.w)
+    #_ang = math.degrees(x_ang)
+
+    x_ang, y_ang, z_ang = euler_from_quaternion(park.pose.position.x, park.pose.position.y, park.pose.position.z,park.pose.orientation.w)
     x_ang = math.degrees(x_ang)
+    z_ang = math.degrees(z_ang)
+
+
+    r_angle = angle_to_rotate(x_ang,z_ang)
+    print(r_angle)
     # if stop2 == False:
     #     global cmd
     #     global angular_z, stop, stop1
@@ -120,6 +134,7 @@ def park_and_stop(event):
         print("Rotate")
         print(time_stop1)
         if time_stop1 > 0:
+
             cmd.linear.x = 0.0
             cmd.angular.z = 0.1
             pub.publish(cmd)
