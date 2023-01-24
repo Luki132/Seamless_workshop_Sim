@@ -23,6 +23,7 @@
 		"reliable_pose": {
 			"topic": "/group6/reliable_pose",
 			"target_frame": "world",
+			"source_timeout_rate": 0.05,
 			"sources": {
 				"odom": {
 					"priority": 1,
@@ -34,7 +35,7 @@
 				},
 				"charuco": {
 					"priority": 3,
-					"timeout": 2.0
+					"timeout": 2.4
 				},
 				"kinect": {
 					"priority": 4,
@@ -42,19 +43,26 @@
 				}
 			}
 		},
+		"sources_WIP": {
+			"extrapolation": {
+					"priority": 2,
+					"timeout": 0.2
+				}
+		},
 		"paths": {
 			"docking_to_conveyor": [
-				{"x": 1.26, "y": 0.78, "dir": 1, "tolerance": 0.10, "min_updates": 1},
-				{"x": 1.10, "y": 0.78, "dir": 1, "tolerance": 0.05, "min_updates": 1},
-				{"x": 1.10, "y": 0.38, "dir": 1, "tolerance": 0.10, "min_updates": 1},
-				{"x": 0.60, "y": 0.38, "dir": 1, "tolerance": 0.10, "min_updates": 1}
+				{"x": 1.26, "y": 0.78, "dir":  1, "tolerance": 0.10, "tolerance_angle": 10, "min_updates": 1},
+				{"x": 1.10, "y": 0.78, "dir":  1, "tolerance": 0.05, "tolerance_angle":  8, "min_updates": 1},
+				{"x": 1.10, "y": 0.38, "dir": -1, "tolerance": 0.10, "tolerance_angle": 10, "min_updates": 1},
+				{"x": 0.60, "y": 0.38, "dir": -1, "tolerance": 0.10, "tolerance_angle": 10, "min_updates": 1},
+				{"x": 0.50, "y": 0.38, "dir": -1, "tolerance": 0.03, "tolerance_angle":  3, "min_updates": 1}
 			],
 			"conveyor_to_docking": [
 
 			]
 		},
-		"min_vel": 0.01,
-		"min_vel_angular": 5,
+		"min_vel": 0.0,
+		"min_vel_angular": 0,
 		"max_vel": 0.1,
 		"max_vel_angular": 30,
 		"max_acc": 0.1,

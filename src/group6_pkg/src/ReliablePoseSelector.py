@@ -8,7 +8,7 @@ import rospy
 import tf2_geometry_msgs
 import tf2_ros
 from tf2_geometry_msgs import PoseStamped  # Not used but the import runs some necessary background code.
-from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, TransformStamped
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, TransformStamped, Twist
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool
 import group6_pkg.msg
@@ -272,10 +272,15 @@ class ReliablePose:
                     f"to {sources_lookup[ReliablePose.best_source].upper()}. ")
             ReliablePose.last_source = ReliablePose.best_source
 
+        # The actual timeout is a little bit higher because
+        # it needs to be detected (finite checking rate), and handled.
+        # Assuming this equals to twice the checking period
+        actual_timeout = self.timeout + 2 * settings.navigation.reliable_pose.source_timeout_rate
+
         pose = group6_pkg.msg.ReliablePoseStamped()
         pose.header.frame_id    = ReliablePose.target_frame
         pose.header.stamp       = rospy.Time.from_sec(self.last_update)
-        pose.pose.timeout       = self.timeout
+        pose.pose.timeout       = actual_timeout
         pose.pose.source        = sources_lookup[self.priority]
 
         copy_trio(src=self.position, dst=pose.pose.position)
@@ -300,6 +305,10 @@ def cb_pos_in_odom(p: Odometry):
     pose.header = p.header
     pose.pose = p.pose.pose
     poses.odom.update(pose)
+
+
+def cb_vel_in_extrapolation(t: Twist):
+    pass
 
 
 def cb_pos_in_amcl(p: PoseWithCovarianceStamped):
@@ -385,13 +394,17 @@ def main():
     ReliablePose.tfBuffer = tf2_ros.Buffer(cache_time=rospy.Duration(10))
     tfListener = tf2_ros.TransformListener(ReliablePose.tfBuffer)
 
+    rospy.Subscriber("/turtlebot1/cmd_vel", data_class=Twist, callback=cb_vel_in_extrapolation)
     rospy.Subscriber("/turtlebot1/odom", data_class=Odometry, callback=cb_pos_in_odom)
     rospy.Subscriber("/turtlebot1/amcl_pose", data_class=PoseWithCovarianceStamped, callback=cb_pos_in_amcl)
     rospy.Subscriber("/turtlebot1/camera/image_charuco_pose", PoseStamped, callback=cb_pos_in_charuco)
     rospy.Subscriber("/group6/kinect_pose", PoseStamped, callback=cb_pos_in_kinect)
 
     # Timer for checking source timeouts
-    source_timeout_timer = rospy.Timer(period=rospy.Duration(0.05), callback=check_source_timeout)
+    source_timeout_timer = rospy.Timer(
+        period=rospy.Duration(settings.navigation.reliable_pose.source_timeout_rate),
+        callback=check_source_timeout,
+    )
 
     while not rospy.is_shutdown():
         # ATM nothing to do
