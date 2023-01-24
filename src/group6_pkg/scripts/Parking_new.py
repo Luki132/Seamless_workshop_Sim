@@ -59,20 +59,20 @@ def charuco_detector_callback(park: PoseStamped):
     # x_ang < -175 and x_ang > 175 and 
     if callback_denied == False:
 
-        if park.pose.position.x < 0.01 and park.pose.position.z > 0.15:
+        if park.pose.position.x < 0.015 and park.pose.position.z > 0.12:
             rospy.loginfo("too far to right")
             cmd.linear.x = 0.00
             cmd.angular.z = 0.015
 
 
-        if park.pose.position.x > 0.04 and park.pose.position.z > 0.15:
+        if park.pose.position.x > 0.035 and park.pose.position.z > 0.12:
             rospy.loginfo("too far to left")
             cmd.linear.x = 0.00
             cmd.angular.z = -0.015
         if abs(x_ang) > 175 and park.pose.position.z > 0.15:
             print("Hello")
             rospy.loginfo("happy path towards marker.")
-            cmd.linear.x = -0.01
+            cmd.linear.x = -0.015
             cmd.angular.z = 0.0
         
         if park.pose.position.z < 0.15 and stop1 == False:
@@ -116,7 +116,7 @@ def park_and_stop(event):
     elif access == True:
         time.sleep(4)
         print(abs(x_ang))
-        time_stop1 = (180-abs(x_ang)-5)/math.degrees(0.1)
+        time_stop1 = (180-abs(x_ang)-7)/math.degrees(0.1)
         print("Rotate")
         print(time_stop1)
         if time_stop1 > 0:

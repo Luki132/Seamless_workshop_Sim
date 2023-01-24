@@ -1,0 +1,50 @@
+<launch>
+  <!-- Launch arguments -->
+  <arg name="model" default="$(find robis_turtlebot)/urdf/model.urdf.xacro" />
+  <arg name="wait" default="" />
+  <!-- wait arg needs to look like: -wait NAME_REFERENCE -->
+  <arg name="name" default="turtlebot" />
+  <arg name="number" default="1" />
+  <arg name="x" default="1.0" />
+  <arg name="y" default="0.25" />
+  <arg name="z" default="0" />
+  <arg name="Y" default="0" />
+  <arg name="start_gazebo" default="false" />
+  <arg name="charuco_detector" default="true" />
+  <arg name="navigation" default="true" />
+  <arg name="reference_frame" default="world" />
+  <arg name="spawn" default="true" />
+  <arg name="map_file" default="$(find seamless_environment)/maps/seamless.yaml"/>
+
+  <!-- start gazebo if necessary -->
+  <group if="$(arg charuco_detector)">
+    <include file="$(find robis_turtlebot)/launch/se_charuco_detector.launch" />
+  </group>
+  <!-- start gazebo if necessary -->
+  <group if="$(arg start_gazebo)">
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="paused" value="false"/>
+      <arg name="headless" value="true"/>
+      <!--arg name="world_name" value="$(find robis_environment)/worlds/seamless.world"/-->
+    </include>
+  </group>
+
+  <group ns="$(arg name)$(arg number)/camera/image_charuco_detection" >
+    <rosparam param="disable_pub_plugins">
+      - 'image_transport/compressedDepth'
+      - 'image_transport/theora'
+      - 'image_transport/compressed'
+    </rosparam>
+  </group>
+
+
+  <group ns="$(arg name)$(arg number)/camera/image" >
+    <rosparam param="disable_pub_plugins">
+      - 'image_transport/compressedDepth'
+      - 'image_transport/theora'
+      - 'image_transport/compressed'
+      - 'dynamic_reconfigure/parameter_descriptions'
+      - 'dynamic_reconfigure/parameter_updates'
+    </rosparam>
+  </group>
+</launch>
