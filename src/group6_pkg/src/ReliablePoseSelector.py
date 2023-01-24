@@ -247,9 +247,11 @@ class EstimatedPose:
         delta_t = event_info.current_real.to_sec() - event_info.last_real.to_sec()
 
         # Turtlebot can only move into x direction anyway
-        self.pose.pose.position.x += self.twist.linear.x * delta_t
+        dist = self.twist.linear.x * delta_t * settings.navigation.reliable_pose.estimate_corr_pos
+        self.pose.pose.position.x += dist * math.cos(self.orientation.e.z)
+        self.pose.pose.position.y += dist * math.sin(self.orientation.e.z)
         # ... and only rotate around z
-        self.orientation.e.z += self.twist.angular.z * delta_t
+        self.orientation.e.z += self.twist.angular.z * delta_t * settings.navigation.reliable_pose.estimate_corr_angle
 
         # Update quaternion with new values.
         self.orientation.set_euler_rad(self.orientation.e)
@@ -259,12 +261,17 @@ class EstimatedPose:
 
         poses.estimate.update(self.pose)
 
-    def set_ref(self, ref:group6_pkg.msg.ReliablePoseStamped):
+        p = group6_pkg.msg.ReliablePoseStamped()
+        p.header = self.pose.header
+        copy_trio(src=self.orientation.get_euler_deg(), dst=p.pose.orientation)
+        copy_trio(src=self.pose.pose.position, dst=p.pose.position)
+        p.pose.source="estimate"
+        pub = rospy.Publisher("/group6/pose_estimate", data_class=group6_pkg.msg.ReliablePoseStamped, queue_size=10)
+        pub.publish(p)
+
+    def set_ref(self, ref: group6_pkg.msg.ReliablePoseStamped):
 
         self.orientation.set_euler_deg(ref.pose.orientation)
-
-        if self.orientation.e.z == 0:
-            print("Zero??")
 
         copy_quat(src=self.orientation.q, dst=self.pose.pose.orientation)
         copy_trio(src=ref.pose.position, dst=self.pose.pose.position)
@@ -335,8 +342,9 @@ class ReliablePose:
 
         # Publish and also update the estimated pose
         global estimated_pose
-        if self.priority != sources.estimate:
+        if self.priority > sources.estimate and self.priority != sources.odom:
             estimated_pose.set_ref(pose)
+
         ReliablePose.publisher.publish(pose)
 
 
@@ -462,7 +470,7 @@ def main():
 
     # Timer for estimating the pose if no reliable source is available
     pose_estimate_timer = rospy.Timer(
-        period=rospy.Duration(0.05),
+        period=rospy.Duration(settings.navigation.reliable_pose.estimate_rate),
         callback=estimated_pose.integrate_vel,
     )
 
