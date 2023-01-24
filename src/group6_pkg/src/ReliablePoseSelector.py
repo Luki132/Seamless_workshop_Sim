@@ -89,7 +89,8 @@ class QOrientation:
         def __repr__(self):
             return f"Quaternion: x={self.x:.03} y={self.y:.03} z={self.z:.03} w={self.w:.03}"
 
-        def set_euler_rad(self, z, x=0.0, y=0.0):
+        def set_euler_rad(self, e):
+            x, y, z = e.x, e.y, e.z
             if x or y:
                 self.x = math.sin(x / 2) * math.cos(y / 2) * math.cos(z / 2) - math.cos(x / 2) * math.sin(y / 2) * math.sin(z / 2)
                 self.y = math.cos(x / 2) * math.sin(y / 2) * math.cos(z / 2) + math.sin(x / 2) * math.cos(y / 2) * math.sin(z / 2)
@@ -239,18 +240,36 @@ class EstimatedPose:
     def integrate_vel(self, event_info: rospy.timer.TimerEvent):
         global poses
 
-        delta_t = event_info.current_real - event_info.last_real
+        if not event_info.last_real:
+            # first run, no delta_t possible.
+            return
+
+        delta_t = event_info.current_real.to_sec() - event_info.last_real.to_sec()
 
         # Turtlebot can only move into x direction anyway
         self.pose.pose.position.x += self.twist.linear.x * delta_t
         # ... and only rotate around z
-        self.orientation.e.z = self.orientation.e.z + math.degrees(self.twist.angular.z) * delta_t
+        self.orientation.e.z += self.twist.angular.z * delta_t
 
         # Update quaternion with new values.
         self.orientation.set_euler_rad(self.orientation.e)
 
         self.pose.header.stamp = event_info.current_real
         copy_quat(src=self.orientation.q, dst=self.pose.pose.orientation)
+
+        poses.estimate.update(self.pose)
+
+    def set_ref(self, ref:group6_pkg.msg.ReliablePoseStamped):
+
+        self.orientation.set_euler_deg(ref.pose.orientation)
+
+        if self.orientation.e.z == 0:
+            print("Zero??")
+
+        copy_quat(src=self.orientation.q, dst=self.pose.pose.orientation)
+        copy_trio(src=ref.pose.position, dst=self.pose.pose.position)
+        self.pose.header.stamp = ref.header.stamp
+        self.pose.header.frame_id = ref.header.frame_id
 
         poses.estimate.update(self.pose)
 
@@ -314,6 +333,10 @@ class ReliablePose:
         copy_trio(src=self.position, dst=pose.pose.position)
         copy_trio(src=self.orientation.get_euler_deg(), dst=pose.pose.orientation)
 
+        # Publish and also update the estimated pose
+        global estimated_pose
+        if self.priority != sources.estimate:
+            estimated_pose.set_ref(pose)
         ReliablePose.publisher.publish(pose)
 
 

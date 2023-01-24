@@ -34,15 +34,15 @@
 					"timeout": 0.2
 				},
 				"amcl": {
-					"priority": 2,
+					"priority": 3,
 					"timeout": 1.0
 				},
 				"charuco": {
-					"priority": 3,
+					"priority": 4,
 					"timeout": 2.4
 				},
 				"kinect": {
-					"priority": 4,
+					"priority": 5,
 					"timeout": 1.0
 				}
 			}
