@@ -230,6 +230,34 @@ sources.none = 0
 sources_lookup = {v: k for k, v in sources.items()}
 
 
+class EstimatedPose:
+    def __init__(self):
+        self.pose = PoseStamped()
+        self.twist = Twist()
+        self.orientation = QOrientation()
+
+    def integrate_vel(self, event_info: rospy.timer.TimerEvent):
+        global poses
+
+        delta_t = event_info.current_real - event_info.last_real
+
+        # Turtlebot can only move into x direction anyway
+        self.pose.pose.position.x += self.twist.linear.x * delta_t
+        # ... and only rotate around z
+        self.orientation.e.z = self.orientation.e.z + math.degrees(self.twist.angular.z) * delta_t
+
+        # Update quaternion with new values.
+        self.orientation.set_euler_rad(self.orientation.e)
+
+        self.pose.header.stamp = event_info.current_real
+        copy_quat(src=self.orientation.q, dst=self.pose.pose.orientation)
+
+        poses.estimate.update(self.pose)
+
+
+estimated_pose = EstimatedPose()
+
+
 class ReliablePose:
     # "Static" class variables (Like global vars but without the need to declare them as global in every function)
     best_source = sources.none
@@ -294,6 +322,7 @@ class ReliablePose:
 # load_settings, otherwise either this source or the settings file needs adjustment.
 poses = ObjectDict()
 poses.odom = ReliablePose()
+poses.estimate = ReliablePose()
 poses.amcl = ReliablePose()
 poses.charuco = ReliablePose()
 poses.kinect = ReliablePose()
@@ -307,8 +336,10 @@ def cb_pos_in_odom(p: Odometry):
     poses.odom.update(pose)
 
 
-def cb_vel_in_extrapolation(t: Twist):
-    pass
+def cb_vel_in(t: Twist):
+    # This callback does not directly update poses.estimated; that's done by the integration timer event.
+    global estimated_pose
+    estimated_pose.twist = t
 
 
 def cb_pos_in_amcl(p: PoseWithCovarianceStamped):
@@ -394,7 +425,7 @@ def main():
     ReliablePose.tfBuffer = tf2_ros.Buffer(cache_time=rospy.Duration(10))
     tfListener = tf2_ros.TransformListener(ReliablePose.tfBuffer)
 
-    rospy.Subscriber("/turtlebot1/cmd_vel", data_class=Twist, callback=cb_vel_in_extrapolation)
+    rospy.Subscriber("/turtlebot1/cmd_vel", data_class=Twist, callback=cb_vel_in)
     rospy.Subscriber("/turtlebot1/odom", data_class=Odometry, callback=cb_pos_in_odom)
     rospy.Subscriber("/turtlebot1/amcl_pose", data_class=PoseWithCovarianceStamped, callback=cb_pos_in_amcl)
     rospy.Subscriber("/turtlebot1/camera/image_charuco_pose", PoseStamped, callback=cb_pos_in_charuco)
@@ -404,6 +435,12 @@ def main():
     source_timeout_timer = rospy.Timer(
         period=rospy.Duration(settings.navigation.reliable_pose.source_timeout_rate),
         callback=check_source_timeout,
+    )
+
+    # Timer for estimating the pose if no reliable source is available
+    pose_estimate_timer = rospy.Timer(
+        period=rospy.Duration(0.05),
+        callback=estimated_pose.integrate_vel,
     )
 
     while not rospy.is_shutdown():

@@ -29,6 +29,10 @@
 					"priority": 1,
 					"timeout": 0.5
 				},
+				"estimate": {
+					"priority": 2,
+					"timeout": 0.2
+				},
 				"amcl": {
 					"priority": 2,
 					"timeout": 1.0
@@ -42,12 +46,6 @@
 					"timeout": 1.0
 				}
 			}
-		},
-		"sources_WIP": {
-			"extrapolation": {
-					"priority": 2,
-					"timeout": 0.2
-				}
 		},
 		"paths": {
 			"docking_to_conveyor": [
