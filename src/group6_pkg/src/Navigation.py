@@ -30,27 +30,32 @@ class Navigation:
 
     pub: rospy.Publisher
     watchdog: rospy.Timer
+    accel_control_timer: rospy.Timer
     pose: ReliablePoseStamped
     ordered_path = ""
-    path_index = 0
-    target: Target(0, 0, 0, 0)
+    path_index = -1
+    target = Target(0, 0, 0, 0, 0)
     dist = 0.0
     adist = 0.0
     vel = 0.0
     avel = 0.0
     actual_vel = 0.0
     actual_avel = 0.0
+    accel_control_enable = False
 
     @staticmethod
     def update(new_pose: ReliablePoseStamped):
         Navigation.watchdog.shutdown()
-        Navigation.watchdog = rospy.Timer(
-            period=rospy.Duration(new_pose.pose.timeout),
-            callback=cb_stop,
-            oneshot=True
-        )
+
+        # Safety margin and reaction time for the other script to actually switch sources
+        new_pose.pose.timeout *= 1.1
+        set_watchdog(new_pose.pose.timeout)
 
         Navigation.pose = new_pose
+
+        if Navigation.path_index < 0:
+            # No path to follow; nothing to do.
+            return
 
         diff = ObjectDict()
         diff.x = Navigation.target.x - new_pose.pose.position.x
@@ -62,11 +67,12 @@ class Navigation:
             new_target = Navigation.next_target()
             if new_target:
                 Navigation.update(new_pose)
+                Navigation.accel_control_enable = True
             else:
                 cb_stop()
             return
 
-        target_angle = math.atan2(diff.y, diff.x)
+        target_angle = math.degrees(math.atan2(diff.y, diff.x))
 
         if Navigation.target.dir < 0:
             target_angle += 180
@@ -106,10 +112,11 @@ class Navigation:
         # Accelerate in discrete steps whose size is determined by the call frequency of this function
         delta_v = delta_t * max_acc
 
-        if actual_vel > vel:
-            actual_vel += delta_v
+        # Accelerate but don't exceed the desired speed.
+        if actual_vel <= vel:
+            actual_vel = min(vel, actual_vel + delta_v)
         else:
-            actual_vel -= delta_v
+            actual_vel = max(vel, actual_vel - delta_v)
 
         # Maintain a minimum speed til the goal is reached. Minimum speed is expected
         # to allow "instantaneous" stopping without controlling the acceleration.
@@ -126,42 +133,58 @@ class Navigation:
     def next_target():
         if Navigation.ordered_path in settings.navigation.paths:
             targets = settings.navigation.paths[Navigation.ordered_path]
-            if Navigation.target.index >= len(targets):
+            if Navigation.path_index >= len(targets):
                 # Reached end of path, wait for further updates.
                 # TODO: Publish end of path!
+                Navigation.path_index = -1
                 Navigation.ordered_path = ""
-                Navigation.path_index = 0
             else:
-                Navigation.path_index += 1
-                Navigation.target = Navigation.Target(**targets[Navigation.path_index])
+                i = Navigation.path_index + 1
+                Navigation.target = Navigation.Target(**targets[i])
+                Navigation.path_index = i
                 return True
         return False
 
 
 def cb_accel_control(event_info: rospy.timer.TimerEvent):
-    cmd = Twist()
+    if not event_info.last_real:
+        # First run
+        return
 
-    cmd.linear = Navigation.accel_controller(
+    if not Navigation.accel_control_enable:
+        return
+
+    delta_t = (event_info.current_real-event_info.last_real).to_sec()
+
+    Navigation.actual_vel = Navigation.accel_controller(
         target_vel=Navigation.vel,
         actual_vel=Navigation.actual_vel,
         max_vel=settings.navigation.max_vel,
         min_vel=settings.navigation.min_vel,
         max_acc=settings.navigation.max_acc,
         dist_to_goal=Navigation.dist,
-        delta_t=(event_info.current_real-event_info.last_real),
+        delta_t=delta_t,
     )
 
-    cmd.angular = Navigation.accel_controller(
+    Navigation.actual_avel = Navigation.accel_controller(
         target_vel=Navigation.avel,
         actual_vel=Navigation.actual_avel,
         max_vel=settings.navigation.max_vel_angular,
         min_vel=settings.navigation.min_vel_angular,
         max_acc=settings.navigation.max_acc_angular,
         dist_to_goal=Navigation.adist,
-        delta_t=(event_info.current_real-event_info.last_real),
+        delta_t=delta_t,
     )
 
-    cmd.angular = math.radians(cmd.angular)
+    vel_rad = math.radians(Navigation.actual_avel)
+
+    cmd = Twist()
+    cmd.linear.x = Navigation.actual_vel
+    cmd.linear.y = 0
+    cmd.linear.z = 0
+    cmd.angular.x = 0
+    cmd.angular.y = 0
+    cmd.angular.z = vel_rad
 
     Navigation.pub.publish(cmd)
 
@@ -172,17 +195,31 @@ def cb_reliable_pose(p: ReliablePoseStamped):
 
 def cb_stop(data="dontcare"):
     # It's been too long since the last pose update, stop moving.
+    Navigation.accel_control_enable = False
     stop = Twist()
-    stop.linear = 0
-    stop.angular = 0
+    stop.linear.x = 0
+    stop.linear.y = 0
+    stop.linear.z = 0
+    stop.angular.x = 0
+    stop.angular.y = 0
+    stop.angular.z = 0
     Navigation.pub.publish(stop)
 
 
 def cb_path(data: String):
     if data.data in settings.navigation.paths:
         Navigation.ordered_path = data.data
+        Navigation.next_target()
     else:
         raise IndexError(f"Desired path '{data.data}' unknown. ")
+
+
+def set_watchdog(timeout = 10):
+    Navigation.watchdog = rospy.Timer(
+        period=rospy.Duration(timeout),
+        callback=cb_stop,
+        oneshot=True
+    )
 
 
 def load_settings():
@@ -201,7 +238,7 @@ def load_settings():
 def main():
     global tfBuffer
 
-    rospy.init_node('ReliablePose')
+    rospy.init_node('unified_navigation')
 
     load_settings()
 
@@ -214,11 +251,28 @@ def main():
     Navigation.pub = rospy.Publisher("/turtlebot1/cmd_vel", data_class=Twist, queue_size=10)
 
     # Timer for controlling the acceleration of the turtlebot
-    acceleration_control_timer = rospy.Timer(period=rospy.Duration(0.05), callback=Navigation.accel_controller)
+    Navigation.accel_control_timer = rospy.Timer(period=rospy.Duration(0.05), callback=cb_accel_control, oneshot=False)
 
+    # Watchdog in case there's no pose update anymore.
+    set_watchdog()
+
+    # Make sure nothing is running!
+    cb_stop()
+
+    rate = rospy.Rate(hz=20)
     while not rospy.is_shutdown():
-        # ATM nothing to do
         break
+        now = rospy.Time.from_sec(rospy.get_time())
+        event_info = rospy.timer.TimerEvent(
+            last_duration=rospy.Duration(0),
+            last_expected=rate.last_time,
+            last_real=rate.last_time,
+            current_real=now,
+            current_expected=now
+        )
+        cb_accel_control(event_info)
+        rate.sleep()
+
 
     rospy.spin()
 
