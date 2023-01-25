@@ -8,6 +8,10 @@ from image_geometry import PinholeCameraModel
 from geometry_msgs.msg import Pose, PoseArray, Point 
 bridge = CvBridge()
 
+x_offset = 0.53 # Test Area A
+y_offset = 0.48 # Test Area A 
+z_diff = 0.6104 - 0.158
+
 counter = 0
 test_green = np.empty((1,2))
 
@@ -107,6 +111,7 @@ def circle_detector(img):
 
 def turtlebot_detector(img1,img2):
     global turtlebot_found,turtlebot_pos
+    counter = 0
     img1=  cv2.bitwise_not(img1)
     img1 = cv2.bitwise_or(img1, img2)
     img1 = cv2.bitwise_not(img1)
@@ -135,10 +140,14 @@ def turtlebot_detector(img1,img2):
                 rectangle = np.int0(box)
                 u_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
                 v_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
-                turtlebot_pos = np.array([[u_pos], [v_pos]])
+                y_old, x_old, z_old = camera.projectPixelTo3dRay((u_pos,v_pos)) ## Keep in mind that the pixel here is flip
+                x_to_world_float[counter] = round(z_diff/z_old*x_old + x_offset, 3)
+                y_to_world_float[counter] = round(z_diff/z_old*y_old + y_offset, 3)
+                turtlebot_pos = np.array([[x_to_world_float[counter]], [y_to_world_float[counter]]])
                 turtlebot_found = True
                 cv2.circle(cv_image, (u_pos, v_pos), 4, 2)
                 cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
+                counter = counter + 1
 
     return img1
 
@@ -146,7 +155,7 @@ def callback(data):
     global tray_found, turtlebot_found,test_green, tray_pos, turtlebot_pos, cv_image, edges, all_mask, out, second_method,counter, angle
     global coordinate_publisher, black_mask
     angle = 0.0
-    # coordinates = PoseArray()
+    coordinates = PoseArray()
 
     test_green = np.empty((1,2))
 
@@ -322,15 +331,22 @@ def callback(data):
 
 def listener():
     global coordinate_publisher
-    rospy.init_node('listener', anonymous=True)
+    rospy.init_node('turtlebot_position_node', anonymous=True)
     rospy.Subscriber("/kinect/rgb_camera/image_raw", Image, callback)
     coordinate_publisher = rospy.Publisher("/turtlebot_position", PoseArray, queue_size=10 )
-    # camera_info_msg = rospy.wait_for_message("/rgb/camera_info", CameraInfo)
-    # camera = PinholeCameraModel()
-    # camera.fromCameraInfo(camera_info_msg)
+    camera_info_msg = rospy.wait_for_message("/rgb/camera_info", CameraInfo)
+    camera = PinholeCameraModel()
+    camera.fromCameraInfo(camera_info_msg)
     rospy.spin()
 
 if __name__=='__main__':
     # while(True):
     #     callback()
-    listener()
+    # listener()
+    rospy.init_node('turtlebot_position_node', anonymous=True)
+    rospy.Subscriber("/kinect/rgb_camera/image_raw", Image, callback)
+    coordinate_publisher = rospy.Publisher("/turtlebot_position", PoseArray, queue_size=10 )
+    camera_info_msg = rospy.wait_for_message("/rgb/camera_info", CameraInfo)
+    camera = PinholeCameraModel()
+    camera.fromCameraInfo(camera_info_msg)
+    rospy.spin()

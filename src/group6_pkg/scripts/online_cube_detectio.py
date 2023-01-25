@@ -8,7 +8,11 @@ from image_geometry import PinholeCameraModel
 from geometry_msgs.msg import Pose, PoseArray, Point
 
 bridge = CvBridge()
+x_offset = 0.53 # Test Area A
+y_offset = 0.48 # Test Area A 
 
+# x_offset = 0.54 # Test Area C
+# y_offset = 0.49 # Test Area C
 counter = 0
 test_green = np.empty((1,2))
 
@@ -47,6 +51,7 @@ x_to_world = [None, None, None]
 y_to_world = [None, None, None]
 x_to_world_float = [None, None, None]
 y_to_world_float = [None, None, None]
+area_float = [None, None, None]
 
 
 # def find_orientation(arr1: np.array, arr2: np.array):
@@ -115,7 +120,7 @@ def callback(data):
     global camera
     coordinates = PoseArray()
  
-    global tray_found, circle_found,test_green, tray_pos, circle_pos, cv_image, edges, all_mask, out, second_method,counter, angle
+    global tray_found, circle_found,test_green, tray_pos, circle_pos, cv_image, edges, all_mask, out, second_method,counter, angle, area_float
 
 
     test_green = np.empty((1,2))
@@ -224,9 +229,12 @@ def callback(data):
                 rectangle = np.int0(box)
                 u_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
                 v_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
+                # u_pos = 640
+                # v_pos = 360
                 y_old, x_old, z_old = camera.projectPixelTo3dRay((u_pos,v_pos)) ## Keep in mind that the pixel here is flip
-                x_to_world_float[counter] = round(z_diff/z_old*x_old + 0.54, 3)
-                y_to_world_float[counter] = round(z_diff/z_old*y_old + 0.49, 3)
+                x_to_world_float[counter] = round(z_diff/z_old*x_old + x_offset, 3)
+                y_to_world_float[counter] = round(z_diff/z_old*y_old + y_offset, 3)
+                area_float[counter] = area
                 cv2.circle(cv_image, (u_pos, v_pos), 4, 2)
                 cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
                 test_green = np.append(test_green, box, axis = 0)
@@ -236,9 +244,9 @@ def callback(data):
                 counter = counter + 1
     # print(test_green)
 
-    coord1 = Pose(position=Point(x=x_to_world_float[0], y=y_to_world_float[0], z=0.158))
-    coord2 = Pose(position=Point(x=x_to_world_float[1], y=y_to_world_float[1], z=0.158))
-    coord3 = Pose(position=Point(x=x_to_world_float[2], y=y_to_world_float[2], z=0.158))
+    coord1 = Pose(position=Point(x=x_to_world_float[0], y=y_to_world_float[0], z=area_float[0]))
+    coord2 = Pose(position=Point(x=x_to_world_float[1], y=y_to_world_float[1], z=area_float[1]))
+    coord3 = Pose(position=Point(x=x_to_world_float[2], y=y_to_world_float[2], z=area_float[2]))
 
     coordinates.poses.append(coord1)
     coordinates.poses.append(coord2)
