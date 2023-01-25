@@ -42,11 +42,13 @@ kernel = np.ones((3, 3), np.uint8)
 turtlebot_found = False
 tray_found = True
 turtlebot_pos = np.array([[0], [0]])
+turtlebot_pos_world = np.array([[0], [0]])
+
 tray_pos = np.array([[0], [0]])
 second_method = False
 test_green = np.empty((1,2))
 angle = 0.0
-
+turtlebot_ang = None
 # def find_orientation(arr1: np.array, arr2: np.array):
 #     """ arr1: tray, arr2: lidar"""
 #     global angle
@@ -75,18 +77,22 @@ def find_orientation(arr1: np.array, arr2: np.array, ang):
     y = abs(arr1[1] - arr2[1])
     print("x",x)
     # print("y",y)
+    print(arr1[1])
+    print(arr2[1])
+
     if arr1[1] < arr2[1]: ## Tray is on top of turtlebot
-        if arr1[0] > arr2[0] or ang > 80: ## Tray: Right, TurtleBot: Left
+        if arr1[0] > arr2[0] or ang > 88: ## Tray: Right, TurtleBot: Left
             print("Done")
             angle = 90 - ang
         else:
             print("Done done")
             angle = ang*(-1)
     else:
-        if arr1[0] > arr2[0] or ang < 10:
+        if arr1[0] > arr2[0] or ang < 3:
             angle = 180 - ang
         else:
             angle = (90 + ang)*(-1)
+    print(ang)
     print("Something happen",angle)
     return angle
 
@@ -110,7 +116,7 @@ def circle_detector(img):
             # print("found")
 
 def turtlebot_detector(img1,img2):
-    global turtlebot_found,turtlebot_pos
+    global turtlebot_found,turtlebot_pos, turtlebot_pos_world
     counter = 0
     img1=  cv2.bitwise_not(img1)
     img1 = cv2.bitwise_or(img1, img2)
@@ -124,7 +130,7 @@ def turtlebot_detector(img1,img2):
         area = cv2.contourArea(contour)
         # print(count, area)
         if(area > 10000):
-            print("Bingo", area)
+            # print("Bingo", area)
             x, y, w, h = cv2.boundingRect(contour)
             if x < 850 and x > 150 and y > 100 and w < 250 and h < 250:
             # if x > 0:
@@ -140,10 +146,11 @@ def turtlebot_detector(img1,img2):
                 rectangle = np.int0(box)
                 u_pos = int((rectangle[0][0] + rectangle[1][0] + rectangle[2][0] + rectangle[3][0])/4)
                 v_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
+                turtlebot_pos = np.array([[u_pos], [v_pos]])
                 y_old, x_old, z_old = camera.projectPixelTo3dRay((u_pos,v_pos)) ## Keep in mind that the pixel here is flip
                 x_to_world_float[counter] = round(z_diff/z_old*x_old + x_offset, 3)
                 y_to_world_float[counter] = round(z_diff/z_old*y_old + y_offset, 3)
-                turtlebot_pos = np.array([[x_to_world_float[counter]], [y_to_world_float[counter]]])
+                turtlebot_pos_world = np.array([[x_to_world_float[counter]], [y_to_world_float[counter]]])
                 turtlebot_found = True
                 cv2.circle(cv_image, (u_pos, v_pos), 4, 2)
                 cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
@@ -153,7 +160,7 @@ def turtlebot_detector(img1,img2):
 
 def callback(data):    
     global tray_found, turtlebot_found,test_green, tray_pos, turtlebot_pos, cv_image, edges, all_mask, out, second_method,counter, angle
-    global coordinate_publisher, black_mask
+    global coordinate_publisher, black_mask, turtlebot_ang
     angle = 0.0
     coordinates = PoseArray()
 
@@ -202,10 +209,11 @@ def callback(data):
 
         for count, contour in enumerate(contours):
             area = cv2.contourArea(contour)
-            if(area > 4000 and area < 15000):
+            if(area > 8000 and area < 15000):
                 x, y, w, h = cv2.boundingRect(contour)
-                if x < 740 and x > 0 and w < 170 and h < 170:
+                if x < 740 and x > 0 and w < 170 and h < 170 and y < 600:
                 # if x > 0:
+                    print("Bingo1", area)
                     info_green = np.array([[x, y, w, h, area, 2]])
                     rect = cv2.minAreaRect(contour)
                     angle = rect[-1]
@@ -225,7 +233,7 @@ def callback(data):
         if tray_found == True and turtlebot_found == True:
             second_method = False
         else:
-            second_method = False
+            second_method = True
     else:
         second_method = False
         turtlebot_found = False
@@ -234,18 +242,21 @@ def callback(data):
         test_green = np.empty((1,2))
 
         overall_candidate = np.zeros((9,6))
-        # cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
+        cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
         # cv_image = cv2.imread('/home/robis/cv_image8.jpg')
         hsv_frame = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
         grayFrame = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
 
         edges = cv2.Canny(grayFrame, threshold1= 0, threshold2=255)
-        edges = cv2.dilate(edges, kernel)
         # edges = cv2.dilate(edges, kernel)
         # edges = cv2.dilate(edges, kernel)
 
+        black_mask = cv2.inRange(hsv_frame, black_lower, black_upper)
+
         circle_detector(grayFrame)
+        if turtlebot_found == False:
+            black_mask = turtlebot_detector(black_mask, edges)
 
         ret, thresh = cv2.threshold(grayFrame, 180, 255, cv2.THRESH_BINARY)
         white_mask = cv2.inRange(hsv_frame, white_lower, white_upper)
@@ -253,8 +264,10 @@ def callback(data):
         red_mask1 = cv2.inRange(hsv_frame, red_lower1, red_upper1)
         red_mask2 = cv2.inRange(hsv_frame, red_lower2, red_upper2)
         green_mask = cv2.inRange(hsv_frame, green_lower, green_upper)
-        all_mask = cv2.bitwise_or(white_mask, red_mask1)
-        all_mask = cv2.bitwise_or(all_mask, red_mask2)
+        # all_mask = cv2.bitwise_or(white_mask, red_mask1)
+        # all_mask = cv2.bitwise_or(all_mask, red_mask2)
+        all_mask = cv2.bitwise_or(red_mask1, red_mask2)
+
         all_mask = cv2.bitwise_or(all_mask, blue_mask)
         all_mask = cv2.bitwise_or(all_mask, green_mask)
 
@@ -266,7 +279,10 @@ def callback(data):
         out2 = cv2.bitwise_or(out2, edges)
         out = cv2.bitwise_not(out2)
         out = cv2.dilate(out, kernel)
-        # out = cv2.morphologyEx(out, cv2.MORPH_CLOSE, kernel)
+        out = cv2.dilate(out, kernel)
+
+        out = cv2.morphologyEx(out, cv2.MORPH_CLOSE, kernel)
+        out = cv2.dilate(out, kernel)
 
         # ret, out = cv2.threshold(out, 190, 255, cv2.THRESH_BINARY)
 
@@ -276,11 +292,11 @@ def callback(data):
         for count, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             # print(count, area)
-            if(area > 4000 and area < 15000):
+            if(area > 8000 and area < 15000):
             # if area > 0:
-                # print("Bingo", area)
+                print("Bingo", area)
                 x, y, w, h = cv2.boundingRect(contour)
-                if x < 740 and x > 0 and w < 130 and h < 130:
+                if x < 740 and x > 0 and w < 150 and h < 150:
                     info_green = np.array([[x, y, w, h, area, 2]])
                     rect = cv2.minAreaRect(contour)
                     box = cv2.boxPoints(rect)
@@ -304,9 +320,7 @@ def callback(data):
             second_method = False
 
 
-    # coord1 = Pose(position=Point(x=x_to_world_float[0], y=y_to_world_float[0], z=0.0))
-    # coordinates.poses.append(coord1)
-    # coordinate_publisher.publish(coordinates)
+
 
 
     if turtlebot_pos[0] != 0 and tray_pos[0] != 0 and  tray_found == True and turtlebot_found == True:
@@ -314,9 +328,13 @@ def callback(data):
         # print(angle)
         cv2.putText(cv_image, "TurtleBot Orientation is: " + str(turtlebot_ang), (10, 650), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0))
 
-    cv2.putText(cv_image, "Position of TurtleBot:" "(" + str(turtlebot_pos[0]) + "," + str(turtlebot_pos[1]) +")", (10, 700), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0))
+    cv2.putText(cv_image, "Position of TurtleBot:" "(" + str(turtlebot_pos_world[0]) + "," + str(turtlebot_pos_world[1]) +")", (10, 700), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0))
     tray_found = False
     turtlebot_found = False
+
+    coord1 = Pose(position=Point(x=x_to_world_float[0], y=y_to_world_float[0], z=turtlebot_ang))
+    coordinates.poses.append(coord1)
+    coordinate_publisher.publish(coordinates)
     # cv2.circle(cv_image, (0, 300), 4, 2)
 
     cv2.imshow('Kinect Camera', cv_image)
