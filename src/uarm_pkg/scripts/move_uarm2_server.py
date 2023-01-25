@@ -7,11 +7,27 @@ import actionlib
 import time
 
 pos_cube1 = []
+storage1 = []
 storage2 = [250, -40, 120, 90]
+storage3 = []
 
 def handle_move_uarm2(order):
     rospy.set_param('/Uarm2_took_cube_from_conv', False)
     pos = order.cube_pos
+    storage = storage2
+    box = rospy.get_param("/storage_amount")
+    if order.storagebox == 1:
+        box[0] +=1
+        storage = storage1
+    elif order.storagebox == 2:
+        box[1] +=1
+        storage = storage2
+    elif order.storagebox == 3:
+        box[2] +=1
+        storage = storage3
+    rospy.set_param("/storage_amount", box)
+
+
     move_uarm2([pos[0], pos[1], pos[2]+20, pos[3]])
     move_uarm2([pos[0], pos[1], pos[2], pos[3]])
     grip_uarm2(True)
@@ -19,7 +35,8 @@ def handle_move_uarm2(order):
     move_uarm2([pos[0], pos[1], pos[2]+50, pos[3]])
     rospy.set_param('/Uarm2_took_cube_from_conv', True)
     move_uarm2([pos[0] + 80, pos[1]-50, pos[2]+80, pos[3]])
-    move_uarm2(storage2)
+    move_uarm2(storage)
+    move_uarm2([storage[0], storage[1], storage[2]-60, storage[3]])
     grip_uarm2(False)
     time.sleep(1)
     move_uarm2([pos[0], pos[1], pos[2]+50, pos[3]])
@@ -130,4 +147,5 @@ if __name__ == '__main__':
     # s = rospy.Subscriber('uarm2_controll/move', store_cube, handle_move_uarm2)
     s = rospy.Service('uarm2_controll/move', store_cube, handle_move_uarm2)
     rospy.set_param('/Uarm2_took_cube_from_conv', True)
+    rospy.set_param("/storage_amount", [0, 0, 0])
     rospy.spin()

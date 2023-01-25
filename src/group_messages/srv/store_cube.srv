@@ -1,5 +1,6 @@
 # the cub has to be stored
 float32[] cube_pos
+float32 storagebox
 
 ---
 bool resul

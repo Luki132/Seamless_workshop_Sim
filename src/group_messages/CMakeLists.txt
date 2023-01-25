@@ -55,6 +55,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   turtle_pos.msg
+  conv_cube.msg
 #   Message2.msg
 )
 
@@ -62,7 +63,6 @@ add_message_files(
 add_service_files(
   FILES
   order_cube1.srv
-  move_int.srv
   store_cube.srv
   move_uarm_test.srv
   grip_uarm_test.srv

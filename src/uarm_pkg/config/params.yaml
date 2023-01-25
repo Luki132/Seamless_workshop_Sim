@@ -1,0 +1,8 @@
+# parameter used in the uarm scripts:
+
+uarm/pos_on_conv_1 = []
+uarm/pos_on_conv_2 = []
+
+uarm2/storage_place1 = [[], [], []]
+uarm2/storage_place2 = [[], [], []]
+uarm2/storage_place3 = [[], [], []]

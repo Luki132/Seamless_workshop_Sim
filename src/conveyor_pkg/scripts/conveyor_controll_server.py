@@ -2,26 +2,32 @@
 import rospy
 from robis_messages.msg import MoveAction, MoveGoal
 from group_messages.srv import store_cube
-from group_messages.srv import move_int
+from group_messages.msg import conv_cube
+from std_msgs.msg import Int64
 import actionlib
 import time
 
 
 def move_conveyor_callback(data):
+  rospy.loginfo("I test heard %s", data.length)
   while True:
     if rospy.has_param('/Uarm2_took_cube_from_conv') and rospy.get_param('/Uarm2_took_cube_from_conv'):
-      handle_move_conveyor(data)
+      handle_move_conveyor(int(data.length))
+      rospy.set_param('/conveyor_moved', True)
       rospy.set_param('/Uarm2_took_cube_from_conv', False)
       uarm2_client = rospy.ServiceProxy('uarm2_controll/move', store_cube)
       uarm2_client.wait_for_service()
-      goal = store_cube._request_class(cube_pos=[96, 159, 60, 90])
+      if int(data.size) == 1:
+        goal = store_cube._request_class(cube_pos=[87, 159, 36, 90], storagebox = 2)
+      else:
+        goal = store_cube._request_class(cube_pos=[87, 159, 50, 90], storagebox = 2)
       result = uarm2_client(goal)
       # uarm2_publisher = rospy.Publisher('uarm2_controll/move', store_cube
       # goal = store_cube._request_class(cube_pos=[108, 167, 46, 90])
       # uarm2_publisher.publish(goal)
       return True
     else:
-      time.sleep(2)
+      time.sleep(1)
 
 
 
@@ -34,10 +40,8 @@ def handle_move_conveyor(data):
     # gets dataand calls actionserver to move the conveyor
     conveyor_client.wait_for_server()
     print("connected")
-    rospy.loginfo("I heard %s", data.length)
-
     # Creates a goal to send to the action server.
-    goal = MoveGoal(target=[data.length, 0, 0, 0])
+    goal = MoveGoal(target=[data, 0, 0, 0])
     print("goal conveyor defined")
 
     # Sends the goal to the action server.
@@ -59,8 +63,9 @@ if __name__ == '__main__':
     # Starts a new node
     rospy.init_node('conveyor_server')
     rospy.loginfo("I heard TEst")
+    rospy.set_param("/conveyor_moved", True)
     # create new Service server
-    s = rospy.Service('conveyor_controll/move', move_int, move_conveyor_callback)
+    s = rospy.Subscriber('conveyor_controll/move', conv_cube, move_conveyor_callback)
     rospy.spin()
 
 
