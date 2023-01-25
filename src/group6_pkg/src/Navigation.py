@@ -92,10 +92,12 @@ class Navigation:
             # Angle too far off; don't drive into the wrong direction. 
             vel = 0.0
             avel = Navigation.adist / (new_pose.pose.timeout * Navigation.target.min_updates)
+            pyrolog("Info", f"avel: {avel}")
         else:
             pyrolog("Info", f"Angle ok. Driving. Remaining dist: {Navigation.dist:.3f}m")
             vel = Navigation.dist / (new_pose.pose.timeout * Navigation.target.min_updates)
             avel = 0
+            pyrolog("Info", f" vel: {vel}")
 
         Navigation.vel = vel * Navigation.target.dir
         Navigation.avel = avel
@@ -136,7 +138,7 @@ class Navigation:
         # to allow "instantaneous" stopping without controlling the acceleration.
         # However, do not move if value equals 0 (a.k.a. we shall stop).
         if vel and abs(actual_vel) <= min_vel:
-            # pyrolog("Info", f"Actual velocity lower than min: {actual_vel:.3f}. Maintaining min of {min_vel:.3f}.")
+            pyrolog("Info", f"Actual velocity lower than min: {actual_vel:.3f}. Maintaining min of {min_vel:.3f}.")
             actual_vel = math.copysign(min_vel, actual_vel)
 
         return actual_vel
@@ -228,7 +230,7 @@ def cb_path(data: String):
         raise IndexError(f"Desired path '{data.data}' unknown. ")
 
 
-def set_watchdog(timeout = 10):
+def set_watchdog(timeout=10):
     Navigation.watchdog = rospy.Timer(
         period=rospy.Duration(timeout),
         callback=cb_stop,
