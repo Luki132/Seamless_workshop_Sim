@@ -71,7 +71,7 @@ def detect_blue_object(hsv_frame, blurred_image):
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         # print(count, area)
-        if(area > 300 and area < 1500):
+        if(area > 300 and area < 1500 and x < 500):
             # print("Bingo")
             x, y, w, h = cv2.boundingRect(contour)
             info_blue = np.array([[x, y, w, h, area, 2]])
@@ -97,7 +97,7 @@ def detect_red_object(hsv_frame, blurred_image):
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         # print(count, area)
-        if(area > 300 and area < 1500):
+        if(area > 300 and area < 1500 and x < 500):
             # print("Bingo")
             x, y, w, h = cv2.boundingRect(contour)
             info_red = np.array([[x, y, w, h, area, 2]])
@@ -125,7 +125,7 @@ def detect_green_object(hsv_frame, blurred_image):
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         # print(count, area)
-        if(area > 300 and area < 1500):
+        if(area > 300 and area < 1500 and x < 500):
             # print("Bingo")
             x, y, w, h = cv2.boundingRect(contour)
             info_green = np.array([[x, y, w, h, area, 2]])
