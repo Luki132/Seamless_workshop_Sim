@@ -1,0 +1,7 @@
+# What cubes has to be transported
+bool storage1
+bool storage2
+bool storage3
+
+---
+bool result

@@ -1,0 +1,28 @@
+<launch>
+    <arg name="start_gazebo" default="false" />
+
+    <!-- start gazebo if necessary -->
+    <group if="$(arg start_gazebo)">
+    <include file="$(find robis_core)/launch/gazebo.launch">
+      <arg name="paused" value="true"/>
+      <arg name="headless" value="false"/>
+    </include>
+    </group>
+
+    <!-- NODES -->
+    <node pkg="robis_cargo_handler"  type="cargo_box_spawner" name="cargo_box_spawner" output="screen">
+        <!--param name="blue_small_on conveyor" type="String" value="size: small, color: blue, pos: 0.1 0.5 0.046, rpy: 0 0 0, frame: world" /-->
+        <!--param name="red_large_on conveyor" type="String" value="size: large, color: red, pos: 0.1 0.3 0.046, rpy: 0 0 90, frame: world" /-->
+
+        <param name="blue_small_on_turtle" type="String" value="size: small, color: blue, pos: 0.373 0.457 0.15, rpy: 0 0 0, frame: world" />
+        <param name="red_small_on_turtle" type="String" value="size: small, color: red, pos: 0.373 0.42 0.15, rpy: 0 0 0, frame: world" />
+        <param name="green_large_on_turtle" type="String" value="size: large, color: green, pos: 0.334 0.439 0.15, rpy: 0 0 90, frame: world" />
+
+    </node>
+    <!--node type="rviz" name="rviz" pkg="rviz"/-->
+
+    <include file="$(find robis_cargo_handler)/launch/cargo_handler.launch">
+
+    </include>
+
+</launch>

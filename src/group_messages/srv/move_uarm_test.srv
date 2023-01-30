@@ -1,0 +1,6 @@
+# move for a specific length
+float32 uarm
+float32[] pos
+
+---
+bool result
