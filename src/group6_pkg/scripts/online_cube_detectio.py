@@ -122,8 +122,10 @@ def callback(data):
  
     global tray_found, circle_found,test_green, tray_pos, circle_pos, cv_image, edges, all_mask, out, second_method,counter, angle, area_float, counter_img
 
-
     test_green = np.empty((1,2))
+    x_to_world_float = [None, None, None]
+    y_to_world_float = [None, None, None]
+    area_float = [None, None, None]
 
     overall_candidate = np.zeros((9,6))
 
@@ -140,10 +142,10 @@ def callback(data):
         counter_img = 0
     hsv_frame = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
     grayFrame = cv2.normalize(cv_image,None, 150, 255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
-    blurFrame= cv2.GaussianBlur(cv_image, (3,3), 0)
+    blurFrame= cv2.GaussianBlur(cv_image, (5,5), 0)
 
     grayFrame = cv2.cvtColor(grayFrame, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(cv_image, threshold1= 100, threshold2=255)
+    # edges = cv2.Canny(cv_image, threshold1= 100, threshold2=255)
 
     white_mask = cv2.inRange(hsv_frame, white_lower, white_upper)
     black_mask = cv2.inRange(hsv_frame, black_lower, black_upper)
@@ -156,8 +158,8 @@ def callback(data):
     # ret, out = cv2.threshold(all_mask, 190, 255, cv2.THRESH_BINARY)
     # out = cv2.dilate(out, kernel)
 
-    edges = cv2.Canny(blurFrame, threshold1= 50, threshold2=255)
-    edges = cv2.dilate(edges, kernel, iterations = 5)
+    edges = cv2.Canny(blurFrame, threshold1= 100, threshold2=255)
+    edges = cv2.dilate(edges, kernel, iterations = 4)
     edges = cv2.erode(edges, kernel, iterations = 3)
 
         # black_mask = cv2.bitwise_not(black_mask)
@@ -222,7 +224,7 @@ def callback(data):
     counter = 0
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
-        if(area > 800 and area < 3000 and counter < 3):
+        if(area > 750 and area < 3500 and counter < 3):
             x, y, w, h = cv2.boundingRect(contour)
             if x < 850 and x > 150 and w < 100 and h < 100 and w > 30 and h > 30:
                 # if x > 0:
@@ -236,9 +238,9 @@ def callback(data):
                 v_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
                 # u_pos = 640
                 # v_pos = 360
-                # y_old, x_old, z_old = camera.projectPixelTo3dRay((u_pos,v_pos)) ## Keep in mind that the pixel here is flip
-                # x_to_world_float[counter] = round(z_diff/z_old*x_old + x_offset, 3)
-                # y_to_world_float[counter] = round(z_diff/z_old*y_old + y_offset, 3)
+                y_old, x_old, z_old = camera.projectPixelTo3dRay((u_pos,v_pos)) ## Keep in mind that the pixel here is flip
+                x_to_world_float[counter] = round(z_diff/z_old*x_old + x_offset, 3)
+                y_to_world_float[counter] = round(z_diff/z_old*y_old + y_offset, 3)
                 area_float[counter] = area
                 cv2.circle(cv_image, (u_pos, v_pos), 4, 2)
                 cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
@@ -270,7 +272,7 @@ def callback(data):
     cv2.imshow('HSV', hsv_mask)
     cv2.imshow('Output', out)
     cv2.imshow('Blue', blue_mask)
-    cv2.imshow('Greeen',  green_mask)
+    cv2.imshow('Greeen',  blurFrame)
 
 
     # print("Bingo")
