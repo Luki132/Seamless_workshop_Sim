@@ -41,19 +41,36 @@ class get_turtle_pos:
         # self.move_uarm3([move_pos[0], -move_pos[1],200, 90])
         # self.move_uarm3([move_pos[0], -move_pos[1], 141, 90])
         # return True
-
+        self.move_uarm3([150, -40, 145, 90])
         cube_nr = int(data.data)
         pos_get = [100, 100, 150, 90]
-        if cube_nr == 1:
-            pos_get = self.pos_onTur1
-        elif cube_nr == 2:
-            pos_get = self.pos_onTur2
-        elif cube_nr == 3:
-            pos_get = self.pos_onTur3
         
-        self.move_uarm3([pos_get[0], pos_get[1] + 70, 145, 90])
-        self.move_uarm3([pos_get[0], pos_get[1],145, 90])
-        self.move_uarm3([pos_get[0], pos_get[1], 145, 90])
+        if cube_nr == 1:
+            if self.pos_of_big_cube == 1:
+                pos_get = self.pos_onTur1
+                pos_get.append(124)
+            else:
+                pos_get = self.pos_onTur1
+                pos_get.append(140)
+        elif cube_nr == 2:
+            if self.pos_of_big_cube == 2:
+                pos_get = self.pos_onTur2
+                pos_get.append(124)
+            else:
+                pos_get = self.pos_onTur2
+                pos_get.append(140)
+        elif cube_nr == 3:
+            if self.pos_of_big_cube == 3:
+                pos_get = self.pos_onTur3
+                pos_get.append(124)
+            else:
+                pos_get = self.pos_onTur3
+                pos_get.append(140)
+        
+        
+        self.move_uarm3([pos_get[0], pos_get[1] + 60, pos_get[2] + 10, 90])
+        self.move_uarm3([pos_get[0], pos_get[1],  pos_get[2] + 10, 90])
+        self.move_uarm3([pos_get[0], pos_get[1],  pos_get[2], 90])
         return True
 
 
@@ -93,9 +110,9 @@ class get_turtle_pos:
         y_hardware_C = 260
         x_hardware_A = 232
         y_hardware_A = 254
-        pos1 = [coordinates.poses[1].position.x*1000-x_hardware_A, coordinates.poses[1].position.y*1000-y_hardware_A]
-        pos2 = [coordinates.poses[2].position.x*1000-x_hardware_A, coordinates.poses[2].position.y*1000-y_hardware_A]
-        pos3 = [coordinates.poses[0].position.x*1000-x_hardware_A, coordinates.poses[0].position.y*1000-y_hardware_A]
+        pos1 = [coordinates.poses[0].position.x*1000-x_hardware_A, coordinates.poses[0].position.y*1000-y_hardware_A]
+        pos2 = [coordinates.poses[1].position.x*1000-x_hardware_A, coordinates.poses[1].position.y*1000-y_hardware_A]
+        pos3 = [coordinates.poses[2].position.x*1000-x_hardware_A, coordinates.poses[2].position.y*1000-y_hardware_A]
         cube_area = [coordinates.poses[0].position.z, coordinates.poses[1].position.z, coordinates.poses[2].position.z]
         self.pos_of_big_cube = cube_area.index(max(cube_area)) + 1
         self.pos_onTur1 = [pos1[1], -pos1[0]]
@@ -165,14 +182,15 @@ class get_turtle_pos:
             if storage[cube]:
                 rospy.loginfo("Getting Cube Nr. %s out of 3", cube)
                 pos = positions[cube]
-                self.move_uarm3([pos[0], pos[1]+80, pos[2]+15, pos[3]])
+                self.move_uarm3([pos[0], pos[1]+70, pos[2]+15, pos[3]])
                 self.move_uarm3([pos[0], pos[1], pos[2]+15, pos[3]])
                 self.move_uarm3([pos[0], pos[1], pos[2], pos[3]])
                 time.sleep(1)
                 self.grip_uarm3(True)
                 time.sleep(1)
                 self.move_uarm3([pos[0], pos[1], pos[2]+20, pos[3]])
-                self.move_uarm3([pos[0], pos[1]+ 90, pos[2]+20, pos[3]])
+                self.move_uarm3([pos[0], pos[1]+ 70, pos[2]+20, pos[3]])
+                self.move_uarm3([pos[0]+10, pos[1]+ 80, pos[2]+20, pos[3]])
                 #time.sleep(1)
                 self.move_uarm3([self.pos_cube3_on_conv_1[0], self.pos_cube3_on_conv_1[1], self.pos_cube3_on_conv_1[2]+30, self.pos_cube3_on_conv_1[3]])
                 self.wait_until_var("/conveyor_moved")

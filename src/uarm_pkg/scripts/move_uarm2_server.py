@@ -7,9 +7,12 @@ import actionlib
 import time
 
 pos_cube1 = []
-storage1 = []
-storage2 = [250, -40, 120, 90]
-storage3 = []
+storage1 = [240, 70,20, 90] # [300, 70, 20, 90], [350, 70, 20, 90]
+storage2 = [240, -40, 20, 90] # [300, -40, 20, 90], [350, -40, 20, 90] 
+storage3 = [240, -147,20, 90] # [320, -147, 20, 90]
+# duicker CUbe: hoehe:30
+# flacher cube: hoehe: 
+
 
 def handle_move_uarm2(order):
     rospy.set_param('/Uarm2_took_cube_from_conv', False)
