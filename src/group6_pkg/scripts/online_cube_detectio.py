@@ -52,7 +52,7 @@ y_to_world = [None, None, None]
 x_to_world_float = [None, None, None]
 y_to_world_float = [None, None, None]
 area_float = [None, None, None]
-
+counter_img = 0
 
 # def find_orientation(arr1: np.array, arr2: np.array):
 #     """ arr1: tray, arr2: lidar"""
@@ -120,7 +120,7 @@ def callback(data):
     global camera
     coordinates = PoseArray()
  
-    global tray_found, circle_found,test_green, tray_pos, circle_pos, cv_image, edges, all_mask, out, second_method,counter, angle, area_float
+    global tray_found, circle_found,test_green, tray_pos, circle_pos, cv_image, edges, all_mask, out, second_method,counter, angle, area_float, counter_img
 
 
     test_green = np.empty((1,2))
@@ -128,15 +128,19 @@ def callback(data):
     overall_candidate = np.zeros((9,6))
 
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
-        # cv_image = cv2.imread('/home/robis/image_23012023/cv_img_'+ str(counter) + '.jpg')
+    # cv_image = cv2.imread('/home/robis/image_23012023/cv_img_'+ str(counter_img) + '.jpg')
+    # cv_image = cv2.imread('/home/robis/image_23012023/cv_img_14.jpg')
+    # cv_image1 = cv2.imread('/home/robis/image_23012023/cv_img_14.jpg')
+
         # cv_image = cv2.imread('/home/robis/cv_image4.jpg')
 
-    if counter < 280:
-        counter = counter + 1
+    if counter_img < 280:
+        counter_img = counter_img + 1
     else:
-        counter = 0
+        counter_img = 0
     hsv_frame = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
     grayFrame = cv2.normalize(cv_image,None, 150, 255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
+    blurFrame= cv2.GaussianBlur(cv_image, (3,3), 0)
 
     grayFrame = cv2.cvtColor(grayFrame, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(cv_image, threshold1= 100, threshold2=255)
@@ -149,11 +153,12 @@ def callback(data):
     green_mask = cv2.inRange(hsv_frame, green_lower, green_upper)
     all_mask = white_mask + blue_mask + red_mask1 + red_mask2 + green_mask
 
-    ret, out = cv2.threshold(all_mask, 190, 255, cv2.THRESH_BINARY)
-    out = cv2.dilate(out, kernel)
+    # ret, out = cv2.threshold(all_mask, 190, 255, cv2.THRESH_BINARY)
+    # out = cv2.dilate(out, kernel)
 
-    edges = cv2.Canny(cv_image, threshold1= 100, threshold2=255)
-    edges = cv2.dilate(edges, kernel)
+    edges = cv2.Canny(blurFrame, threshold1= 50, threshold2=255)
+    edges = cv2.dilate(edges, kernel, iterations = 5)
+    edges = cv2.erode(edges, kernel, iterations = 3)
 
         # black_mask = cv2.bitwise_not(black_mask)
         # black_mask = cv2.bitwise_or(black_mask, edges)
@@ -207,21 +212,21 @@ def callback(data):
     hsv_mask = cv2.bitwise_or(hsv_mask, red_mask2)
     hsv_mask = cv2.bitwise_or(hsv_mask, blue_mask)
     hsv_mask = cv2.bitwise_or(hsv_mask, green_mask)
-    hsv_mask = cv2.bitwise_not(hsv_mask)
-    hsv_mask = cv2.bitwise_or(hsv_mask,edges)
-    hsv_mask = cv2.bitwise_not(hsv_mask)
+    hsv_mask_inv = cv2.bitwise_not(hsv_mask)
+    out_inv = cv2.bitwise_or(hsv_mask_inv,edges)
+    out = cv2.bitwise_not(out_inv)
 
 
-    contours, hierarchy = cv2.findContours(hsv_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(out, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     counter = 0
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
-        if(area > 1000 and area < 5000):
+        if(area > 800 and area < 3000 and counter < 3):
             x, y, w, h = cv2.boundingRect(contour)
-            if x < 850 and x > 150 and w < 170 and h < 170:
+            if x < 850 and x > 150 and w < 100 and h < 100 and w > 30 and h > 30:
                 # if x > 0:
-        
+                print("For count:{}, area: {}, width: {}, heigth:{}".format(count, area, w, h))
                 info_green = np.array([[x, y, w, h, area, 2]])
                 rect = cv2.minAreaRect(contour)
                 box = cv2.boxPoints(rect)
@@ -231,9 +236,9 @@ def callback(data):
                 v_pos = int((rectangle[0][1] + rectangle[1][1] + rectangle[2][1] + rectangle[3][1])/4)
                 # u_pos = 640
                 # v_pos = 360
-                y_old, x_old, z_old = camera.projectPixelTo3dRay((u_pos,v_pos)) ## Keep in mind that the pixel here is flip
-                x_to_world_float[counter] = round(z_diff/z_old*x_old + x_offset, 3)
-                y_to_world_float[counter] = round(z_diff/z_old*y_old + y_offset, 3)
+                # y_old, x_old, z_old = camera.projectPixelTo3dRay((u_pos,v_pos)) ## Keep in mind that the pixel here is flip
+                # x_to_world_float[counter] = round(z_diff/z_old*x_old + x_offset, 3)
+                # y_to_world_float[counter] = round(z_diff/z_old*y_old + y_offset, 3)
                 area_float[counter] = area
                 cv2.circle(cv_image, (u_pos, v_pos), 4, 2)
                 cv2.drawContours(cv_image,[rectangle],0,(0,0,0),2)
@@ -259,11 +264,13 @@ def callback(data):
     # cv2.circle(cv_image, (0, 300), 4, 2)
 
     cv2.imshow('Kinect Camera', cv_image)
-    # cv2.imshow('Binary', out2)
-    # cv2.imshow('Black mask', black_mask)
+    cv2.imshow('Out_Inv', out_inv)
+    cv2.imshow('HSV_Inv', hsv_mask_inv)
     cv2.imshow('Canny', edges)
     cv2.imshow('HSV', hsv_mask)
     cv2.imshow('Output', out)
+    cv2.imshow('Blue', blue_mask)
+    cv2.imshow('Greeen',  green_mask)
 
 
     # print("Bingo")
@@ -297,4 +304,3 @@ if __name__=='__main__':
     camera = PinholeCameraModel()
     camera.fromCameraInfo(camera_info_msg)
     rospy.spin()
-    # listener()
