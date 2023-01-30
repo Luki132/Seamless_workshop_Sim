@@ -18,9 +18,9 @@ def move_conveyor_callback(data):
       uarm2_client = rospy.ServiceProxy('uarm2_controll/move', store_cube)
       uarm2_client.wait_for_service()
       if int(data.size) == 1:
-        goal = store_cube._request_class(cube_pos=[87, 159, 36, 90], storagebox = 2)
+        goal = store_cube._request_class(cube_pos=[95, 164, 36, 90], storagebox = 2)
       else:
-        goal = store_cube._request_class(cube_pos=[87, 159, 50, 90], storagebox = 2)
+        goal = store_cube._request_class(cube_pos=[95, 164, 50, 90], storagebox = 2)
       result = uarm2_client(goal)
       # uarm2_publisher = rospy.Publisher('uarm2_controll/move', store_cube
       # goal = store_cube._request_class(cube_pos=[108, 167, 46, 90])
