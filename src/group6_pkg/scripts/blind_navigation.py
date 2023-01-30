@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import math
 import rospy
+from std_msgs.msg import Bool, String
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
 
@@ -284,13 +285,7 @@ def navigate_step(dir: str, delta_t: float, speed_lin=0.1, speed_rot=math.radian
     rospy.sleep(delta_t / speed_factor)
 
 
-def navigate():
-    global velocity_publisher, laser
-    rospy.init_node('blind_navigation', anonymous=True)
-    velocity_publisher = rospy.Publisher('/turtlebot1/cmd_vel', Twist, queue_size=10)
-    sub = rospy.Subscriber('/turtlebot1/scan', LaserScan, laser.cb_scan)
-
-    # Set linear velocity in the x-axis
+def path_docking_to_conveyor():
     navigate_step("stop    ", 2.00)
     navigate_step("forward ", 1.30)
     laser.set_check(angle=0, diff=0.02, dist=0.24, block=True)
@@ -302,17 +297,54 @@ def navigate():
     laser.set_check(angle=270, diff=0.0025, block=True)
     navigate_step("backward", 3.50)
     laser.set_check(angle=0, diff=0.05, dist=1.45, block=True)
-    navigate_step("stop    ", 5.00)
+    navigate_step("stop    ", 0.00)
 
+
+def path_conveyor_to_parking():
     navigate_step("forward ", 3.50)
     laser.set_check(angle=0, diff=0.03, dist=1.00, block=True)
     navigate_step("left    ", 0.50)
-    laser.set_check(angle=190, diff=0.0025, block=True)
+    laser.set_check(angle=180, diff=0.0025, block=True)
     navigate_step("forward ", 3.00)
-    laser.set_check(angle=0, diff=0.01, dist=0.30, block=True)
+    laser.set_check(angle=0, diff=0.005, dist=0.29, block=True)
     navigate_step("left    ", 1.10)
     laser.set_check(angle=267, diff=0.0025, block=True)
-    navigate_step("stop    ", 2.00)
+    navigate_step("stop    ", 0.00)
+
+
+paths = {
+    "conveyor": path_docking_to_conveyor,
+    "parking":  path_conveyor_to_parking,
+}
+
+goal_list = []
+pub_state: rospy.Publisher
+
+def cb_goal(msg: String):
+    global  goal_list, paths, pub_state
+    if msg.data in paths:
+        pub_state.publish(f"accepted:{msg.data}")
+        goal_list.append(msg.data)
+    else:
+        pub_state.publish(f"refused:{msg.data}")
+
+
+def navigate():
+    global velocity_publisher, laser, paths, goal_list, pub_state
+    rospy.init_node('navigation', anonymous=True)
+    velocity_publisher = rospy.Publisher('/turtlebot1/cmd_vel', data_class=Twist, queue_size=10)
+    sub_laser_scan = rospy.Subscriber('/turtlebot1/scan', data_class=LaserScan, callback=laser.cb_scan)
+
+    sub_goal = rospy.Subscriber('/group6/nav_goal', data_class=String, callback=cb_goal)
+    pub_state = rospy.Publisher('/group6/nav_state', data_class=String, queue_size=10)
+
+    while not rospy.is_shutdown():
+        if goal_list:
+            p = goal_list.pop(0)
+            # Drive to the desired positions.
+            pub_state.publish(f"driving:{p}")
+            paths[p]()
+            pub_state.publish(f"reached:{p}")
 
 
 if __name__ == '__main__':
