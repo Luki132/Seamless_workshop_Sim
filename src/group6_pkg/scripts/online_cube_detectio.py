@@ -291,9 +291,13 @@ if __name__=='__main__':
     #     callback()
     rospy.init_node('listener', anonymous=True)
     rospy.Subscriber("/kinect/rgb_camera/image_raw", Image, callback)
+    # rospy.Subscriber("/kinect1/rgb_camera/image_raw", Image, callback) # simulation
+
     coordinate_publisher = rospy.Publisher("/cargo_position", PoseArray, queue_size=10 )
 
     camera_info_msg = rospy.wait_for_message("/rgb/camera_info", CameraInfo)
+    # camera_info_msg = rospy.wait_for_message("/kinect1/rgb_camera/camera_info", CameraInfo) ## simulation
+
     camera = PinholeCameraModel()
     camera.fromCameraInfo(camera_info_msg)
     rospy.spin()
