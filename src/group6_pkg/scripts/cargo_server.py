@@ -10,6 +10,8 @@ from group6_pkg.msg import cargo_actionFeedback
 from std_msgs.msg import Int64MultiArray
 import actionlib_tutorials.msg
 
+import math
+
 class CargoAction(object):
     # create messages that are used to publish feedback/result
     _feedback = cargo_actionFeedback()
@@ -27,11 +29,30 @@ class CargoAction(object):
         # helper variables
         print("BINGO")
         max_order = 0
+        num_of_big = 0
+        num_of_small = 0
         stow_box = goal.priority
         order_num = goal.num_objects
         order_num = [elem for elem in order_num]
         for i in range(6):
             max_order = max_order + order_num[i]
+        # if max_order > 3:
+        #     print("ERROR: Please give only max. 3 cargo per order")
+        for i in range(3):
+            num_of_big = num_of_big + order_num[i]
+        for i in range(3):
+            num_of_small = num_of_small + order_num[i+3]
+        print("No. of big:", num_of_big)
+        print("No. of small:", num_of_small)
+
+        num_of_trip = num_of_big
+
+        if num_of_big == 0:
+            num_of_trip = math.ceil(num_of_small/2)
+
+        if max_order < 4:
+            if num_of_big < 1: 
+                
         r = rospy.Rate(1)
         success = True
 
