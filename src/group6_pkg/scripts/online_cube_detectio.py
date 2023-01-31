@@ -6,6 +6,7 @@ from sensor_msgs.msg import Image, CompressedImage, CameraInfo
 import math    
 from image_geometry import PinholeCameraModel
 from geometry_msgs.msg import Pose, PoseArray, Point
+from std_msgs.msg import Bool
 
 bridge = CvBridge()
 x_offset = 0.53 # Test Area A
@@ -53,7 +54,7 @@ x_to_world_float = [None, None, None]
 y_to_world_float = [None, None, None]
 area_float = [None, None, None]
 counter_img = 0
-
+check_position = False
 # def find_orientation(arr1: np.array, arr2: np.array):
 #     """ arr1: tray, arr2: lidar"""
 #     global angle
@@ -73,6 +74,10 @@ counter_img = 0
 #             angle = (180 - math.degrees(math.atan(x/y)))*(-1)
 #     print(angle)
 #     return angle
+# def get_callback(data): 
+#     global check_position
+#     check_position = data.data
+#     print(data.data)
 
 def find_orientation(arr1: np.array, arr2: np.array, ang):
     """ arr1: tray, arr2: lidar"""
@@ -249,7 +254,8 @@ def callback(data):
                 tray_pos = np.array([[u_pos],[v_pos]])
                 print(counter)
                 counter = counter + 1
-    # print(test_green)
+
+
 
     coord1 = Pose(position=Point(x=x_to_world_float[0], y=y_to_world_float[0], z=area_float[0]))
     coord2 = Pose(position=Point(x=x_to_world_float[1], y=y_to_world_float[1], z=area_float[1]))
@@ -263,7 +269,6 @@ def callback(data):
 
     tray_found = False
     circle_found = False
-    # cv2.circle(cv_image, (0, 300), 4, 2)
 
     cv2.imshow('Kinect Camera', cv_image)
     cv2.imshow('Out_Inv', out_inv)
@@ -272,7 +277,6 @@ def callback(data):
     cv2.imshow('HSV', hsv_mask)
     cv2.imshow('Output', out)
     cv2.imshow('Blue', blue_mask)
-    cv2.imshow('Greeen',  blurFrame)
 
 
     # print("Bingo")
@@ -300,6 +304,8 @@ if __name__=='__main__':
     #     callback()
     rospy.init_node('listener', anonymous=True)
     rospy.Subscriber("/kinect/rgb_camera/image_raw", Image, callback)
+    # rospy.Subscriber("/get_kinect_data", Bool, get_callback)
+
     coordinate_publisher = rospy.Publisher("/cargo_position", PoseArray, queue_size=10 )
 
     camera_info_msg = rospy.wait_for_message("/rgb/camera_info", CameraInfo)
