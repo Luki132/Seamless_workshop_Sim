@@ -11,7 +11,7 @@
   <arg name="Y" default="0" />
   <arg name="start_gazebo" default="false" />
   <arg name="charuco_detector" default="true" />
-  <arg name="navigation" default="true" />
+  <arg name="navigation" default="false" />
   <arg name="reference_frame" default="world" />
   <arg name="spawn" default="true" />
   <arg name="map_file" default="$(find seamless_environment)/maps/seamless.yaml"/>
