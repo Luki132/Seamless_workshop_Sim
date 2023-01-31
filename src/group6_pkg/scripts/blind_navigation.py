@@ -4,6 +4,7 @@ import rospy
 from std_msgs.msg import Bool, String
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
+from Settings import settings
 
 
 
@@ -256,7 +257,7 @@ laser = Laser()
 speed_factor = 1.5
 
 
-def navigate_step(dir: str, delta_t: float, speed_lin=0.1, speed_rot=math.radians(30), laser_angle=0, laser_dist=0):
+def navigate_step(dir: str, blind_time: float, speed_lin=0.1, speed_rot=math.radians(30), laser_angle=0, laser_dist=0):
     global velocity_publisher, speed_factor
 
     print(dir)
@@ -282,47 +283,30 @@ def navigate_step(dir: str, delta_t: float, speed_lin=0.1, speed_rot=math.radian
     twist.angular.z *= speed_rot * speed_factor
 
     velocity_publisher.publish(twist)
-    rospy.sleep(delta_t / speed_factor)
+    rospy.sleep(blind_time / speed_factor)
 
 
-def path_docking_to_conveyor():
-    navigate_step("stop    ", 2.00)
-    navigate_step("forward ", 1.30)
-    laser.set_check(angle=0, diff=0.02, dist=0.24, block=True)
-    navigate_step("left    ", 1.00)
-    laser.set_check(angle=180, diff=0.0025, block=True)
-    navigate_step("forward ", 3.50)
-    laser.set_check(angle=0, diff=0.04, dist=0.45, block=True)
-    navigate_step("left    ", 1.5)
-    laser.set_check(angle=270, diff=0.0025, block=True)
-    navigate_step("backward", 3.50)
-    laser.set_check(angle=0, diff=0.05, dist=1.45, block=True)
-    navigate_step("stop    ", 0.00)
+def drive_along_path(p):
+    global laser
+    path = list(settings.navigation[p].values())
 
+    for step in path:
+        step: dict
+        laser_data = None
+        if "laser" in step:
+            laser_data = step.pop("laser")
+        navigate_step(**step)
+        if laser_data:
+            laser.set_check(**laser_data)
 
-def path_conveyor_to_parking():
-    navigate_step("forward ", 3.50)
-    laser.set_check(angle=0, diff=0.03, dist=1.00, block=True)
-    navigate_step("left    ", 0.50)
-    laser.set_check(angle=180, diff=0.0025, block=True)
-    navigate_step("forward ", 3.00)
-    laser.set_check(angle=0, diff=0.005, dist=0.29, block=True)
-    navigate_step("left    ", 1.10)
-    laser.set_check(angle=267, diff=0.0025, block=True)
-    navigate_step("stop    ", 0.00)
-
-
-paths = {
-    "conveyor": path_docking_to_conveyor,
-    "parking":  path_conveyor_to_parking,
-}
 
 goal_list = []
 pub_state: rospy.Publisher
 
+
 def cb_goal(msg: String):
-    global  goal_list, paths, pub_state
-    if msg.data in paths:
+    global goal_list,  pub_state
+    if msg.data in settings.navigation:
         pub_state.publish(f"accepted:{msg.data}")
         goal_list.append(msg.data)
     else:
@@ -330,7 +314,7 @@ def cb_goal(msg: String):
 
 
 def navigate():
-    global velocity_publisher, laser, paths, goal_list, pub_state
+    global velocity_publisher, laser, goal_list, pub_state
     rospy.init_node('navigation', anonymous=True)
     velocity_publisher = rospy.Publisher('/turtlebot1/cmd_vel', data_class=Twist, queue_size=10)
     sub_laser_scan = rospy.Subscriber('/turtlebot1/scan', data_class=LaserScan, callback=laser.cb_scan)
@@ -343,7 +327,7 @@ def navigate():
             p = goal_list.pop(0)
             # Drive to the desired positions.
             pub_state.publish(f"driving:{p}")
-            paths[p]()
+            drive_along_path(p)
             pub_state.publish(f"reached:{p}")
 
 
