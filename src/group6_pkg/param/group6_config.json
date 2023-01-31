@@ -1,8 +1,55 @@
 {
   "print_after_loading": true,
   "workstation": "",
+  "a": {
+    "slider": {
+      "left_space": {
+        "x": 97,
+        "y": -278,
+        "z": 95,
+        "w": 150
+      },
+      "right_space": {
+        "x": 60,
+        "y": -280,
+        "z": 95,
+        "w": 145
+      },
+      "large_space": {
+        "x": 79,
+        "y": -240,
+        "z": 73,
+        "w": 150
+      }
+    },
   "b": {
+    "slider": {
+      "left_space": {
+        "x": 92,
+        "y": -280,
+        "z": 95,
+        "w": 150
+      },
+      "right_space": {
+        "x": 55,
+        "y": -280,
+        "z": 95,
+        "w": 145
+      },
+      "large_space": {
+        "x": 77,
+        "y": -240,
+        "z": 73,
+        "w": 150
+      },
     "navigation": {
+      "conveyor": {
+        "turn_to_conveyor": {
+          "laser": {
+            "angle": 272
+          }
+        }
+      },
       "parking": {
         "move_upwards": {
           "laser": {
@@ -14,6 +61,24 @@
   },
   "default": {
     "slider": {
+      "left_space": {
+        "x": 92,
+        "y": -280,
+        "z": 95,
+        "w": 150
+      },
+      "right_space": {
+        "x": 55,
+        "y": -280,
+        "z": 95,
+        "w": 145
+      },
+      "large_space": {
+        "x": 77,
+        "y": -240,
+        "z": 73,
+        "w": 150
+      },
       "positions": [
         [10,10],
         [10,20],
@@ -24,7 +89,7 @@
       ]
     },
     "turtlebot": {
-      "tray_height": 150
+      "tray_height": 150,
     },
     "navigation": {
       "conveyor": {
