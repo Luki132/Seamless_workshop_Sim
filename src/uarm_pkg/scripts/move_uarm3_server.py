@@ -13,12 +13,22 @@ from tf.transformations import euler_from_quaternion
 
 best_pos_of_turtle = [200, -170, 170, 90]
 
+Area = "B"
+
 class get_turtle_pos:
 
     def __init__(self):
-        self.initial_odom_x = 1268.201
-        self.initial_odom_y = 783.632
-        self.z_pos_turtlebot = 141 # in mm
+
+        if Area == "A":
+            self.z_tur_s = 140 # in mm
+            self.z_tur_b = 124 # in mm
+        elif Area == "B":
+            self.z_tur_s = 129 # in mm
+            self.z_tur_b = 115 # in mm
+        else:
+            self.z_tur_s = 140 # in mm
+            self.z_tur_b = 124 # in mm
+
         self.pos_cube3_on_conv = [200, 159, 60, 90]
         self.pos_cube3_on_conv_1 = [200, 159, 36, 90] # big Cube but thin cube
         self.pos_cube3_on_conv_2 = [200, 159, 50, 90] # small quadratic cube
@@ -133,7 +143,7 @@ class get_turtle_pos:
             x_values_test = self.x_val_raw
             y_values_test = self.y_val_raw
             cube_area_test = self.z_val_raw
-            # rospy.logerr("x_1: %s, y_1: %s, z_1: %s", x_values_test, y_values_test, cube_area_test)
+            rospy.logerr("x_1: %s, y_1: %s, z_1: %s", x_values_test, y_values_test, cube_area_test)
             if cube_area_test[0] == 0.0:
                 num_of_positions -= 1
             if cube_area_test[1] == 0.0:
@@ -232,10 +242,10 @@ class get_turtle_pos:
         detected_cubes_kinect = self.cubes_detected
         for i in range(3):
             if i + 1 == pos_of_biggest_cube:
-                positions[i].append(124)
+                positions[i].append(self.z_tur_b)
                 positions[i].append(90)
             else:
-                positions[i].append(140)
+                positions[i].append(self.z_tur_s)
                 positions[i].append(90)
 
         # positions = [[self.pos_onTur1[0], self.pos_onTur1[1],124, 90], [self.pos_onTur2[0], self.pos_onTur2[1], 140, 90],[self.pos_onTur3[0], self.pos_onTur3[1], 140, 90]]
@@ -265,7 +275,7 @@ class get_turtle_pos:
                 self.move_uarm3([pos[0]+30, pos[1]+ 80, pos[2]+15, pos[3]])
                 #time.sleep(1)
                 self.move_uarm3([200, -20, 140, 90])
-                self.move_uarm3([self.pos_cube3_on_conv_1[0], self.pos_cube3_on_conv_1[1], self.pos_cube3_on_conv_1[2]+30, self.pos_cube3_on_conv_1[3]])
+                self.move_uarm3([self.pos_cube3_on_conv_1[0], self.pos_cube3_on_conv_1[1], self.pos_cube3_on_conv_1[2]+45, self.pos_cube3_on_conv_1[3]])
                 self.wait_until_var("/conveyor_moved")
                 rospy.set_param('/conveyor_moved', False)
                 msg = conv_cube()
