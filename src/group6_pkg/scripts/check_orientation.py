@@ -9,18 +9,11 @@ import math
 # max angular speed is 2.84rad/sec
 angular_z = 0.1
 
-# def stop():
-#     global cmd
-#     cmd = Twist()
-#     rospy.loginfo("STOP.")
-#     cmd.linear.x = 0.0
-#     cmd.angular.z = 0.0  
-stop = False
-
-def log_pub(c):
-    print(c)
-    pub.publish(c)
-
+def stop():
+    cmd = Twist()
+    rospy.loginfo("STOP.")
+    cmd.linear.x = 0.0
+    cmd.angular.z = 0.0  
 
 def euler_from_quaternion(x, y, z, w):
     t0 = +2.0 * (w * x + y * z)
@@ -40,58 +33,54 @@ def euler_from_quaternion(x, y, z, w):
 
 
 def charuco_detector_callback(park: PoseStamped):
-    # pass
-    global cmd
-    global angular_z, stop
-    cmd = Twist()
-    x_rad, y_rad, z_rad = euler_from_quaternion(park.pose.orientation.x, park.pose.orientation.y, park.pose.orientation.z, park.pose.orientation.w)
-    x_degree = math.degrees(x_rad)
-    # print(x_degree)
+    pass
+    # global cmd
+    # global angular_z
+    # cmd = Twist()
+    # x_rad, y_rad, z_rad = euler_from_quaternion(park.pose.orientation.x, park.pose.orientation.y, park.pose.orientation.z, park.pose.orientation.w)
+    # x_degree = math.degrees(x_rad)
+    # # print(x_degree)
 
-    if park.pose.position.x < 0.01 and park.pose.position.z > 0.15:
-        rospy.loginfo("too far to right")
-        cmd.linear.x = 0.00
-        cmd.angular.z = 0.3
-
-
-    if park.pose.position.x > 0.04 and park.pose.position.z > 0.15:
-        rospy.loginfo("too far to left")
-        cmd.linear.x = 0.00
-        cmd.angular.z = -0.3
-
-    # if park.pose.position.x < 0.01:
+    # if park.pose.position.x < 0.01 and park.pose.position.z > 0.15:
     #     rospy.loginfo("too far to right")
-    #     cmd.linear.x = -0.05
-    #     cmd.angular.z = 0.3      
-
-    
+    #     cmd.linear.x = 0.00
+    #     cmd.angular.z = 0.3
 
 
     # if park.pose.position.x > 0.04 and park.pose.position.z > 0.15:
     #     rospy.loginfo("too far to left")
-    #     cmd.linear.x = -0.05
+    #     cmd.linear.x = 0.00
     #     cmd.angular.z = -0.3
+
+    # # if park.pose.position.x < 0.01:
+    # #     rospy.loginfo("too far to right")
+    # #     cmd.linear.x = -0.05
+    # #     cmd.angular.z = 0.3      
+
+    
+
+
+    # # if park.pose.position.x > 0.04 and park.pose.position.z > 0.15:
+    # #     rospy.loginfo("too far to left")
+    # #     cmd.linear.x = -0.05
+    # #     cmd.angular.z = -0.3
     
     
 
-    if park.pose.position.x > 0.01 and park.pose.position.x < 0.04 and park.pose.position.z > 0.15:
-        rospy.loginfo("happy path towards marker.")
-        cmd.linear.x = -0.1
-        cmd.angular.z = 0.0
-    elif park.pose.position.z < 0.15 and stop == False:
-        cmd.linear.x = -0.1
-        angular_z = angular_z*(-1)
-        cmd.angular.z = angular_z
+    # if park.pose.position.x > 0.01 and park.pose.position.x < 0.04 and park.pose.position.z > 0.15:
+    #     rospy.loginfo("happy path towards marker.")
+    #     cmd.linear.x = -0.15
+    #     cmd.angular.z = 0.0
+    # elif park.pose.position.z < 0.15:
+    #     cmd.linear.x = -0.15
+    #     angular_z = angular_z*(-1)
+    #     cmd.angular.z = angular_z
 
-    if park.pose.position.z < 0.085:
-        print("BINGO")
-        cmd.linear.x = 0.0
-        cmd.angular.z = 0.0
-        stop = True
+    # if park.pose.position.z < 0.085:
+    #    stop()
             
-    # print(park.pose.position.z)  
-    # log_pub(cmd)
-    pub.publish(cmd)
+    # # print(park.pose.position.z)  
+    # pub.publish(cmd)
 
 # def odom_callback(data: Odometry):
 #     global cmd
@@ -102,8 +91,8 @@ def charuco_detector_callback(park: PoseStamped):
 #     z_degree = math.degrees(z_rad)
 #     # z_sign = math.degrees(z_rad)
 
-#     # print(z_degree)
-#     # print(data.pose.pose.position.x)
+#     print(z_degree)
+#     print(data.pose.pose.position.x)
 
 #     if z_degree < -90 and z_degree > -180 and data.pose.pose.position.x < 1.15:
 #         if z_degree < -90 and z_degree > -175:
@@ -121,15 +110,15 @@ def charuco_detector_callback(park: PoseStamped):
 
 #     pub.publish(cmd)
 
-# def odom_callback(data: Odometry):
-#     global cmd
+def odom_callback(data: Odometry):
+    global cmd
 
-#     cmd = Twist()
+    cmd = Twist()
 
-#     x_rad, y_rad, z_rad = euler_from_quaternion(data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w)
-#     z_degree = abs(math.degrees(z_rad))
+    x_rad, y_rad, z_rad = euler_from_quaternion(data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w)
+    z_degree = math.degrees(z_rad)
 
-#     print(z_degree)
+    print(z_degree)
 
     # if data.pose.pose.position.x < 1.15 and z_degree < 185 and z_degree > 175:
     #     rospy.loginfo("First condition achieved.")
@@ -141,7 +130,7 @@ def charuco_detector_callback(park: PoseStamped):
 if __name__ == '__main__':
     rospy.init_node("turtlebot_controller")
     pub = rospy.Publisher("/turtlebot1/cmd_vel", Twist, queue_size=10)
-    # sub = rospy.Subscriber("/turtlebot1/odom", Odometry,callback=odom_callback)
+    sub = rospy.Subscriber("/turtlebot1/odom", Odometry,callback=odom_callback)
     sub1 = rospy.Subscriber("/turtlebot1/camera/image_charuco_pose", PoseStamped,callback=charuco_detector_callback)
     rospy.loginfo("Node has been started.")
 
