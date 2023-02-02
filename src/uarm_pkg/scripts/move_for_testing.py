@@ -13,11 +13,29 @@ def handle_move_uarm(order):
     grip_client2 = actionlib.SimpleActionClient('uarm2/grip', GraspAction)
     move_client3 = actionlib.SimpleActionClient('uarm3/move', MoveAction)
     grip_client3 = actionlib.SimpleActionClient('uarm3/grip', GraspAction)
+
+    move_client1 = actionlib.SimpleActionClient('uarm1/move', MoveAction)
+    grip_client1 = actionlib.SimpleActionClient('uarm1/grip', GraspAction)
     uarm = int(order.uarm)
     print("connecting")
     # Waits until the action server has started up and started
     # listening for goals.
-    if uarm == 2:
+    if uarm == 1:
+        move_client1.wait_for_server()
+        print("connected")
+        # Creates a goal to send to the action server.
+        goal = MoveGoal(target=order.pos)
+        print("goal defined")
+        # Sends the goal to the action server.
+        move_client1.send_goal(goal)
+        print("goal sent")
+        # Waits for the server to finish performing the action.
+        move_client1.wait_for_result()
+        # or shorter alternative to three commands above:
+        # move_client.send_goal_and_wait(MoveGoal(target=[x, y, z, w]))
+        # gets the result of the task
+        return move_client1.get_result()
+    elif uarm == 2:
         move_client2.wait_for_server()
         print("connected")
         # Creates a goal to send to the action server.

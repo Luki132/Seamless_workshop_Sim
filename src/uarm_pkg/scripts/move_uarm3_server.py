@@ -4,7 +4,7 @@ from robis_messages.msg import MoveAction, MoveGoal, GraspAction, GraspGoal
 from group_messages.srv import order_cube1, move_uarm_test
 from group_messages.msg import conv_cube
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float64, Int64, Bool
+from std_msgs.msg import Float64,String, Int64, Bool
 from geometry_msgs.msg import PoseArray
 import time
 import actionlib
@@ -13,7 +13,7 @@ from tf.transformations import euler_from_quaternion
 
 best_pos_of_turtle = [200, -170, 170, 90]
 
-Area = "B"
+Area = "A"
 
 class get_turtle_pos:
 
@@ -44,7 +44,9 @@ class get_turtle_pos:
         self.pos_of_big_cube = 3 # 1, 2 or 3
 
         # rospy.Subscriber("/turtlebot1/odom", Odometry, self.callback_odom)
+        rospy.Subscriber("/group6/nav_state", String, self.Turtlebot_is_there)
         s = rospy.Service('uarm3_controll/move', order_cube1, self.handle_move_uarm3_real_hardware)
+        self.navigation_pub = rospy.Publisher("/group6/nav_goal", String, queue_size=10)
         rospy.Subscriber("/uarm3_move_odom/move", Float64, self.callback_move_uarm3_odom)
         rospy.Subscriber("/cargo_position", PoseArray, self.callback_cargo_pos_raw)
         self.conveyor_pub = rospy.Publisher("conveyor_controll/move", conv_cube)
@@ -87,6 +89,15 @@ class get_turtle_pos:
         self.move_uarm3([pos_get[0], pos_get[1],  pos_get[2] + 10, 90])
         self.move_uarm3([pos_get[0], pos_get[1],  pos_get[2], 90])
         return True
+
+    def Turtlebot_is_there(self, data):
+        state = data.data
+        if state == "reached:conveyor":
+            goal_move = order_cube1._request_class(storage1 = True, storage2 = True, storage3 = True)
+            self.handle_move_uarm3_real_hardware(goal_move)
+        else:
+            pass
+
 
 
     def get_turtle_pos(self):
@@ -294,8 +305,10 @@ class get_turtle_pos:
                 self.conveyor_pub.publish(msg)
                 time.sleep(2) # without that it doesnt work:after a specific time the conveyor stops
 
-
-
+        
+        goal_move = String()
+        goal_move.data = "parking"
+        self.navigation_pub.publish(goal_move)
         return True
 
     def wait_until_var(self, var):
