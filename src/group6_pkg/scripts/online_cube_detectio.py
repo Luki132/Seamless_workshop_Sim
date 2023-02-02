@@ -11,6 +11,8 @@ from std_msgs.msg import Bool
 bridge = CvBridge()
 x_offset = 0.53 # Test Area A
 y_offset = 0.48 # Test Area A 
+# x_offset = 0.54 # Test Area B
+# y_offset = 0.485 # Test Area B
 
 # x_offset = 0.54 # Test Area C
 # y_offset = 0.49 # Test Area C
@@ -229,7 +231,7 @@ def callback(data):
     counter = 0
     for count, contour in enumerate(contours):
         area = cv2.contourArea(contour)
-        if(area > 750 and area < 3500 and counter < 3):
+        if(area > 750 and area < 3800 and counter < 3):
             x, y, w, h = cv2.boundingRect(contour)
             if x < 850 and x > 150 and w < 100 and h < 100 and w > 30 and h > 30:
                 # if x > 0:
