@@ -29,11 +29,10 @@ class CargoAction(object):
         self._execution_done = False
         self._order_done = False
 
-        self.pub1 = rospy.Publisher("/cargo_order",Int64MultiArray, queue_size=10)
-        self.pub2 = rospy.Publisher("/stow_order",Int64, queue_size=10)
+        self.pub1 = rospy.Publisher("/group6/cargo_order",Int64MultiArray, queue_size=10) ## uArm + Slider
 
         rospy.Subscriber("/Hello", Bool, callback=self.execuction_done)
-        rospy.Subscriber("/order_done", Bool, callback=self.order_done)
+        rospy.Subscriber("/group6/order_done", Bool, callback=self.order_done)
 
         self._action_name = name
         self._as = actionlib.SimpleActionServer(self._action_name, cargo_actionAction, execute_cb=self.execute_cb, auto_start = False)
@@ -113,9 +112,8 @@ class CargoAction(object):
         print(order[1,:])                   
         print(order[2,:]) 
 
-        stow_order = Int64()
-        stow_order.data = goal.stow_box
-        self.pub2.publish(stow_order)                  
+        stow_order = goal.stow_box
+        rospy.set_param("/group6/stow_order", stow_order)
         # rospy.wait_for_message("/Hello", Bool)
         # print("It waited")
         r = rospy.Rate(1)

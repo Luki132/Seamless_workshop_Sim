@@ -1,0 +1,20 @@
+# === Goal definition ===
+
+Header Header
+uint8[6] num_objects
+uint8 stow_box
+uint8 priority
+
+---
+
+# === Result definition ===
+
+time finish_time
+float32 duration 
+
+---
+
+# === Feedback definition ===
+
+float32 percent_complete
+time estimated_finish_time
