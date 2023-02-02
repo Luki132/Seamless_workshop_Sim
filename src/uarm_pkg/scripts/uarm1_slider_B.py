@@ -252,17 +252,16 @@ def execute_order(data):
     if data.data[0] == 1:
         print("Pick big red object")
         print(move_slider(50, 0, 0, 0)) #slider movement, checked initial(50, 0, 0, 0)
-        print(move(160, 160, 80, 90)) #for first rect box intermediate position, checked
-        print(move(140, 185, -47, 90)) #for first one at the storage, touch box, checked
-        print(grip(True)) #grabbing the box
+        print(move(160, 160, 80, 90))   #for first rect box intermediate position, checked
+        print(move(135, 190, -47, 90))  #touch box
+        print(grip(True))               #grabbing the box
         time.sleep(1)
         print(move(160, 160, 80, 90))
         time.sleep(1)
         print(move(180, 0, 130, 90)) 
         print(move_slider(0, 0, 0, 0))
-
         print(move(75, -235, 120, 150))  #for the rect boxes intermediate position
-        print(move(79, -240, 73, 150))   #for the rect box in turtlebox
+        print(move(70, -237, 73, 150)) 
         print(grip(False)) 
         print(move(75, -235, 120, 150))  #for the rect boxes intermediate position
         print(move(180, 0, 130, 90))     #homed position
@@ -270,9 +269,9 @@ def execute_order(data):
 
     if data.data[1] == 1 and big_object_done == False:
         print("Pick big green object")
-        print(move_slider(165, 0, 0, 0)) #slider movement
+        print(move_slider(162, 0, 0, 0)) #slider movement
         print(move(160, 160, 80, 90))    #for second rect box intermediate position, checked
-        print(move(140, 185, -46, 90))   #touch box
+        print(move(135, 190, -46, 90))   #touch box
         print(grip(True))                #grabbing the box
         time.sleep(1)
         print(move(160, 160, 80, 90))    #moving back to intermediate position
@@ -288,9 +287,9 @@ def execute_order(data):
 
     if data.data[2] == 1 and big_object_done == False:
         print("Pick big blue object")
-        print(move_slider(276, 0, 0, 0)) #slider movement
+        print(move_slider(273, 0, 0, 0)) #slider movement
         print(move(160, 160, 80, 90))    #for 3rd rect box intermediate position, checked
-        print(move(140, 185, -46, 90))   #touch box
+        print(move(135, 190, -46, 90))   #touch box
         print(grip(True))                #grabbing the box
         time.sleep(1)
         print(move(160, 160, 80, 90))
@@ -307,21 +306,21 @@ def execute_order(data):
     if data.data[3] == 1: 
         print("Pick small red object")
         small_object_counter = small_object_counter + 1
-        print(move_slider(370, 0, 0, 0)) #slider movement
+        print(move_slider(366, 0, 0, 0)) # slider movement
         print(move(180, 160, 80, 90))    #for 4th square box intermediate position, checked
-        print(move(140, 185, -31, 90))   #touch box
+        print(move(140, 190, -31, 90))   #touch box
         print(grip(True))                #grabbing the box
         time.sleep(1)
         print(move(160, 160, 80, 90))    
         time.sleep(1)
         print(move(180, 0, 130, 90))
         time.sleep(1)
-        print(move_slider(0, 0, 0, 0)) #slider movement
+        print(move_slider(0, 0, 0, 0))   #slider movement
         
        
         print(move(60, -280, 120, 145)) 
         time.sleep(1)
-        print(move(60, -280, 95, 145))  #for the square boxes on turtlebot right most
+        print(move(50, -277, 95, 145))   #for the square boxes on turtlebot right most
         print(grip(False)) 
         print(move(60, -280, 120, 145)) #for the square box position, intermediate position , right most
         print(move(180, 0, 130, 90))
@@ -333,9 +332,10 @@ def execute_order(data):
     if data.data[4] == 1 and small_object_done == False:
         print("Pick small green object")
         small_object_counter = small_object_counter + 1 
-        print(move_slider(452, 0, 0, 0)) #slider movement
-        print(move(180, 160, 80, 90))    #for 5th square box intermediate position, checked
-        print(move(140, 185, -31, 90))   #touch box
+
+        print(move_slider(448, 0, 0, 0)) #slider movement
+        print(move(180, 160, 80, 90))    #for 5th square box intermediate position
+        print(move(138, 189, -31, 90))   #touch box
         print(grip(True))                #grabbing the box
         time.sleep(1)
         print(move(160, 160, 80, 90))
@@ -343,18 +343,17 @@ def execute_order(data):
         print(move(180, 0, 130, 90))
         print(move_slider(0, 0, 0, 0))   #slider movement
        
-
         if right_space_occupied == 0:
             print(move(60, -280, 120, 145))  # intermediate positions
             time.sleep(1)
-            print(move(60, -280, 95, 145))   #for the square boxes on turtlebot right most
+            print(move(50, -277, 95, 145))   #for the square boxes on turtlebot right most
         else:  
             print(move(60, -280, 120, 145)) 
             time.sleep(1)
-            print(move(97, -278, 95, 150))   #left space on the turtlebot
+            print(move(95, -277, 95, 150))   #left space on the turtlebot
 
         print(grip(False)) 
-        print(move(60, -280, 120, 145))     #for the square box position, intermediate position , right most
+        print(move(60, -280, 120, 145))      #for the square box position, intermediate position , right most
         print(move(180, 0, 130, 90))
 
         if small_object_counter == 2:
@@ -362,19 +361,15 @@ def execute_order(data):
 
     if data.data[5] == 1 and small_object_done == False:
         print("Pick small blue object")
-        print(move_slider(535, 0, 0, 0))  #slider movement
+        print(move_slider(527, 0, 0, 0))  #slider movement
         print(move(180, 160, 80, 90))     #for 6th square box intermediate position, checked
-        print(move(140, 185, -31, 90))    #touch box
+        print(move(138, 189, -31, 90))    #touch box
         print(grip(True))                 #grabbing the box
-        time.sleep(1)
         print(move(160, 160, 80, 90))
-        time.sleep(1)
         print(move(180, 0, 130, 90))
-        time.sleep(1)
         print(move_slider(0, 0, 0, 0))    #slider movement
         print(move(100, -280, 120, 150)) 
-        time.sleep(1)
-        print(move(97, -278, 95, 150))    #for the square boxes on turtlebot left most
+        print(move(95, -277, 95, 150))    #for the square boxes on turtlebot left most   
         print(grip(False)) 
         print(move(100, -280, 120, 150))  #for the square box position, intermediate position , left most
         print(move(180, 0, 130, 90))
