@@ -140,8 +140,8 @@
     <arg name="Y" value="1.5707"/>
     <arg name="reference_frame" value="slider1::rail"/>
     <arg name="tf_reference" value="slider1/rail"/>
-    <arg name="slider" value="1"/>
-    <arg name="slider_ns" value="slider1"/>
+    <!-- <arg name="slider" value="1"/>
+    <arg name="slider_ns" value="slider1"/> -->
     <arg name="wait" value="-wait slider1"/>
     <arg name="spawn" value="true"/>
   </include>
@@ -177,11 +177,11 @@
     <arg name="number" value="1"/>
     <arg name="name" value="turtlebot"/>
     <arg name="x" value="1.150"/>
-    <!-- <arg name="y" value="0.783632"/> -->
-    <arg name="y" value="0.73"/>
+    <arg name="y" value="0.783632"/>
+    <!--<arg name="y" value="0.73"/>-->
     <arg name="z" value="0.0"/>
-    <!-- <arg name="Y" value="3.141593"/> -->
-    <arg name="Y" value="3.5"/>
+    <arg name="Y" value="3.141593"/> 
+    <!--<arg name="Y" value="3.5"/>-->
 
     <arg name="wait" value="-wait wooden_ground_plane"/>
     <arg name="spawn" value="true"/>
