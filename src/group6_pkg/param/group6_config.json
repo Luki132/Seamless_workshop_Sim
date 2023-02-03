@@ -1,6 +1,6 @@
 {
   "print_after_loading": true,
-  "workstation": "",
+  "workstation": "a",
   "a": {
     "slider": {
       "left_space": {
@@ -22,6 +22,16 @@
         "w": 150
       }
     },
+    "navigation": {
+      "parking": {
+        "move_upwards": {
+          "laser": {
+            "dist": 0.26
+          }
+        }
+      }
+    }
+  },
   "b": {
     "slider": {
       "left_space": {
@@ -41,7 +51,8 @@
         "y": -240,
         "z": 73,
         "w": 150
-      },
+      }
+    },
     "navigation": {
       "conveyor": {
         "turn_to_conveyor": {
@@ -89,17 +100,21 @@
       ]
     },
     "turtlebot": {
-      "tray_height": 150,
+      "tray_height": 150
     },
     "navigation": {
       "conveyor": {
         "start": {
-          "dir": "stop",
-          "blind_time": 1.0
+          "blind": {
+            "dir": "stop",
+            "blind_time": 1.0
+          }
         },
         "move_out_of_docking": {
-          "dir": "forward",
-          "blind_time": 1.30,
+          "blind": {
+            "dir": "forward",
+            "blind_time": 1.30
+          },
           "laser": {
             "angle": 0,
             "diff": 0.02,
@@ -107,16 +122,20 @@
           }
         },
         "turn_downwards": {
-          "dir": "left",
-          "blind_time": 1.00,
+          "blind": {
+            "dir": "left",
+            "blind_time": 1.00
+          },
           "laser": {
             "angle": 180,
             "diff": 0.0025
           }
         },
         "move_downwards": {
-          "dir": "forward",
-          "blind_time": 3.50,
+          "blind": {
+            "dir": "forward",
+            "blind_time": 3.50
+          },
           "laser": {
             "angle": 0,
             "diff": 0.04,
@@ -124,16 +143,20 @@
           }
         },
         "turn_to_conveyor": {
-          "dir": "left",
-          "blind_time": 1.50,
+          "blind": {
+            "dir": "left",
+            "blind_time": 1.50
+          },
           "laser": {
             "angle": 270,
             "diff": 0.0025
           }
         },
         "move_to_conveyor": {
-          "dir": "backward",
-          "blind_time": 3.50,
+          "blind": {
+            "dir": "backward",
+            "blind_time": 3.50
+          },
           "laser": {
             "angle": 0,
             "diff": 0.05,
@@ -141,18 +164,24 @@
           }
         },
         "end": {
-          "dir": "stop",
-          "blind_time": 0.0
+          "blind": {
+            "dir": "stop",
+            "blind_time": 0.0
+          }
         }
       },
       "parking": {
         "start": {
-          "dir": "stop",
-          "blind_time": 1.0
+          "blind": {
+            "dir": "stop",
+            "blind_time": 1.0
+          }
         },
         "move_to_middle": {
-          "dir": "forward",
-          "blind_time": 3.50,
+          "blind": {
+            "dir": "forward",
+            "blind_time": 3.50
+          },
           "laser": {
             "angle": 0,
             "diff": 0.03,
@@ -160,33 +189,42 @@
           }
         },
         "turn_upwards": {
-          "dir": "left",
-          "blind_time": 0.50,
+          "blind": {
+            "dir": "left",
+            "blind_time": 0.50
+          },
           "laser": {
             "angle": 180,
             "diff": 0.0025
           }
         },
         "move_upwards": {
-          "dir": "forward",
-          "blind_time": 3.00,
+          "blind": {
+            "dir": "forward",
+            "blind_time": 3.00
+          },
           "laser": {
             "angle": 0,
             "diff": 0.005,
-            "dist": 0.29
+            "dist": 0.27,
+            "speed_lin": 0.03
           }
         },
         "turn_to_docking": {
-          "dir": "left",
-          "blind_time": 1.10,
+          "blind": {
+            "dir": "left",
+            "blind_time": 1.10
+          },
           "laser": {
             "angle": 267,
             "diff": 0.0025
           }
         },
         "end": {
-          "dir": "stop",
-          "blind_time": 0.0
+          "blind": {
+            "dir": "stop",
+            "blind_time": 0.0
+          }
         }
       }
     },

@@ -156,7 +156,7 @@ class Laser:
 
         self.cb_continue()
 
-    def set_check(self, angle, diff, dist=0.0, block=True, angle_spread=2):
+    def set_check(self, angle, diff, dist=0.0, block=True, angle_spread=2, speed_lin=None, speed_rot=None):
         # if dist is specified, the distance to the obstacle is checked and must be withing diff
         # if dist is not specified, the turtlebot is turned til the threshold is met.
         self.angle = int(angle)
@@ -170,9 +170,14 @@ class Laser:
         self.eval.reset()
         self.eval_l.reset()
         self.eval_r.reset()
+        if speed_lin:
+            self.speed_lin = speed_lin
+        if speed_rot:
+            self.speed_rot = speed_rot
         if dist:
             self.dir = "f"
-            self.ref_diff = 4 * diff
+            self.ref_diff = max(0.05, 4 * diff) # min 5cm
+            self.angle_spread = 1
         else:
             self.dir = "l"
             self.ref_diff = 20 * diff
@@ -190,17 +195,18 @@ class Laser:
 
     def cb_scan(self, scan: LaserScan):
         current_dist = scan.ranges[self.angle]
-        current_dist_avg = (scan.ranges[self.angle - 1] + scan.ranges[self.angle] + scan.ranges[self.angle + 1]) / 3
         change = current_dist - self.last
-        error = current_dist_avg - self.dist
-
-        if not current_dist:
-            print(f"Laser: Invalid data for ray {self.angle}! (all zero)")
-            return
 
         self.eval.set(current_dist)
         self.eval_l.set(scan.ranges[self.angle - self.angle_spread])
         self.eval_r.set(scan.ranges[self.angle + self.angle_spread])
+
+        if not self.eval.get() * self.eval_l.get() * self.eval_r.get():
+            print(f"Some laser rays are zero (l, c, r): {self.eval_l.get():.3f}, {self.eval.get():.3f}, {self.eval_r.get():.3f}")
+            return
+
+        current_dist_avg = (self.eval_l.get() + self.eval.get() + self.eval_r.get()) / 3
+        error = current_dist_avg - self.dist
 
         if not self.check:
             return
@@ -209,17 +215,17 @@ class Laser:
             self.last_avg = current_dist_avg
             return
 
-        angle_diff = (scan.ranges[self.angle + self.angle_spread] - scan.ranges[self.angle - self.angle_spread]) / current_dist
-        angle_diff_predicted = (self.eval_r.get(0) - self.eval_l.get(0)) / self.eval.get(0)
+        # angle_diff = (scan.ranges[self.angle + self.angle_spread] - scan.ranges[self.angle - self.angle_spread]) / self.eval.get()
+        angle_diff_predicted = (self.eval_r.get() - self.eval_l.get()) / self.eval.get()
 
-        print(f"Laser: dist={current_dist}, dist_avg={current_dist_avg} error={error}, change={change}, angle_diff={angle_diff}, predicted={angle_diff_predicted}")
+        print(f"Laser: dist={current_dist}, dist_avg={current_dist_avg} error={error}, change={change}, predicted={angle_diff_predicted}")
 
         if self.reaction_lock:
             print(f"Laser: reaction lock {self.reaction_lock}")
             self.reaction_lock -= 1
         elif self.dist:
             error = abs(error)
-            self.speed_corr = min(1.0, max(0.3, error / self.ref_diff))
+            self.speed_corr = min(1.0, max(0.1, error / self.ref_diff))
             if abs(error) < self.diff:
                     print(f"Laser: Within lin tolerance ({self.diff})")
                     self.cb_ok()
@@ -241,7 +247,7 @@ class Laser:
                     self.change_dir("s")
             else:
                 self.last_good = False
-                if angle_diff > 0:
+                if angle_diff_predicted > 0:
                     # Turning away from the wall. change direction
                     self.change_dir("r")
                 else:
@@ -292,10 +298,8 @@ def drive_along_path(p):
 
     for step in path:
         step: dict
-        laser_data = None
-        if "laser" in step:
-            laser_data = step.pop("laser")
-        navigate_step(**step)
+        laser_data = step.get("laser", None)
+        navigate_step(**step["blind"])
         if laser_data:
             laser.set_check(**laser_data)
 
@@ -312,6 +316,45 @@ def cb_goal(msg: String):
     else:
         pub_state.publish(f"refused:{msg.data}")
 
+#########################################
+nav_state = ""
+park_state = False
+
+
+def cb_nav(msg: String):
+    global nav_state
+    print("cbn")
+    nav_state = msg.data
+
+
+def cb_park(msg: Bool):
+    global park_state
+    print("cbp")
+    park_state = msg.data
+
+def automated_ping_pong():
+    #rospy.init_node('autonav', anonymous=True)
+    sub_nav_state = rospy.Subscriber('/group6/nav_state', data_class=String, callback=cb_nav)
+    sub_park_state = rospy.Subscriber('/group6/parking_state', data_class=Bool, callback=cb_park)
+    pub_nav_goal = rospy.Publisher('/group6/nav_goal', data_class=String, queue_size=10)
+    while not rospy.is_shutdown():
+        goal = String()
+        print(1)
+        goal.data = "conveyor"
+        pub_nav_goal.publish(goal)
+        print(2)
+        goal.data = "parking"
+        pub_nav_goal.publish(goal)
+        print(3)
+        rospy.sleep(5)
+        while nav_state != "reached:parking":
+            pass
+        print(4)
+        while park_state:
+            pass
+        print(5)
+        while not park_state:
+            pass
 
 def navigate():
     global velocity_publisher, laser, goal_list, pub_state
