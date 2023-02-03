@@ -21,6 +21,7 @@ class SomeActionClient:
     
     def send_goal(self):
         goal = cargo_actionGoal()
+        goal.num_objects = [0,0,3,0,0,0]
         self._client.send_goal(goal, self._done_cb, self._active_cb, self._feedback_cb)
     
     def _done_cb(self, status, result):
