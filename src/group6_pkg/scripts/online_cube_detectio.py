@@ -304,7 +304,7 @@ def listener():
 if __name__=='__main__':
     # while(True):
     #     callback()
-    rospy.init_node('listener', anonymous=True)
+    rospy.init_node('kinect', anonymous=True)
     rospy.Subscriber("/kinect/rgb_camera/image_raw", Image, callback)
     # rospy.Subscriber("/get_kinect_data", Bool, get_callback)
 

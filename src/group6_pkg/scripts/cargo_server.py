@@ -17,7 +17,7 @@ import time
 t_sum = 0.0
 
 # Receive /cargo_ready from uArm + Slider when stacking is complete
-
+# Time to take one cube for converyor is 40 seconds
 class CargoAction(object):
     # create messages that are used to publish feedback/result
     _feedback = cargo_actionFeedback()
@@ -39,6 +39,7 @@ class CargoAction(object):
     phase2 = False
     phase3 = False
     phase4 = False
+
 
 
     # Case 1. For 3 big cargo (3 trips)
@@ -67,6 +68,9 @@ class CargoAction(object):
     def __init__(self, name):
         self._execution_done = False
         self._order_done = False
+
+        self.count_done = 0
+        self.order_completed = False
 
         self.pub1 = rospy.Publisher("/group6/cargo_order",Int64MultiArray, queue_size=10) ## uArm + Slider
         rospy.Subscriber("/group6/nav_goal", String, callback=self.update_nav_goal)
@@ -103,6 +107,12 @@ class CargoAction(object):
     def trip_done(self,data):
         self._order_done = data.data
         print("Trip completed",data.data)
+        if self._order_done == True:
+            print("Trip completed",data.data)
+            self.count_done = self.count_done + 1
+
+            
+
 
     #if the sequence is compromised, the emergency stop should be activated
     def check_state(self): 
@@ -167,8 +177,11 @@ class CargoAction(object):
                 print("System is behind phase 4")
 
     def execute_cb(self, goal):
+        global num_of_trip
         # helper variables
         self._execution_done = False
+        self.count_done = 0
+        self.order_completed = False
 
         slot1 = True
         slot2 = True
@@ -186,7 +199,7 @@ class CargoAction(object):
         # rospy.wait_for_message("/Hello", Bool)
         # print("It waited")
         r = rospy.Rate(1)
-        success = True
+        self.success = True
         order_num = goal.num_objects
         order_num = [elem for elem in order_num]
         for i in range(6):
@@ -275,13 +288,14 @@ class CargoAction(object):
         count = 0
         start_time = rospy.get_time() # Get the start time
 
-        while not self._execution_done and not rospy.is_shutdown(): #If KeyboardInterrupt is triggered the system will stop
+        while not self._execution_done and not rospy.is_shutdown() and not self.order_completed: #If KeyboardInterrupt is triggered the system will stop
             if self._order_done == True or first_trip == True:
                 print("Publishing to uArm + Slider")
                 first_trip = False
                 self._order_done = False
-                system_order.data = order[count,:].tolist() #convert the numpy array into a list, that can be publish
-                self.pub1.publish(system_order) 
+                if sum(order[count,:]) != 0:
+                    system_order.data = order[count,:].tolist() #convert the numpy array into a list, that can be publish
+                    self.pub1.publish(system_order) 
                 
                 self.calculate_time_slot(count, num_of_trip, order)
 
@@ -307,17 +321,22 @@ class CargoAction(object):
 
             r.sleep()
 
+            if self.count_done == num_of_trip:
+                self.order_completed = True
+                self.success = True
 
-        if self._execution_done == True:
-            success = True
-        success = True
+
+        print("Order completed")
+        # if self._execution_done == True:
+        #     self.success = True
+        # self.success = True
         # # start executing the action
         # for i in range(10):
         #     # check that preempt has not been requested by the client
         #     if self._as.is_preempt_requested():
         #         rospy.loginfo('%s: Preempted' % self._action_name)
         #         self._as.set_preempted()
-        #         success = False
+        #         self.success = False
         #         break
         #     self._feedback.percent_complete = self._feedback.percent_complete + 1.0
         #     # publish the feedback
@@ -325,7 +344,7 @@ class CargoAction(object):
         #     # this step is not necessary, the sequence is computed at 1 Hz for demonstration purposes
         #     r.sleep()
           
-        if success:
+        if self.success:
             self._result.finish_time = current_time
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)

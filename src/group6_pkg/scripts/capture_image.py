@@ -23,7 +23,7 @@ def callback(data):
     str_counter = str(counter)
     # print(cv_image.shape) # [0] = 280, [1]=720
     cv2.waitKey(1)
-    cv2.imwrite('/home/robis/image_24012023/cv_img_'+ str_counter+ '.jpg', cv_image)
+    cv2.imwrite('/home/robis/image_03022023/cv_img_'+ str_counter+ '.jpg', cv_image)
     counter = counter + 1
     print("Bingo!")
 
