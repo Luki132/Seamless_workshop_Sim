@@ -152,9 +152,6 @@ def cb_nav(msg: String):
         reinit()
 
 
-
-
-
 if __name__ == '__main__':
     rospy.init_node("turtlebot_controller")
     pub_cmd_vel = rospy.Publisher("/turtlebot1/cmd_vel", Twist, queue_size=10)
