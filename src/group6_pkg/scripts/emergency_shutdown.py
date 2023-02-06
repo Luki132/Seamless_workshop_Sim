@@ -1,9 +1,9 @@
 import asyncio
-from string import whitespace
 import rospy
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
 from actionlib_msgs.msg import GoalID
+from RobisConsoleUtils import *
 
 
 # Name of the node of this script. Search for its usage to find out when and
@@ -13,110 +13,6 @@ NODE_NAME = "emergency_shutdown"
 
 # There is or isn't an emergency
 emergency = False
-
-
-# Wrapper for executing ros related commands like you do in a normal terminal.
-# Sourcing ~/.bashrc doesn't work because bashrc can only be sourced from an
-# interactive terminal (see "If not running interactively, don't do anything"
-# in .bashrc)
-# Therefore the sourcing of the relevant stuff must be made manually before
-# executing the actual command
-# This is kinda hacky and specific to the SE22 setup:
-#   * Source the ros setup.bash file (hardcoded here)
-#   * Find the SE22 workshop params (like IP addresses etc) and run those
-#     commands as well.
-async def bash_run(cmd):
-    init_cmds = ['source /opt/ros/noetic/setup.bash']
-    with open("/home/robis/.bashrc") as f:
-        bashrc = f.read()
-
-    # Find SE22 config, discard everything before, then discard the
-    # se22 config comment.
-    se22_start = "#=== SE22 Workspace/Simulation Configurations ===#"
-    if se22_start in bashrc:
-        bashrc = bashrc[bashrc.index(se22_start):].splitlines()[1:]
-        init_cmds += bashrc
-    init_cmds = " && ".join([c for c in init_cmds if c.strip(whitespace)])
-    if type(cmd) is not str:
-        raise TypeError(f"cmd must be of type str, got {type(cmd)}: {cmd}")
-    final_cmd = f"bash -c '{init_cmds} && {cmd}'"
-    print("executing:", cmd)
-
-    proc = await asyncio.create_subprocess_shell(
-        final_cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
-    return stdout, stderr
-
-
-# rospy doesn't provide a function to get the publishers or subscribers of a topic.
-# Therefore, they must be gathered from the console output of rostopic info.
-#
-# Example output of rostopic info /rosout:
-#   Type: rosgraph_msgs/Log
-#
-#   Publishers:
-#    * /pycon1 (http://robis-ubuntu20-usb:42955/)
-#    * /pycon2 (http://robis-ubuntu20-usb:42956/)
-#
-#   Subscribers:
-#    * /rosout (http://robis-ubuntu20-usb:39559/)
-async def get_publishers(topic):
-    stdout, stderr = await bash_run(f"rostopic info {topic}")
-    if stderr:
-        raise Exception(stderr)
-    stdout = stdout.decode("utf8")
-    publishers = []
-    if "Publishers" in stdout:
-        stdout = stdout[stdout.index("Publishers"):].splitlines()[1:]
-        for p in stdout:
-            start, end = " * ", " ("
-            if start not in p or end not in p:
-                break
-            start = p.index(start) + len(start)
-            end   = p.index(end)
-            p = p[start:end]
-            publishers.append(p)
-    return publishers
-
-
-# Track nodes that are being killed. This is necessary to prevent them from
-# being killed multiple times, resulting in errors. Those errors could be
-# ignored, however, this could ignore actual errors as well.
-# Cleaner ways of doing this likely exist, yet none are known to me atm.
-node_kill_list = []
-
-
-async def kill_node(node):
-    global node_kill_list
-
-    # Node has already been killed.
-    if node in node_kill_list:
-        return True
-
-    node_kill_list.append(node)
-
-    # rospy doesn't provide a function to kill nodes. Therefore, this
-    # wrapper function relies on the CLI command "rosnode kill /node".
-    # It also adds basic error handling.
-    stdout, stderr = await bash_run(f"rosnode kill {node}")
-
-    if stderr:
-        # if stderr.startswith(b"ERROR: Unknown node(s):"):
-        #     # Node has already been stopped.
-        #     return True
-        # else:
-        #     raise Exception(stderr)
-        raise Exception(stderr)
-
-    # Return value could be used for more robust code.
-    if b"killed" in stdout:
-        return True
-
-    print(f"Couldn't kill node {node}. stdout: {stdout}")
-    return False
 
 
 class Robot:
@@ -213,6 +109,12 @@ def cb_timer_enforce_stop(timer_info: rospy.timer.TimerEvent = None):
         Robot.log_enable = old
 
 
+def cb_timer_enfore_node_kills(timer_info: rospy.timer.TimerEvent = None):
+    global emergency
+    if emergency:
+        asyncio.run(disable_all_robots())
+
+
 def cb_set_emergency(msg: Bool):
     global emergency
 
@@ -235,6 +137,7 @@ def main():
 
     rospy.Subscriber(name="/group6/emergency_shutdown", data_class=Bool, callback=cb_set_emergency)
     rospy.Timer(period=rospy.Duration(0.1), callback=cb_timer_enforce_stop)
+    rospy.Timer(period=rospy.Duration(1), callback=cb_timer_enfore_node_kills)
 
     rospy.spin()
 
