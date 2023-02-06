@@ -440,7 +440,7 @@ def execute_order(data):
 
 def Uarm1Movement():
     print("listenning to move and grab/command")
-    rospy.Subscriber("/cargo_order", Int64MultiArray,callback=execute_order)
+    rospy.Subscriber("/group6/cargo_order", Int64MultiArray,callback=execute_order)
     rospy.spin()
 
 if __name__ == '__main__':

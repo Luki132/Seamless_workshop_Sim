@@ -381,6 +381,13 @@ class get_turtle_pos:
         # gets the result of the task
         return grip_client.get_result()
 
+    def check_for_emergency(self):
+        while True:
+            if rospy.get_param("/group6/emergency") == True:
+                time.sleep(1)
+            else:
+                break
+
 
 if __name__ == '__main__':
     # Starts a new node

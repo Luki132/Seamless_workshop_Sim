@@ -3,6 +3,7 @@
     <node pkg="uarm_pkg" type="move_uarm2_server.py" name="Uarm2_server_node"/>
     <node pkg="uarm_pkg" type="move_for_testing.py" name="Uarm_move_test_node"/>
     <node pkg="uarm_pkg" type="grip_for_testing.py" name="Uarm3_server_grip_node"/>
+    <node pkg="conveyor_pkg" type="conveyor_controll_server.py" name="Conveyor_node"/>
     <!--node pkg="uarm_pkg" type="uarm1_slider_B.py" name="Uarm1_silder_node"/-->
 </launch>
     
