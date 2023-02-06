@@ -165,6 +165,8 @@ catkin_install_python(PROGRAMS
   scripts/move_uarm2_server.py
   scripts/move_for_testing.py
   scripts/grip_for_testing.py
+  scripts/uarm1_slider_A.py
+  scripts/uarm1_slider_B.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
