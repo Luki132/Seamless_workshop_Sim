@@ -31,15 +31,15 @@ class ObjectDict(dict):
                 self[k] = v
 
     def update_recursively(self, d:dict):
-            for sk, sv in d.items():
-                if sk in self and isinstance(self[sk], dict):
-                    if not isinstance(self[sk], ObjectDict):
-                        od = ObjectDict()
-                        od.init_from_dict(self[sk])
-                        self[sk] = od
-                    self[sk].update_recursively(sv)
-                else:
-                    self[sk] = sv
+        for sk, sv in d.items():
+            if sk in self and isinstance(self[sk], dict):
+                if not isinstance(self[sk], ObjectDict):
+                    od = ObjectDict()
+                    od.init_from_dict(self[sk])
+                    self[sk] = od
+                self[sk].update_recursively(sv)
+            else:
+                self[sk] = sv
 
 
 def load_settings():
@@ -56,6 +56,7 @@ def load_settings():
     if settings.print_after_loading:
         print(json.dumps(settings.default, indent=2))
 
+    settings.default.workstation = settings.workstation
     settings = settings.default
 
 

@@ -59,18 +59,18 @@ def charuco_detector_callback(park:PoseStamped):
     if do_parking:# and callback_denied == False:
 
         if park.pose.position.z > 0.15:
-            if park.pose.position.x < 0.015:
+            if park.pose.position.x < 0.005:
                 rospy.loginfo("too far to right")
                 cmd.linear.x = 0.00
                 cmd.angular.z = 0.015
 
 
-            if park.pose.position.x > 0.035:
+            elif park.pose.position.x > 0.045:
                 rospy.loginfo("too far to left")
                 cmd.linear.x = 0.00
                 cmd.angular.z = -0.015
 
-            if abs(x_ang) > 175:
+            elif abs(x_ang) > 175:
                 rospy.loginfo("happy path towards marker.")
                 cmd.linear.x = -0.015
                 cmd.angular.z = 0.0
@@ -150,9 +150,6 @@ def cb_nav(msg: String):
         status.data = True
         pub_state.publish(status)
         reinit()
-
-
-
 
 
 if __name__ == '__main__':

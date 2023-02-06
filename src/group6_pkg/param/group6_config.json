@@ -23,6 +23,17 @@
       }
     },
     "navigation": {
+      "conveyor": {
+        "move_to_conveyor": {
+          "blind": {
+            "dir": "backward",
+            "blind_time": 3.50
+          },
+          "laser": {
+            "dist": 1.45
+          }
+        }
+      },
       "parking": {
         "move_upwards": {
           "laser": {
@@ -159,7 +170,7 @@
           },
           "laser": {
             "angle": 0,
-            "diff": 0.05,
+            "diff": 0.03,
             "dist": 1.45
           }
         },

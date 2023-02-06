@@ -15,12 +15,16 @@ def move_conveyor_callback(data):
       handle_move_conveyor(int(data.length))
       rospy.set_param('/conveyor_moved', True)
       rospy.set_param('/Uarm2_took_cube_from_conv', False)
+      if rospy.has_param("/group6/stow_order"):
+        storage = rospy.get_param("/group6/stow_order")
+      else:
+        storage = 1 # default if no param
       uarm2_client = rospy.ServiceProxy('uarm2_controll/move', store_cube)
       uarm2_client.wait_for_service()
       if int(data.size) == 1:
-        goal = store_cube._request_class(cube_pos=[87, 159, 36, 90], storagebox = 2)
+        goal = store_cube._request_class(cube_pos=[95, 164, 36, 90], storagebox = storage)
       else:
-        goal = store_cube._request_class(cube_pos=[87, 159, 50, 90], storagebox = 2)
+        goal = store_cube._request_class(cube_pos=[95, 164, 50, 90], storagebox = storage)
       result = uarm2_client(goal)
       # uarm2_publisher = rospy.Publisher('uarm2_controll/move', store_cube
       # goal = store_cube._request_class(cube_pos=[108, 167, 46, 90])
@@ -66,6 +70,7 @@ if __name__ == '__main__':
     rospy.set_param("/conveyor_moved", True)
     # create new Service server
     s = rospy.Subscriber('conveyor_controll/move', conv_cube, move_conveyor_callback)
+
     rospy.spin()
 
 
