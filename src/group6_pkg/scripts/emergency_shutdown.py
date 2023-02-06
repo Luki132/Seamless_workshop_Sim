@@ -82,21 +82,41 @@ async def get_publishers(topic):
     return publishers
 
 
+# Track nodes that are being killed. This is necessary to prevent them from
+# being killed multiple times, resulting in errors. Those errors could be
+# ignored, however, this could ignore actual errors as well.
+# Cleaner ways of doing this likely exist, yet none are known to me atm.
+node_kill_list = []
+
+
 async def kill_node(node):
-    # rospy doesn't provide a function to kill nodes. Therefore this
+    global node_kill_list
+
+    # Node has already been killed.
+    if node in node_kill_list:
+        return True
+
+    node_kill_list.append(node)
+
+    # rospy doesn't provide a function to kill nodes. Therefore, this
     # wrapper function relies on the CLI command "rosnode kill /node".
     # It also adds basic error handling.
     stdout, stderr = await bash_run(f"rosnode kill {node}")
-    if stderr:
-        raise Exception(stderr)
-    stdout = stdout.decode("utf8")
 
-    # Return values could be used for more robust code.
-    if "killed" in stdout:
+    if stderr:
+        # if stderr.startswith(b"ERROR: Unknown node(s):"):
+        #     # Node has already been stopped.
+        #     return True
+        # else:
+        #     raise Exception(stderr)
+        raise Exception(stderr)
+
+    # Return value could be used for more robust code.
+    if b"killed" in stdout:
         return True
-    else:
-        print(f"Couldn't kill node {node}. stdout: {stdout}")
-        return False
+
+    print(f"Couldn't kill node {node}. stdout: {stdout}")
+    return False
 
 
 class Robot:
@@ -138,39 +158,43 @@ turtlebot = Robot(
     stop_topic="/turtlebot1/cmd_vel",
     stop_msg=Twist(),
 )
-uarm1 = Robot(
-    name="slider",
-    control_topic="/slider/goal",
-    stop_topic="/slider/cancel",
+slider = Robot(
+    name="slider1",
+    control_topic="/slider1/move/goal",
+    stop_topic="/slider1/move/cancel",
     stop_msg=GoalID(stamp=rospy.Time.from_sec(0.0), id=""),
 )
 uarm1 = Robot(
     name="uarm1",
-    control_topic="/uarm1/goal",
-    stop_topic="/uarm1/cancel",
+    control_topic="/uarm1/move/goal",
+    stop_topic="/uarm1/move/cancel",
     stop_msg=GoalID(stamp=rospy.Time.from_sec(0.0), id=""),
 )
 uarm2 = Robot(
     name="uarm2",
-    control_topic="/uarm2/goal",
-    stop_topic="/uarm2/cancel",
+    control_topic="/uarm2/move/goal",
+    stop_topic="/uarm2/move/cancel",
     stop_msg=GoalID(stamp=rospy.Time.from_sec(0.0), id=""),
 )
 uarm3 = Robot(
     name="uarm3",
-    control_topic="/uarm3/goal",
-    stop_topic="/uarm3/cancel",
+    control_topic="/uarm3/move/goal",
+    stop_topic="/uarm3/move/cancel",
     stop_msg=GoalID(stamp=rospy.Time.from_sec(0.0), id=""),
 )
 
-robots = [turtlebot, uarm1, uarm2, uarm3]
+robots = [turtlebot, slider, uarm1, uarm2, uarm3]
 
 
 # Run the stop functions for each robot. await and async ensure that if one stop action
 # is waiting for something (f.ex. a node shutting down), the other stop actions are not
 # delayed. Not the same as parallelization but close.
 async def disable_all_robots():
-    global robots
+    global robots, node_kill_list
+
+    # reset kill list because nodes could have been respawned
+    node_kill_list = []
+
     await asyncio.gather(*(robot.disable() for robot in robots))
 
 
