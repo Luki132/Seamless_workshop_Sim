@@ -245,18 +245,18 @@ def execute_order(data):
     inter_pos_rec = [75, -235, 120, 150]  # intermediate positions of the rectangle boxes
     interPos_slide = [140, 160, 80, 90]
     height_square = -33
-    hweight_rec = -47
+    hweight_rec = -48
     y_pos = 186
     x_pos = 140
     turtle_1 = [63, -280, 95, 145] # for the square boxes on turtlebot right most
-    turtle_2 = [99, -277, 95, 150]  # for the square boxes on turtlebot right most
-    turtle_big = [78, -240, 73, 150]
+    turtle_2 = [97, -277, 95, 150]  # for the square boxes on turtlebot right most
+    turtle_big = [80, -240, 73, 150]
 
    
 
     if data.data[0] == 1:
         rospy.logerr("Pick big red object")
-        print(move_slider(55, 0, 0, 0)) #slider movement, checked initial(50, 0, 0, 0)
+        print(move_slider(53, 0, 0, 0)) #slider movement, checked initial(50, 0, 0, 0)
         print(move(interPos_slide[0], interPos_slide[1], interPos_slide[2], interPos_slide[3]))  #for first rect box intermediate position, checked
         print(move(x_pos, y_pos, hweight_rec, 90)) #for first one at the storage, touch box, checked
         print(grip(True)) #grabbing the box

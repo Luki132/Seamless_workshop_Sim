@@ -150,7 +150,7 @@ class get_turtle_pos:
         cube_det = [True, True, True] # assume that 3 cubes are on the turtlebot
         biggest_num_of_detected_cubes = 0 # innitialize that zero cubes are detected
         num_of_positions = 3
-        for i in range(70):
+        for i in range(40):
             x_values_test = self.x_val_raw
             y_values_test = self.y_val_raw
             cube_area_test = self.z_val_raw
@@ -231,7 +231,7 @@ class get_turtle_pos:
                 
                 #time.sleep(1)
                 self.grip_uarm3(False)
-                #time.sleep(1)
+                time.sleep(1)
                 self.move_uarm3([self.pos_cube3_on_conv[0], self.pos_cube3_on_conv[1], self.pos_cube3_on_conv[2]+50, self.pos_cube3_on_conv[3]])
                 msg = conv_cube()
                 msg.length = -250
@@ -244,7 +244,7 @@ class get_turtle_pos:
         return True
 
     def handle_move_uarm3_real_hardware(self, order):
-        time.sleep(4)
+        time.sleep(1)
         self.callback_cargo_pos()
         storage = [order.storage1, order.storage2, order.storage3]
         # positions = [[169, -83, 124, 90], [150, -126, 140, 90], [187, -126, 140, 90]]
