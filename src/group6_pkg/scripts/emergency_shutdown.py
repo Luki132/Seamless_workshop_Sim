@@ -1,17 +1,18 @@
+import asyncio
+from string import whitespace
 import rospy
-from rosnode import rosnode_listnodes
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
-from robis_messages.msg import MoveActionGoal
-import subprocess
-import multiprocessing as mp
-from string import whitespace
-import asyncio
+from actionlib_msgs.msg import GoalID
 
 
 # Name of the node of this script. Search for its usage to find out when and
 # why it's needed.
 NODE_NAME = "emergency_shutdown"
+
+
+# There is or isn't an emergency
+emergency = False
 
 
 # Wrapper for executing ros related commands like you do in a normal terminal.
@@ -99,17 +100,21 @@ async def kill_node(node):
 
 
 class Robot:
-    def __init__(self, name, control_topic, stop_msg):
+    log_enable = True
+
+    def __init__(self, name, control_topic, stop_topic, stop_msg):
         self.name = name
         self.control_topic = control_topic
+        self.stop_topic = stop_topic
         self.stop_msg = stop_msg
-        self.pub = rospy.Publisher(self.control_topic, data_class=type(self.stop_msg), queue_size=10)
+        self.pub = rospy.Publisher(self.stop_topic, data_class=type(self.stop_msg), queue_size=10)
         self.shell_init = ""
 
     def log(self, msg):
-        print(f"{self.name}: {msg}")
+        if Robot.log_enable:
+            print(f"{self.name}: {msg}")
 
-    async def stop(self):
+    async def disable(self):
         self.log(f"Getting subscribers of {self.control_topic}")
         nodes_to_kill = await get_publishers(self.control_topic)
         # Exclude this script from the list of nodes that shall be killed.
@@ -118,41 +123,96 @@ class Robot:
         for node in nodes_to_kill:
             await kill_node(node)
         self.log("All nodes killed.")
+
+    def stop(self):
         self.log("Stopping robot...")
         self.pub.publish(self.stop_msg)
         self.log("Robot stopped. ")
 
 
-async def emergency_stop():
-    # Set up all the robots that need to be stopped, and specify how they're stopped.
-    # Assumes turtlebot-like interfaces (a.k.a. likely to need adjustment for uarms).
-    turtlebot = Robot(name="turtlebot", control_topic="/turtlebot1/cmd_vel", stop_msg=Twist())
-    uarm1     = Robot(name="uarm1",     control_topic="/uarm1/goal",         stop_msg=MoveActionGoal())
-    uarm2     = Robot(name="uarm2",     control_topic="/uarm2/goal",         stop_msg=MoveActionGoal())
-    uarm3     = Robot(name="uarm3",     control_topic="/uarm3/goal",         stop_msg=MoveActionGoal())
+# Set up all the robots that need to be stopped, and specify how they're stopped.
+# Assumes turtlebot-like interfaces (a.k.a. likely to need adjustment for uarms).
+turtlebot = Robot(
+    name="turtlebot",
+    control_topic="/turtlebot1/cmd_vel",
+    stop_topic="/turtlebot1/cmd_vel",
+    stop_msg=Twist(),
+)
+uarm1 = Robot(
+    name="slider",
+    control_topic="/slider/goal",
+    stop_topic="/slider/cancel",
+    stop_msg=GoalID(stamp=rospy.Time.from_sec(0.0), id=""),
+)
+uarm1 = Robot(
+    name="uarm1",
+    control_topic="/uarm1/goal",
+    stop_topic="/uarm1/cancel",
+    stop_msg=GoalID(stamp=rospy.Time.from_sec(0.0), id=""),
+)
+uarm2 = Robot(
+    name="uarm2",
+    control_topic="/uarm2/goal",
+    stop_topic="/uarm2/cancel",
+    stop_msg=GoalID(stamp=rospy.Time.from_sec(0.0), id=""),
+)
+uarm3 = Robot(
+    name="uarm3",
+    control_topic="/uarm3/goal",
+    stop_topic="/uarm3/cancel",
+    stop_msg=GoalID(stamp=rospy.Time.from_sec(0.0), id=""),
+)
 
-    robots = [turtlebot, uarm1, uarm2, uarm3]
-
-    # Run the stop functions for each robot. await and async ensure that if one stop action
-    # is waiting for something (f.ex. a node shutting down), the other stop actions are not
-    # delayed. Not the same as parallelization but close.
-    await asyncio.gather(*(robot.stop() for robot in robots))
+robots = [turtlebot, uarm1, uarm2, uarm3]
 
 
-def callback(msg):
-    # This is how you run an async function. Check out the comments in emergency_stop()
-    # for details.
-    # This likely can be simplified a bit, but I'm not sure how. 
-    asyncio.run(emergency_stop())
+# Run the stop functions for each robot. await and async ensure that if one stop action
+# is waiting for something (f.ex. a node shutting down), the other stop actions are not
+# delayed. Not the same as parallelization but close.
+async def disable_all_robots():
+    global robots
+    await asyncio.gather(*(robot.disable() for robot in robots))
+
+
+def stop_all_robots():
+    global robots
+    for robot in robots:
+        robot.stop()
+
+
+def cb_timer_enforce_stop(timer_info: rospy.timer.TimerEvent = None):
+    global emergency
+    if emergency:
+        old = Robot.log_enable
+        Robot.log_enable = False
+        stop_all_robots()
+        Robot.log_enable = old
+
+
+def cb_set_emergency(msg: Bool):
+    global emergency
+
+    emergency = msg.data
+
+    if emergency:
+        # This is how you run an async function. Check out the comments in emergency_stop()
+        # for details.
+        # This likely can be simplified a bit, but I'm not sure how.
+        asyncio.run(disable_all_robots())
+
+        # Immediately stop the robots, then continue to enforce it using a timer (see main).
+        stop_all_robots()
+    else:
+        print("Disabling emergency stop enforcement.")
 
 
 def main():
     rospy.init_node(NODE_NAME)
-    rospy.Subscriber("/group6/emergency_shutdown", data_class=Bool, callback=callback)
 
-    while not rospy.is_shutdown():
-        # Prevent excessive CPU load
-        rospy.sleep(0.05)
+    rospy.Subscriber(name="/group6/emergency_shutdown", data_class=Bool, callback=cb_set_emergency)
+    rospy.Timer(period=rospy.Duration(0.1), callback=cb_timer_enforce_stop)
+
+    rospy.spin()
 
 
 if __name__ == '__main__':
