@@ -265,8 +265,10 @@ def drive_along_path(p):
 
     for step in path:
         step: dict
+        blind_step = step.get("blind", None)
         laser_data = step.get("laser", None)
-        navigate_step(**step["blind"])
+        if blind_step:
+            navigate_step(**blind_step)
         if laser_data:
             laser.set_check(**laser_data)
 

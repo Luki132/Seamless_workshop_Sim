@@ -199,11 +199,25 @@
             "dist": 1.00
           }
         },
-        "turn_upwards": {
-          "blind": {
-            "dir": "left",
-            "blind_time": 0.50
-          },
+        "turn_upwards_1": {
+          "laser": {
+            "angle": 110,
+            "diff": 0.005
+          }
+        },
+        "turn_upwards_2": {
+          "laser": {
+            "angle": 130,
+            "diff": 0.005
+          }
+        },
+        "turn_upwards_3": {
+          "laser": {
+            "angle": 150,
+            "diff": 0.005
+          }
+        },
+        "turn_upwards_4": {
           "laser": {
             "angle": 180,
             "diff": 0.0025
@@ -237,7 +251,19 @@
             "blind_time": 0.0
           }
         }
-      }
+      },
+	  "parking_backup": {
+        "turn_upwards": {
+          "blind": {
+            "dir": "left",
+            "blind_time": 0.50
+          },
+          "laser": {
+            "angle": 180,
+            "diff": 0.0025
+          }
+        }
+	  }
     },
     "conveyor": {
 
