@@ -7,40 +7,7 @@ from sensor_msgs.msg import LaserScan
 from Settings import settings
 
 
-
 velocity_publisher: rospy.Publisher
-
-
-# laser_points = [0,0,0,0] # 0, 90, 180, 270
-#
-#
-# def scan_callback(msg: LaserScan):
-#     global laser_points
-#
-#     laser_points[0] = msg.ranges[0]
-#     laser_points[1] = msg.ranges[89]
-#     laser_points[2] = msg.ranges[179]
-#     laser_points[3] = msg.ranges[269]
-#
-#
-# def print_current_pos():
-#     global laser_points, velocity_publisher
-#     t0 = rospy.get_time()
-#
-#     vel_msg = Twist()
-#
-#     velocity_publisher.publish(vel_msg)
-#     current_time = 0
-#
-#     while(current_time < (1)):
-#         t1 = rospy.get_time()
-#         current_time = t1-t0
-#
-#     print(f"Laser Pos:")
-#     print(f"    0: {laser_points[0]}")
-#     print(f"   90: {laser_points[1]}")
-#     print(f"  180: {laser_points[2]}")
-#     print(f"  270: {laser_points[3]}")
 
 
 class Extrapolated:
