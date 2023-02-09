@@ -1,5 +1,5 @@
 {
-  "print_after_loading": true,
+  "print_after_loading": false,
   "workstation": "a",
   "a": {
     "slider": {
