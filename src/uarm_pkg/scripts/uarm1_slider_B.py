@@ -242,13 +242,13 @@ def execute_order(data):
     interPoss = [60, -280, 120, 145]  # intermediate positions
     inter_pos_rec = [75, -235, 120, 150]  # intermediate positions of the rectangle boxes
     interPos_slide = [160, 160, 80, 90]
-    height_square = -31
-    hweight_rec = -47
+    height_square = -35
+    hweight_rec = -49
     y_pos = 190
     x_pos = 135
-    turtle_1 = [50, -277, 95, 145] # for the square boxes on turtlebot right most
+    turtle_1 = [52, -277, 95, 145] # for the square boxes on turtlebot right most
     turtle_2 = [95, -277, 95, 150]  # for the square boxes on turtlebot right most
-    turtle_big = [79, -240, 73, 150]
+    turtle_big = [74, -240, 73, 150]
    
 
     if data.data[0] == 1:
@@ -297,6 +297,7 @@ def execute_order(data):
         print(move(interPos_slide[0], interPos_slide[1], interPos_slide[2], interPos_slide[3])) 
         time.sleep(1)
         print(move(180, 0, 130, 90))
+        print(move_slider(0, 0, 0, 0))   #homed position
         print(move(inter_pos_rec[0], inter_pos_rec[1], inter_pos_rec[2], inter_pos_rec[3])) # for the rect boxes intermediate position
         print(move(turtle_big[0], turtle_big[1], turtle_big[2], turtle_big[3])) # for the big box on turtlebot
         print(grip(False)) 
@@ -308,7 +309,7 @@ def execute_order(data):
         for i in range(data.data[3]):
             rospy.logerr("Pick small red object")
             small_object_counter = small_object_counter + 1
-            print(move_slider(366, 0, 0, 0)) # slider movement
+            print(move_slider(368, 0, 0, 0)) # slider movement
             print(move(interPos_slide[0], interPos_slide[1], interPos_slide[2], interPos_slide[3]))     #for 4th square box intermediate position, checked
             print(move(x_pos, y_pos, height_square, 90))   #touch box
             print(grip(True))                #grabbing the box
@@ -322,12 +323,12 @@ def execute_order(data):
             if right_space_occupied == 0:
                 print(move(interPoss[0], interPoss[1], interPoss[2], interPoss[3]))  # intermediate positions
                 time.sleep(1)
-                print(move(turtle_1[0], turtle_1[1], turtle_1[2]+20, turtle_1[3]))  #right space on the turtlebot
+                print(move(turtle_1[0], turtle_1[1], turtle_1[2]+17, turtle_1[3]))  #right space on the turtlebot
                 print(move(turtle_1[0], turtle_1[1], turtle_1[2], turtle_1[3]))  #right space on the turtlebot
             else:  
                 print(move(interPoss[0], interPoss[1], interPoss[2], interPoss[3]))
                 time.sleep(1)
-                print(move(turtle_2[0], turtle_2[1], turtle_2[2]+20, turtle_2[3]))  #left space on the turtlebot
+                print(move(turtle_2[0], turtle_2[1], turtle_2[2]+17, turtle_2[3]))  #left space on the turtlebot
                 print(move(turtle_2[0], turtle_2[1], turtle_2[2], turtle_2[3]))  #left space on the turtlebot
 
             print(grip(False)) 
@@ -347,7 +348,7 @@ def execute_order(data):
                 rospy.logerr("Pick small green object")
                 small_object_counter = small_object_counter + 1 
 
-                print(move_slider(448, 0, 0, 0)) #slider movement
+                print(move_slider(450, 0, 0, 0)) #slider movement
                 print(move(interPos_slide[0], interPos_slide[1], interPos_slide[2], interPos_slide[3]))     #for 5th square box intermediate position, checked
                 print(move(x_pos, y_pos, height_square, 90))   #touch box
                 print(grip(True))                #grabbing the box
@@ -360,13 +361,13 @@ def execute_order(data):
                 if right_space_occupied == 0:
                     print(move(interPoss[0], interPoss[1], interPoss[2], interPoss[3]))  # intermediate positions
                     time.sleep(1)
-                    print(move(turtle_1[0], turtle_1[1], turtle_1[2]+20, turtle_1[3])) # for the square boxes on turtlebot right most
+                    print(move(turtle_1[0], turtle_1[1], turtle_1[2]+17, turtle_1[3])) # for the square boxes on turtlebot right most
                     print(move(turtle_1[0], turtle_1[1], turtle_1[2], turtle_1[3])) # for the square boxes on turtlebot right most
                     right_space_occupied = 1
                 else:  
                     print(move(interPoss[0], interPoss[1], interPoss[2], interPoss[3])) 
                     time.sleep(1)
-                    print(move(turtle_2[0], turtle_2[1], turtle_2[2]+20, turtle_2[3])) # for the square boxes on turtlebot left most
+                    print(move(turtle_2[0], turtle_2[1], turtle_2[2]+17, turtle_2[3])) # for the square boxes on turtlebot left most
                     print(move(turtle_2[0], turtle_2[1], turtle_2[2], turtle_2[3])) # for the square boxes on turtlebot left most
 
                 print(grip(False)) 
@@ -384,7 +385,7 @@ def execute_order(data):
             else: 
                 small_object_counter += 1
                 rospy.logerr("Pick small blue object")
-                print(move_slider(527, 0, 0, 0))  #slider movement
+                print(move_slider(531, 0, 0, 0))  #slider movement
                 print(move(interPos_slide[0], interPos_slide[1], interPos_slide[2], interPos_slide[3]))      #for 6th square box intermediate position, checked
                 print(move(x_pos, y_pos, height_square, 90))    #touch box
                 print(grip(True))                 #grabbing the box
@@ -396,13 +397,13 @@ def execute_order(data):
                 if right_space_occupied == 0:
                     print(move(interPoss[0], interPoss[1], interPoss[2], interPoss[3]))  # intermediate positions
                     time.sleep(1)
-                    print(move(turtle_1[0], turtle_1[1], turtle_1[2]+20, turtle_1[3])) # for the square boxes on turtlebot right most
+                    print(move(turtle_1[0], turtle_1[1], turtle_1[2]+16, turtle_1[3])) # for the square boxes on turtlebot right most
                     print(move(turtle_1[0], turtle_1[1], turtle_1[2], turtle_1[3])) # for the square boxes on turtlebot right most
                     right_space_occupied = 1
                 else:  
                     print(move(interPoss[0], interPoss[1], interPoss[2], interPoss[3]))
                     time.sleep(1)
-                    print(move(turtle_2[0], turtle_2[1], turtle_2[2]+20, turtle_2[3])) # for the square boxes on turtlebot left most
+                    print(move(turtle_2[0], turtle_2[1], turtle_2[2]+16, turtle_2[3])) # for the square boxes on turtlebot left most
                     print(move(turtle_2[0], turtle_2[1], turtle_2[2], turtle_2[3])) # for the square boxes on turtlebot left most
 
                 print(grip(False)) 
