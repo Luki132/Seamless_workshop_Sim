@@ -242,21 +242,21 @@ def execute_order(data):
     right_space_occupied = 0
 
     interPoss = [100, -275, 120, 145]  # intermediate positions
-    inter_pos_rec = [75, -235, 120, 150]  # intermediate positions of the rectangle boxes
+    inter_pos_rec = [85, -235, 120, 150]  # intermediate positions of the rectangle boxes
     interPos_slide = [140, 160, 80, 90]
     height_square = -33
     hweight_rec = -48
-    y_pos = 186
+    y_pos = 188
     x_pos = 140
-    turtle_1 = [63, -280, 95, 145] # for the square boxes on turtlebot right most
-    turtle_2 = [97, -277, 95, 150]  # for the square boxes on turtlebot right most
-    turtle_big = [80, -240, 73, 150]
+    turtle_1 = [69, -278, 95, 145] # for the square boxes on turtlebot right most
+    turtle_2 = [105, -277, 95, 150]  # for the square boxes on turtlebot left most
+    turtle_big = [88, -238, 73, 150]
 
    
 
     if data.data[0] == 1:
         rospy.logerr("Pick big red object")
-        print(move_slider(53, 0, 0, 0)) #slider movement, checked initial(50, 0, 0, 0)
+        print(move_slider(49, 0, 0, 0)) #slider movement, checked initial(50, 0, 0, 0)
         print(move(interPos_slide[0], interPos_slide[1], interPos_slide[2], interPos_slide[3]))  #for first rect box intermediate position, checked
         print(move(x_pos, y_pos, hweight_rec, 90)) #for first one at the storage, touch box, checked
         print(grip(True)) #grabbing the box
@@ -275,7 +275,7 @@ def execute_order(data):
 
     if data.data[1] == 1 and big_object_done == False:
         rospy.logerr("Pick big green object")
-        print(move_slider(165, 0, 0, 0)) #slider movement
+        print(move_slider(163, 0, 0, 0)) #slider movement
         print(move(interPos_slide[0], interPos_slide[1], interPos_slide[2], interPos_slide[3]))    #for second rect box intermediate position, checked
         print(move(x_pos, y_pos, hweight_rec, 90))   #touch box
         print(grip(True))                #grabbing the box
@@ -352,7 +352,7 @@ def execute_order(data):
             else:
                 rospy.logerr("Pick small green object")
                 small_object_counter = small_object_counter + 1 
-                print(move_slider(461, 0, 0, 0)) #slider movement
+                print(move_slider(457, 0, 0, 0)) #slider movement
                 print(move(interPos_slide[0], interPos_slide[1], interPos_slide[2], interPos_slide[3]))     #for 5th square box intermediate position, checked
                 print(move(x_pos, y_pos, height_square, 90))   #touch box
                 print(grip(True))                #grabbing the box
@@ -389,7 +389,7 @@ def execute_order(data):
                 continue
             else:
                 rospy.logerr("Pick small blue object")
-                print(move_slider(544, 0, 0, 0))  #slider movement
+                print(move_slider(541, 0, 0, 0))  #slider movement
                 print(move(interPos_slide[0], interPos_slide[1], interPos_slide[2], interPos_slide[3]))      #for 6th square box intermediate position, checked
                 print(move(x_pos, y_pos, height_square, 90))    #touch box
                 print(grip(True))                 #grabbing the box

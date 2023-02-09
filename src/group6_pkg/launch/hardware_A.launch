@@ -5,6 +5,5 @@
     <node pkg="uarm_pkg" type="grip_for_testing.py" name="Uarm3_server_grip_node"/>
     <node pkg="conveyor_pkg" type="conveyor_controll_server.py" name="Conveyor_node"/>
     <node pkg="uarm_pkg" type="uarm1_slider_A.py" name="Uarm1_silder_node"/>
-    <!--node pkg="uarm_pkg" type="uarm1_slider_B.py" name="Uarm1_silder_node"/-->
     <!--node pkg="group6_pkg" type="online_cube_detectio.py" name="kinect_node"/-->
 </launch>
