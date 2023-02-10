@@ -24,7 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-#catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -105,12 +105,12 @@ generate_messages(
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-#catkin_package(
-#INCLUDE_DIRS include
-#  LIBRARIES group6_pkg
-#  CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
-#)
+catkin_package(
+INCLUDE_DIRS scripts
+  LIBRARIES group6_pkg
+  CATKIN_DEPENDS roscpp rospy std_msgs
+  #DEPENDS system_lib
+)
 
 #catkin_package()
 

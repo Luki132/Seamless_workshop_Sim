@@ -3,7 +3,7 @@ import rospy
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
 from actionlib_msgs.msg import GoalID
-from RobisConsoleUtils import *
+from navigation_setup.RobisConsoleUtils import *
 
 
 # Name of the node of this script. Search for its usage to find out when and
