@@ -1,5 +1,6 @@
 import asyncio
 from string import whitespace
+import paramiko
 
 
 def get_init_cmds():
@@ -48,7 +49,7 @@ async def bash_run(cmd, exception_on_error=True):
 
 async def ssh_run(name, pw, cmds, exception_on_error=True):
     init_cmds = get_init_cmds()
-    init_ssh = f"ssh {name}"
+    init_ssh = f"ssh -o BatchMode=Yes root@{name}"
     final_cmd = f"bash -c '{init_cmds} && {init_ssh}'"
     print("executing:", init_ssh)
 
@@ -58,6 +59,7 @@ async def ssh_run(name, pw, cmds, exception_on_error=True):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
+    print(await proc.communicate())
 
     # Strip newlines and whitespaces, add them later to ensure all commands are the same
     cmds = [cmd.strip(whitespace) for cmd in cmds]
@@ -73,11 +75,16 @@ async def ssh_run(name, pw, cmds, exception_on_error=True):
 
     stdout, stderr = b"", b""
     for i, cmd in enumerate(cmds):
-        if not i:
-            print("ssh exec: [login using given pw]")
-        else:
-            print("ssh exec:", cmd)
-        o, e = await proc.communicate(cmd)
+        if type(cmd) is str:
+            cmd = cmd.encode("utf8")
+
+        #if not i:
+        #    print("ssh exec: [login using given pw]")
+        #else:
+        print("ssh exec:", cmd)
+        o, e = await proc.communicate(input=cmd)
+        print("o:", o)
+        print("e:", e)
         stdout += o
         stderr += e
 
@@ -86,6 +93,49 @@ async def ssh_run(name, pw, cmds, exception_on_error=True):
                 raise Exception(f"Error running {cmds}. stderr: {stderr}")
 
     return stdout, stderr
+
+
+async def ssh_sync(host, name, pw, cmd):
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    if type(host) is not str:
+        host = ".".join([str(x) for x in host])
+
+    print(f"ssh login: {host}")
+    ssh.connect(hostname=host, username=name, password=pw)
+
+    # source bashrc manually.
+    stdin, stdout, stderr = ssh.exec_command("cat ~/.bashrc")
+    bashrc = stdout.read().decode("utf8")
+    bashrc = bashrc.rsplit("\nfi\n", 1)[-1].splitlines()
+    bashrc = [b.strip(whitespace) for b in bashrc]
+    bashrc = " && ".join([b for b in bashrc if b and '"catkin" not in b'])
+    bashrc = bashrc.replace("'", "\"")
+
+    # for cmd in bashrc:
+    #     print("ssh exec bashrc:", cmd)
+    #     stdin, stdout, stderr = ssh.exec_command("bash -c ")
+    #     stdout = stdout.read()
+    #     stderr = stderr.read()
+    #     if stdout:
+    #         print(f"ssh stdout: {stdout}")
+    #     if stderr:
+    #         print(f"ssh stderr: {stderr}")
+
+    print("ssh {name}@{host} exec:", cmd)
+    stdin, stdout, stderr = ssh.exec_command(f"bash -c '{bashrc} && {cmd}'")
+    if name == "npi":
+        for line in stdout:
+            print("tb stdout:", line)
+    # for line in stdout:
+    #     if line:
+    #         print(f"ssh {name}@{host} stdout: {line}")
+    #     await asyncio.sleep(0.001)
+    # for line in stderr:
+    #     if line:
+    #         print(f"ssh {name}@{host} stderr: {line}")
+    #     await asyncio.sleep(0.001)
 
 
 # rospy doesn't provide a function to get the publishers or subscribers of a topic.

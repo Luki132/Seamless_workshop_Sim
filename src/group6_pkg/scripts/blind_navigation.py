@@ -91,7 +91,8 @@ class Laser:
 
     def cb_ok(self):
         self.check = False
-        navigate_step("stop", 0.0)
+        if self.ref_diff:
+            navigate_step("stop", 0.0)
 
     def cb_continue(self):
         print(f"speed_corr: {self.speed_corr}")
@@ -123,10 +124,20 @@ class Laser:
 
         self.cb_continue()
 
-    def set_check(self, angle, diff, dist=0.0, block=True, angle_spread=2, speed_lin=None, speed_rot=None):
+    def set_check(
+            self,
+            angle,
+            diff,
+            dist=0.0,
+            block=True,
+            angle_spread=2,
+            speed_lin=None,
+            speed_rot=None,
+            ref_diff_factor=-1.0,
+            dir="",
+    ):
         # if dist is specified, the distance to the obstacle is checked and must be withing diff
         # if dist is not specified, the turtlebot is turned til the threshold is met.
-        self.angle = int(angle)
         self.diff  = diff
         self.dist  = dist
         self.last  = -1
@@ -134,25 +145,44 @@ class Laser:
         self.angle_spread = angle_spread
         # self.reaction_lock = Laser.LOCK_COUNT
         self.last_good = False
-        self.eval.reset()
-        self.eval_l.reset()
-        self.eval_r.reset()
+        angle = int(angle)
+
+        if self.angle != angle:
+            self.eval.reset()
+            self.eval_l.reset()
+            self.eval_r.reset()
+        elif self.angle_spread != angle_spread:
+            self.eval_l.reset()
+            self.eval_r.reset()
+        self.angle = angle
+
         if speed_lin:
             self.speed_lin = speed_lin
         if speed_rot:
             self.speed_rot = speed_rot
         if dist:
-            self.dir = "f"
-            self.ref_diff = max(0.05, 4 * diff) # min 5cm
+            if dir not in "fb":
+                dir = "f"
+            min_diff = 0.05
+            if ref_diff_factor < 0:
+                ref_diff_factor = 4.0
+            elif ref_diff_factor == 0.0:
+                min_diff = 0.0
+            self.ref_diff = max(min_diff, ref_diff_factor * diff)
             self.angle_spread = 1
         else:
-            self.dir = "l"
-            self.ref_diff = 20 * diff
+            if dir not in "rl":
+                self.dir = "l"
+            if ref_diff_factor < 0:
+                ref_diff_factor = 20.0
+            self.ref_diff = ref_diff_factor * diff
 
         if 90 <= angle < 270:
             self.dir_increase = "f"
         else:
             self.dir_increase = "b"
+
+        self.dir = dir
 
         self.check = True
 
@@ -166,7 +196,7 @@ class Laser:
 
         self.eval.set(current_dist)
         self.eval_l.set(scan.ranges[self.angle - self.angle_spread])
-        self.eval_r.set(scan.ranges[self.angle + self.angle_spread])
+        self.eval_r.set(scan.ranges[(self.angle + self.angle_spread) % 360])
 
         if not self.eval.get() * self.eval_l.get() * self.eval_r.get():
             print(f"Some laser rays are zero (l, c, r): {self.eval_l.get():.3f}, {self.eval.get():.3f}, {self.eval_r.get():.3f}")
@@ -185,14 +215,17 @@ class Laser:
         # angle_diff = (scan.ranges[self.angle + self.angle_spread] - scan.ranges[self.angle - self.angle_spread]) / self.eval.get()
         angle_diff_predicted = (self.eval_r.get() - self.eval_l.get()) / self.eval.get()
 
-        print(f"Laser: dist={current_dist}, dist_avg={current_dist_avg} error={error}, change={change}, predicted={angle_diff_predicted}")
+        print(f"Laser: dist={current_dist}, dist_avg={current_dist_avg} error={error}, change={change}, angle_diff={angle_diff_predicted}")
 
         if self.reaction_lock:
             print(f"Laser: reaction lock {self.reaction_lock}")
             self.reaction_lock -= 1
         elif self.dist:
             error = abs(error)
-            self.speed_corr = min(1.0, max(0.1, error / self.ref_diff))
+            if self.ref_diff:
+                self.speed_corr = min(1.0, max(0.1, error / self.ref_diff))
+            else:
+                self.speed_corr = 1.0
             if abs(error) < self.diff:
                     print(f"Laser: Within lin tolerance ({self.diff})")
                     self.cb_ok()
@@ -204,14 +237,18 @@ class Laser:
                 self.cb_continue()
         else:
             min_diff = abs(angle_diff_predicted)
-            self.speed_corr = min(1.0, max(0.05, min_diff / self.ref_diff))
+            if self.ref_diff:
+                self.speed_corr = min(1.0, max(0.05, min_diff / self.ref_diff))
+            else:
+                self.speed_corr = 1.0
             if min_diff < self.diff:
                 if self.last_good:
                     print(f"Laser: Within rot tolerance ({min_diff})")
                     self.cb_ok()
                 else:
                     self.last_good = True
-                    self.change_dir("s")
+                    if self.ref_diff:
+                        self.change_dir("s")
             else:
                 self.last_good = False
                 if angle_diff_predicted > 0:
@@ -230,30 +267,27 @@ laser = Laser()
 speed_factor = 1.5
 
 
+def normalize_dir(d: str):
+    d = d[0].lower()
+    return d if d in "fblr" else "s"
+
+
 def navigate_step(dir: str, blind_time: float, speed_lin=0.1, speed_rot=math.radians(30), laser_angle=0, laser_dist=0):
     global velocity_publisher, speed_factor
 
     print(dir)
 
-    dir = dir.lower()
+    dir = normalize_dir(dir)
 
     twist = Twist()
 
-    #[F]orward
-    if dir.startswith("f"):
-        twist.linear.x = 1
-    #[B]ackward
-    elif dir.startswith("b"):
-        twist.linear.x = -1
-    #[L]eft
-    elif dir.startswith("l"):
-        twist.angular.z = 1
-    #[R]ight
-    elif dir.startswith("r"):
-        twist.angular.z = -1
+    lin = {"f": 1, "b": -1}
+    rot = {"l": 1, "r": -1}
 
-    twist.linear.x  *= speed_lin * speed_factor
-    twist.angular.z *= speed_rot * speed_factor
+    if dir in lin:
+        twist.linear.x = lin[dir] * speed_lin * speed_factor
+    elif dir in rot:
+        twist.angular.z = rot[dir] * speed_rot * speed_factor
 
     velocity_publisher.publish(twist)
     rospy.sleep(blind_time / speed_factor)
@@ -265,11 +299,15 @@ def drive_along_path(p):
 
     for step in path:
         step: dict
-        blind_step = step.get("blind", None)
-        laser_data = step.get("laser", None)
+        blind_step: dict = step.get("blind", None)
+        laser_data: dict = step.get("laser", None)
+        dir = ""
         if blind_step:
             navigate_step(**blind_step)
+            dir = normalize_dir(blind_step["dir"])
         if laser_data:
+            if dir:
+                laser_data["dir"] = dir
             laser.set_check(**laser_data)
 
 

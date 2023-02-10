@@ -37,7 +37,7 @@
       "parking": {
         "move_upwards": {
           "laser": {
-            "dist": 0.26
+            "dist": 0.25
           }
         }
       }
@@ -138,7 +138,7 @@
             "blind_time": 1.00
           },
           "laser": {
-            "angle": 180,
+            "angle": 190,
             "diff": 0.0025
           }
         },
@@ -196,31 +196,38 @@
           "laser": {
             "angle": 0,
             "diff": 0.03,
-            "dist": 1.00
+            "dist": 1.05
           }
         },
         "turn_upwards_0": {
           "laser": {
             "angle": 270,
-            "diff": 0.008
+            "diff": 0.012,
+            "dir": "l",
+            "ref_diff_factor": 0
           }
         },
         "turn_upwards_1": {
           "laser": {
             "angle": 240,
-            "diff": 0.008
+            "diff": 0.012,
+            "dir": "l",
+            "ref_diff_factor": 0
           }
         },
         "turn_upwards_3": {
           "laser": {
             "angle": 210,
-            "diff": 0.008
+            "diff": 0.012,
+            "dir": "l",
+            "ref_diff_factor": 0
           }
         },
         "turn_upwards_4": {
           "laser": {
-            "angle": 180,
-            "diff": 0.0025
+            "angle": 190,
+            "diff": 0.0025,
+            "dir": "l"
           }
         },
         "move_upwards": {
@@ -229,9 +236,9 @@
             "blind_time": 3.00
           },
           "laser": {
-            "angle": 0,
+            "angle": 10,
             "diff": 0.005,
-            "dist": 0.27,
+            "dist": 0.26,
             "speed_lin": 0.03
           }
         },
