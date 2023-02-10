@@ -285,45 +285,6 @@ def cb_goal(msg: String):
     else:
         pub_state.publish(f"refused:{msg.data}")
 
-#########################################
-nav_state = ""
-park_state = False
-
-
-def cb_nav(msg: String):
-    global nav_state
-    print("cbn")
-    nav_state = msg.data
-
-
-def cb_park(msg: Bool):
-    global park_state
-    print("cbp")
-    park_state = msg.data
-
-def automated_ping_pong():
-    #rospy.init_node('autonav', anonymous=True)
-    sub_nav_state = rospy.Subscriber('/group6/nav_state', data_class=String, callback=cb_nav)
-    sub_park_state = rospy.Subscriber('/group6/parking_state', data_class=Bool, callback=cb_park)
-    pub_nav_goal = rospy.Publisher('/group6/nav_goal', data_class=String, queue_size=10)
-    while not rospy.is_shutdown():
-        goal = String()
-        print(1)
-        goal.data = "conveyor"
-        pub_nav_goal.publish(goal)
-        print(2)
-        goal.data = "parking"
-        pub_nav_goal.publish(goal)
-        print(3)
-        rospy.sleep(5)
-        while nav_state != "reached:parking":
-            pass
-        print(4)
-        while park_state:
-            pass
-        print(5)
-        while not park_state:
-            pass
 
 def navigate():
     global velocity_publisher, laser, goal_list, pub_state
