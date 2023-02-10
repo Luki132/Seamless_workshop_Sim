@@ -199,22 +199,22 @@
             "dist": 1.00
           }
         },
-        "turn_upwards_1": {
+        "turn_upwards_0": {
           "laser": {
-            "angle": 110,
-            "diff": 0.005
+            "angle": 270,
+            "diff": 0.008
           }
         },
-        "turn_upwards_2": {
+        "turn_upwards_1": {
           "laser": {
-            "angle": 130,
-            "diff": 0.005
+            "angle": 240,
+            "diff": 0.008
           }
         },
         "turn_upwards_3": {
           "laser": {
-            "angle": 150,
-            "diff": 0.005
+            "angle": 210,
+            "diff": 0.008
           }
         },
         "turn_upwards_4": {
