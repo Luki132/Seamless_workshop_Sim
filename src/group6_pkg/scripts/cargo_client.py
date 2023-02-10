@@ -23,12 +23,12 @@ num_objects = [0,0,0,0,1,1]
 
 class SomeActionClient:
     def __init__(self):
-        self._client = actionlib.SimpleActionClient("cargo_server", OrderAction)
+        self._client = actionlib.SimpleActionClient("cargo_client", OrderAction)
         self._client.wait_for_server()
     
     def send_goal(self):
         # goal = OrderActionGoal
-        goal = robis_messages.msg.OrderGoal(num_objects = [1,0,0,0,0,0], stow_box = 1, priority = 0)
+        goal = robis_messages.msg.OrderGoal(num_objects = [1,0,0,2,0,0], stow_box = 2, priority = 0)
         # goal.num_objects = [0,0,0,0,1,1]
         # goal.stow_box = 3
         self._client.send_goal(goal, self._done_cb, self._active_cb, self._feedback_cb)
