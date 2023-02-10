@@ -68,7 +68,6 @@ find_package(catkin REQUIRED COMPONENTS
 add_action_files(
   FILES
   cargo_action.action
-
 )
 
 ## Generate added messages and services with any dependencies listed here

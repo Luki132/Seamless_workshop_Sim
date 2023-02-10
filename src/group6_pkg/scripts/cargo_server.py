@@ -3,10 +3,14 @@
 import rospy
 
 import actionlib
-from group6_pkg.msg import cargo_actionAction
-from group6_pkg.msg import cargo_actionGoal
-from group6_pkg.msg import cargo_actionResult
-from group6_pkg.msg import cargo_actionFeedback
+from robis_messages.msg import OrderAction
+from robis_messages.msg import OrderActionGoal
+from robis_messages.msg import OrderActionFeedback
+from robis_messages.msg import OrderActionResult
+# from group6_pkg.msg import cargo_actionAction
+# from group6_pkg.msg import cargo_actionGoal
+# from group6_pkg.msg import cargo_actionResult
+# from group6_pkg.msg import cargo_actionFeedback
 from std_msgs.msg import Int64MultiArray, Bool, Int64, String
 import actionlib_tutorials.msg
 
@@ -20,9 +24,12 @@ t_sum = 0.0
 # Time to take one cube for converyor is 40 seconds
 class CargoAction(object):
     # create messages that are used to publish feedback/result
-    _feedback = cargo_actionFeedback()
-    _result = cargo_actionResult()
-    _goal = cargo_actionGoal()
+    # _feedback = cargo_actionFeedback()
+    # _result = cargo_actionResult()
+    # _goal = cargo_actionGoal()
+    _feedback = OrderActionFeedback
+    _result = OrderActionResult
+    _goal = OrderActionGoal
     _time_conveyor_to_stow_one = 48 # Add 25 seconds for every subsequent cube
     _time_wait_kinect = 12
     _time_conveyor_one = 30 # the time to just pick the cube and immediately return to source to start next trip. Add 25 seconds to every subsequent cube
@@ -81,7 +88,7 @@ class CargoAction(object):
         rospy.Subscriber("/group6/parking_state", Bool, callback=self.trip_done) # From parking
 
         self._action_name = name
-        self._as = actionlib.SimpleActionServer(self._action_name, cargo_actionAction, execute_cb=self.execute_cb, auto_start = False)
+        self._as = actionlib.SimpleActionServer(self._action_name, OrderAction, execute_cb=self.execute_cb, auto_start = False)
         self._as.start()
         self._feedback.percent_complete = 0.0
 
