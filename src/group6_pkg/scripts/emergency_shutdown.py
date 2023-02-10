@@ -109,7 +109,7 @@ def cb_timer_enforce_stop(timer_info: rospy.timer.TimerEvent = None):
         Robot.log_enable = old
 
 
-def cb_timer_enfore_node_kills(timer_info: rospy.timer.TimerEvent = None):
+def cb_timer_enforce_node_kills(timer_info: rospy.timer.TimerEvent = None):
     global emergency
     if emergency:
         asyncio.run(disable_all_robots())
@@ -137,7 +137,7 @@ def main():
 
     rospy.Subscriber(name="/group6/emergency_shutdown", data_class=Bool, callback=cb_set_emergency)
     rospy.Timer(period=rospy.Duration(0.1), callback=cb_timer_enforce_stop)
-    rospy.Timer(period=rospy.Duration(1), callback=cb_timer_enfore_node_kills)
+    rospy.Timer(period=rospy.Duration(1), callback=cb_timer_enforce_node_kills)
 
     rospy.spin()
 
