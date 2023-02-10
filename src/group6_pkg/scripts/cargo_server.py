@@ -23,15 +23,16 @@ class CargoAction(object):
     _feedback = cargo_actionFeedback()
     _result = cargo_actionResult()
     _goal = cargo_actionGoal()
-    _time_conveyor_to_stow_one = 6 + 45 # Add 25 seconds for every subsequent cube
-    _time_conveyor_one = 26 # the time to just pick the cube and immediately return to source to start next trip. Add 25 seconds to every subsequent cube
-    _time_add_cargo = 25
+    _time_conveyor_to_stow_one = 48 # Add 25 seconds for every subsequent cube
+    _time_wait_kinect = 12
+    _time_conveyor_one = 30 # the time to just pick the cube and immediately return to source to start next trip. Add 25 seconds to every subsequent cube
+    _time_add_cargo = 30
     _time_turtlebot_to_conveyor = 25 # should be 20 seconds but an additional 5 seconds for tolerance
     _time_turtlebot_to_parking = 28 # should be 25 seconds but an additional 3 seconds for tolerance
     _time_parking = 25 # should be 20 seconds but an additional 5 seconds for tolerance
-    _time_slider_best_case = 33
-    _time_slider_normal_case = 38
-    _time_slider_worst_case = 42.5
+    _time_slider_best_case = 40
+    _time_slider_normal_case = 43
+    _time_slider_worst_case = 48
     _avg_time_slider_large = (_time_slider_best_case + _time_slider_normal_case)/2
     _avg_time_slider_small = (_time_slider_worst_case + _time_slider_normal_case)/2
 
@@ -43,23 +44,23 @@ class CargoAction(object):
 
 
     # Case 1. For 3 big cargo (3 trips)
-    _execution_time_3_big = _avg_time_slider_large*3 + _time_turtlebot_to_conveyor*3 + _time_conveyor_one*2 + _time_turtlebot_to_parking*2 + _time_parking*2 + _time_conveyor_to_stow_one    
+    _execution_time_3_big = _avg_time_slider_large*3 + _time_turtlebot_to_conveyor*3 + _time_conveyor_one*2 + _time_turtlebot_to_parking*2 + _time_parking*2 + _time_conveyor_to_stow_one + _time_wait_kinect*3
     # Case 2. For 2 big cargo (2 trips)
-    _execution_time_2_big = _avg_time_slider_large*2 + _time_turtlebot_to_conveyor*2 + _time_conveyor_one*1 + _time_turtlebot_to_parking*1 + _time_parking*1 + _time_conveyor_to_stow_one    
+    _execution_time_2_big = _avg_time_slider_large*2 + _time_turtlebot_to_conveyor*2 + _time_conveyor_one*1 + _time_turtlebot_to_parking*1 + _time_parking*1 + _time_conveyor_to_stow_one + _time_wait_kinect*2
     # Case 3. For 1 big cargo (1 trip)
-    _execution_time_1_big = _avg_time_slider_large*1 + _time_turtlebot_to_conveyor*1 + _time_conveyor_one*0 + _time_turtlebot_to_parking*0 + _time_parking*0 + _time_conveyor_to_stow_one    
+    _execution_time_1_big = _avg_time_slider_large*1 + _time_turtlebot_to_conveyor*1 + _time_conveyor_one*0 + _time_turtlebot_to_parking*0 + _time_parking*0 + _time_conveyor_to_stow_one  + _time_wait_kinect*1  
     # Case 4.For 2 big cargo + 1 small cargo (2 trip)
-    _execution_time_2_big_1_small = _avg_time_slider_large*2 + _avg_time_slider_small*1 + _time_turtlebot_to_conveyor*2 + (_time_conveyor_one*1 +25) + _time_turtlebot_to_parking*1 + _time_parking*1 + _time_conveyor_to_stow_one    
+    _execution_time_2_big_1_small = _avg_time_slider_large*2 + _avg_time_slider_small*1 + _time_turtlebot_to_conveyor*2 + (_time_conveyor_one*1 +30) + _time_turtlebot_to_parking*1 + _time_parking*1 + _time_conveyor_to_stow_one + _time_wait_kinect*2
     # Case 5. For 1 big cargo + 2 small cargo (1 trip)
-    _execution_time_1_big_2_small = _avg_time_slider_large + _avg_time_slider_small*2 +_time_turtlebot_to_conveyor + _time_conveyor_to_stow_one + 25*2
+    _execution_time_1_big_2_small = _avg_time_slider_large + _avg_time_slider_small*2 +_time_turtlebot_to_conveyor + _time_conveyor_to_stow_one + 30*2 + _time_wait_kinect*1
     # Case 6. For 1 big cargo + 1 small cargo (1 trip)
-    _execution_time_1_big_1_small = _avg_time_slider_large + _avg_time_slider_small +_time_turtlebot_to_conveyor + _time_conveyor_to_stow_one + 25
+    _execution_time_1_big_1_small = _avg_time_slider_large + _avg_time_slider_small +_time_turtlebot_to_conveyor + _time_conveyor_to_stow_one + 30 + _time_wait_kinect*1
     # Case 7. For 3 small cargo (2 trip)
-    _execution_time_3_small = _avg_time_slider_small*3 +_time_turtlebot_to_conveyor*2 + (_time_conveyor_one + 25) +_time_conveyor_to_stow_one + _time_parking + _time_turtlebot_to_parking
+    _execution_time_3_small = _avg_time_slider_small*3 +_time_turtlebot_to_conveyor*2 + (_time_conveyor_one + 30) +_time_conveyor_to_stow_one + _time_parking + _time_turtlebot_to_parking + _time_wait_kinect*2
     # Case 8. For 2 small cargo (1 trip)
-    _execution_time_2_small = _avg_time_slider_small*2 +_time_turtlebot_to_conveyor +_time_conveyor_to_stow_one + 25   
+    _execution_time_2_small = _avg_time_slider_small*2 +_time_turtlebot_to_conveyor +_time_conveyor_to_stow_one + 30 + _time_wait_kinect*1
     # Case 9. For 1 small cargo (1 trip)
-    _execution_time_1_small = _avg_time_slider_small*1 +_time_turtlebot_to_conveyor +_time_conveyor_to_stow_one
+    _execution_time_1_small = _avg_time_slider_small*1 +_time_turtlebot_to_conveyor +_time_conveyor_to_stow_one + _time_wait_kinect*1
     # _execution_two = 70 + 25 + 50
     # _execution_three = 105 + 25 + 70
 
@@ -73,6 +74,7 @@ class CargoAction(object):
         self.order_completed = False
 
         self.pub1 = rospy.Publisher("/group6/cargo_order",Int64MultiArray, queue_size=10) ## uArm + Slider
+        self.pub2 = rospy.Publisher("/group6/emergency_shutdown", Bool, queue_size=10)
         rospy.Subscriber("/group6/nav_goal", String, callback=self.update_nav_goal)
         rospy.Subscriber("/group6/nav_state", String, callback=self.update_nav_state)
         rospy.Subscriber("/Hello", Bool, callback=self.execuction_done) # From conveyor
@@ -116,15 +118,23 @@ class CargoAction(object):
 
     #if the sequence is compromised, the emergency stop should be activated
     def check_state(self): 
+        shutdown = Bool()
+        shutdown.data = False
         if self.phase4 == True: 
             if self.phase1 == False or self.phase2 == False or self.phase3 == False:
                 print("Sequence compromised. ABORT!")
+                shutdown.data = True
+
         elif self.phase3 == True:
             if self.phase1 == False or self.phase2 == False:
                 print("Sequence compromised. ABORT!")
+                shutdown.data = True
         elif self.phase2 == True:
             if self.phase1 == False:
                 print("Sequence compromised. ABORT!")
+                shutdown.data = True
+
+        self.pub2.publish(shutdown)
 
     def calculate_time_slot(self, count, num_of_trip, order): 
         global t1,t2,t3,t4,t_sum
@@ -145,11 +155,11 @@ class CargoAction(object):
         t2 = self._time_turtlebot_to_conveyor
 
         if count == num_of_trip - 1:
-            t3 = self._time_conveyor_to_stow_one + self._time_add_cargo*(total_cargo- 1)
+            t3 = self._time_conveyor_to_stow_one + self._time_add_cargo*(total_cargo- 1) + self._time_wait_kinect
             t4 = 0
             self.phase4 = True # Not the final trip, so system does not need to check for this
         else:
-            t3 = self._time_conveyor_one + self._time_add_cargo*(total_cargo - 1)
+            t3 = self._time_conveyor_one + self._time_add_cargo*(total_cargo - 1) + self._time_wait_kinect
             t4 = self._time_turtlebot_to_parking + self._time_parking
         
         t_sum = t_sum + t1 + t2 + t3 + t4
@@ -345,7 +355,8 @@ class CargoAction(object):
         #     r.sleep()
           
         if self.success:
-            self._result.finish_time = current_time
+            self._result.finish_time = rospy.Time(current_time/1000000000)
+            self._result.duration = start_time - current_time
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)
 
