@@ -331,6 +331,9 @@ class CargoAction(object):
             else: 
                 self._feedback.estimated_finish_time = rospy.Time(0)
             self._feedback.percent_complete = current_time/expected_end_time 
+            if self._feedback.percent_complete > 1.0:
+                print("time exceeded")
+                self._feedback.percent_complete = 1.0
 
             print(("This is the feedback time",self._feedback.estimated_finish_time ))
             # publish the feedback
