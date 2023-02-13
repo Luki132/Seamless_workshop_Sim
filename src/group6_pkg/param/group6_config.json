@@ -266,13 +266,6 @@
             "diff": 0.0025
           }
         },
-        "move_into_docking": {
-          "laser": {
-            "angle": 0,
-            "diff": 0.001,
-            "dist": 0.451
-          }
-        },
         "end": {
           "blind": {
             "dir": "stop",
