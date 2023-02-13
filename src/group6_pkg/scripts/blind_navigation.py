@@ -4,7 +4,7 @@ import rospy
 from std_msgs.msg import Bool, String
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
-from navigation_setup.Settings import settings # This was me Max. It works with ROS now, and I need you to be okay with it. 
+from navigation_setup.Settings import settings
 
 velocity_publisher: rospy.Publisher
 

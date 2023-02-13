@@ -60,6 +60,6 @@ def load_settings():
     settings = settings.default
 
 
-settings_source = Path("../group6_ws/src/group6_pkg/param/group6_config.json").resolve()
+settings_source = Path("/home/robis/group6_ws/src/group6_pkg/param/group6_config.json").resolve()
 settings = ObjectDict()
 load_settings()
