@@ -230,24 +230,10 @@
             "dir": "l"
           }
         },
-        "move_into_wall": {
-          "blind": {
-            "dir": "forward",
-            "blind_time": 4.50,
-            "speed_lin": 0.22
-          }
-        },
-        "enjoy_wall": {
-          "blind": {
-            "dir": "stop",
-            "blind_time": 0.3
-          }
-        },
         "move_upwards": {
           "blind": {
-            "dir": "backward",
-            "blind_time": 0.10,
-            "speed_lin": 0.03
+            "dir": "forward",
+            "blind_time": 3.00
           },
           "laser": {
             "angle": 10,
