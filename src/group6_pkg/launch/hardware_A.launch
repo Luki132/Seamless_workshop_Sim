@@ -5,5 +5,9 @@
     <node pkg="uarm_pkg" type="grip_for_testing.py" name="Uarm3_server_grip_node"/>
     <node pkg="conveyor_pkg" type="conveyor_controll_server.py" name="Conveyor_node"/>
     <node pkg="uarm_pkg" type="uarm1_slider_A.py" name="Uarm1_silder_node"/>
-    <!--node pkg="group6_pkg" type="online_cube_detectio.py" name="kinect_node"/-->
+    <node pkg="group6_pkg" type="blind_navigation.py" name="blind_navigation_node"/>
+    <node pkg="group6_pkg" type="Parking_with_sub.py" name="parking_with_sub_node"/>
+    <node pkg="group6_pkg" type="online_cube_detectio.py" name="kinect_node">
+    <node pkg="group6_pkg" type="cargo_server.py" name="cargo_server_node">
+
 </launch>
