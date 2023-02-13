@@ -31,14 +31,14 @@ class CargoAction(object):
     _result = OrderActionResult
     _goal = OrderActionGoal
     _time_conveyor_to_stow_one = 48 # Add 25 seconds for every subsequent cube
-    _time_wait_kinect = 12
-    _time_conveyor_one = 30 # the time to just pick the cube and immediately return to source to start next trip. Add 25 seconds to every subsequent cube
+    _time_wait_kinect = 6
+    _time_conveyor_one = 28 # the time to just pick the cube and immediately return to source to start next trip. Add 25 seconds to every subsequent cube
     _time_add_cargo = 30
-    _time_turtlebot_to_conveyor = 25 # should be 20 seconds but an additional 5 seconds for tolerance
-    _time_turtlebot_to_parking = 28 # should be 25 seconds but an additional 3 seconds for tolerance
-    _time_parking = 25 # should be 20 seconds but an additional 5 seconds for tolerance
-    _time_slider_best_case = 40
-    _time_slider_normal_case = 43
+    _time_turtlebot_to_conveyor = 15 # should be 20 seconds but an additional 5 seconds for tolerance
+    _time_turtlebot_to_parking = 20 # should be 25 seconds but an additional 3 seconds for tolerance
+    _time_parking = 30 # should be 20 seconds but an additional 5 seconds for tolerance
+    _time_slider_best_case = 36
+    _time_slider_normal_case = 42
     _time_slider_worst_case = 48
     _avg_time_slider_large = (_time_slider_best_case + _time_slider_normal_case)/2
     _avg_time_slider_small = (_time_slider_worst_case + _time_slider_normal_case)/2
@@ -51,23 +51,23 @@ class CargoAction(object):
 
 
     # Case 1. For 3 big cargo (3 trips)
-    _execution_time_3_big = _avg_time_slider_large*3 + _time_turtlebot_to_conveyor*3 + _time_conveyor_one*2 + _time_turtlebot_to_parking*2 + _time_parking*2 + _time_conveyor_to_stow_one + _time_wait_kinect*3
+    _execution_time_3_big = _avg_time_slider_large*3 + _time_turtlebot_to_conveyor*3 + _time_conveyor_one*3 + _time_turtlebot_to_parking*3 + _time_parking*3  + _time_wait_kinect*3
     # Case 2. For 2 big cargo (2 trips)
-    _execution_time_2_big = _avg_time_slider_large*2 + _time_turtlebot_to_conveyor*2 + _time_conveyor_one*1 + _time_turtlebot_to_parking*1 + _time_parking*1 + _time_conveyor_to_stow_one + _time_wait_kinect*2
+    _execution_time_2_big = _avg_time_slider_large*2 + _time_turtlebot_to_conveyor*2 + _time_conveyor_one*2 + _time_turtlebot_to_parking*2 + _time_parking*2  + _time_wait_kinect*2
     # Case 3. For 1 big cargo (1 trip)
-    _execution_time_1_big = _avg_time_slider_large*1 + _time_turtlebot_to_conveyor*1 + _time_conveyor_one*0 + _time_turtlebot_to_parking*0 + _time_parking*0 + _time_conveyor_to_stow_one  + _time_wait_kinect*1  
+    _execution_time_1_big = _avg_time_slider_large*1 + _time_turtlebot_to_conveyor*1 + _time_conveyor_one*1 + _time_turtlebot_to_parking*1 + _time_parking*1  + _time_wait_kinect*1  
     # Case 4.For 2 big cargo + 1 small cargo (2 trip)
-    _execution_time_2_big_1_small = _avg_time_slider_large*2 + _avg_time_slider_small*1 + _time_turtlebot_to_conveyor*2 + (_time_conveyor_one*1 +30) + _time_turtlebot_to_parking*1 + _time_parking*1 + _time_conveyor_to_stow_one + _time_wait_kinect*2
+    _execution_time_2_big_1_small = _avg_time_slider_large*2 + _avg_time_slider_small*1 + _time_turtlebot_to_conveyor*2 + (_time_conveyor_one*2) + _time_turtlebot_to_parking*2 + _time_parking*2  + _time_wait_kinect*2
     # Case 5. For 1 big cargo + 2 small cargo (1 trip)
-    _execution_time_1_big_2_small = _avg_time_slider_large + _avg_time_slider_small*2 +_time_turtlebot_to_conveyor + _time_conveyor_to_stow_one + 30*2 + _time_wait_kinect*1
+    _execution_time_1_big_2_small = _avg_time_slider_large + _avg_time_slider_small*2 +_time_turtlebot_to_conveyor  + _time_conveyor_one*3 + _time_wait_kinect*1 + _time_turtlebot_to_parking + _time_parking
     # Case 6. For 1 big cargo + 1 small cargo (1 trip)
-    _execution_time_1_big_1_small = _avg_time_slider_large + _avg_time_slider_small +_time_turtlebot_to_conveyor + _time_conveyor_to_stow_one + 30 + _time_wait_kinect*1
+    _execution_time_1_big_1_small = _avg_time_slider_large + _avg_time_slider_small +_time_turtlebot_to_conveyor  + _time_conveyor_one*2 + _time_wait_kinect*1 + _time_turtlebot_to_parking + _time_parking
     # Case 7. For 3 small cargo (2 trip)
-    _execution_time_3_small = _avg_time_slider_small*3 +_time_turtlebot_to_conveyor*2 + (_time_conveyor_one + 30) +_time_conveyor_to_stow_one + _time_parking + _time_turtlebot_to_parking + _time_wait_kinect*2
+    _execution_time_3_small = _avg_time_slider_small*3 +_time_turtlebot_to_conveyor*2 + (_time_conveyor_one*3) + _time_parking*2 + _time_turtlebot_to_parking*2 + _time_wait_kinect*2
     # Case 8. For 2 small cargo (1 trip)
-    _execution_time_2_small = _avg_time_slider_small*2 +_time_turtlebot_to_conveyor +_time_conveyor_to_stow_one + 30 + _time_wait_kinect*1
+    _execution_time_2_small = _avg_time_slider_small*2 +_time_turtlebot_to_conveyor +_time_conveyor_one*2 + _time_wait_kinect*1 + _time_turtlebot_to_parking + _time_parking
     # Case 9. For 1 small cargo (1 trip)
-    _execution_time_1_small = _avg_time_slider_small*1 +_time_turtlebot_to_conveyor +_time_conveyor_to_stow_one + _time_wait_kinect*1
+    _execution_time_1_small = _avg_time_slider_small*1 +_time_turtlebot_to_conveyor +_time_conveyor_one*1 + _time_wait_kinect*1 + _time_turtlebot_to_parking + _time_parking
     # _execution_two = 70 + 25 + 50
     # _execution_three = 105 + 25 + 70
 
@@ -161,13 +161,13 @@ class CargoAction(object):
         t1 = self._avg_time_slider_large*num_of_big_for_trip + self._avg_time_slider_small*num_of_small_for_trip
         t2 = self._time_turtlebot_to_conveyor
 
-        if count == num_of_trip - 1:
-            t3 = self._time_conveyor_to_stow_one + self._time_add_cargo*(total_cargo- 1) + self._time_wait_kinect
-            t4 = 0
-            self.phase4 = True # Not the final trip, so system does not need to check for this
-        else:
-            t3 = self._time_conveyor_one + self._time_add_cargo*(total_cargo - 1) + self._time_wait_kinect
-            t4 = self._time_turtlebot_to_parking + self._time_parking
+        # if count == num_of_trip - 1:
+        #     t3 = self._time_conveyor_to_stow_one + self._time_add_cargo*(total_cargo- 1) + self._time_wait_kinect
+        #     t4 = 0
+        #     self.phase4 = True # Not the final trip, so system does not need to check for this
+        # else:
+        t3 = self._time_conveyor_one*(total_cargo - 1) + self._time_wait_kinect
+        t4 = self._time_turtlebot_to_parking + self._time_parking
         
         t_sum = t_sum + t1 + t2 + t3 + t4
 
