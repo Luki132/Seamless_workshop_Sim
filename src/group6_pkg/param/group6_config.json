@@ -37,7 +37,7 @@
       "parking": {
         "move_upwards": {
           "laser": {
-            "dist": 0.25
+            "dist": 0.247
           }
         }
       }
@@ -118,7 +118,7 @@
         "start": {
           "blind": {
             "dir": "stop",
-            "blind_time": 1.0
+            "blind_time": 0.1
           }
         },
         "move_out_of_docking": {
@@ -150,7 +150,7 @@
           "laser": {
             "angle": 0,
             "diff": 0.04,
-            "dist": 0.45
+            "dist": 0.46
           }
         },
         "turn_to_conveyor": {
@@ -185,7 +185,7 @@
         "start": {
           "blind": {
             "dir": "stop",
-            "blind_time": 1.0
+            "blind_time": 0.1
           }
         },
         "move_to_middle": {
@@ -230,14 +230,28 @@
             "dir": "l"
           }
         },
-        "move_upwards": {
+        "move_into_wall": {
           "blind": {
             "dir": "forward",
-            "blind_time": 3.00
+            "blind_time": 4.50,
+            "speed_lin": 0.22
+          }
+        },
+        "enjoy_wall": {
+          "blind": {
+            "dir": "stop",
+            "blind_time": 0.3
+          }
+        },
+        "move_upwards": {
+          "blind": {
+            "dir": "backward",
+            "blind_time": 0.10,
+            "speed_lin": 0.03
           },
           "laser": {
             "angle": 10,
-            "diff": 0.005,
+            "diff": 0.003,
             "dist": 0.26,
             "speed_lin": 0.03
           }
@@ -250,6 +264,13 @@
           "laser": {
             "angle": 267,
             "diff": 0.0025
+          }
+        },
+        "move_into_docking": {
+          "laser": {
+            "angle": 0,
+            "diff": 0.001,
+            "dist": 0.451
           }
         },
         "end": {

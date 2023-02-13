@@ -21,13 +21,13 @@ def handle_move_uarm2(order):
     box = rospy.get_param("/storage_amount")
     if order.storagebox == 1:
         box[0] +=1
-        storage = storage1
+        storage = storage3
     elif order.storagebox == 2:
         box[1] +=1
         storage = storage2
     elif order.storagebox == 3:
         box[2] +=1
-        storage = storage3
+        storage = storage1
     rospy.set_param("/storage_amount", box)
 
 
