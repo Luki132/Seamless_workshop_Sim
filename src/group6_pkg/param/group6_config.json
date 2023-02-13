@@ -118,7 +118,7 @@
         "start": {
           "blind": {
             "dir": "stop",
-            "blind_time": 1.0
+            "blind_time": 0.1
           }
         },
         "move_out_of_docking": {
@@ -185,7 +185,7 @@
         "start": {
           "blind": {
             "dir": "stop",
-            "blind_time": 1.0
+            "blind_time": 0.1
           }
         },
         "move_to_middle": {
