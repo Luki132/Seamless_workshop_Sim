@@ -37,7 +37,7 @@
       "parking": {
         "move_upwards": {
           "laser": {
-            "dist": 0.247
+            "dist": 0.249
           }
         }
       }
@@ -251,7 +251,7 @@
           },
           "laser": {
             "angle": 10,
-            "diff": 0.003,
+            "diff": 0.001,
             "dist": 0.26,
             "speed_lin": 0.03
           }
