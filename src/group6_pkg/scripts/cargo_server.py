@@ -32,7 +32,7 @@ class CargoAction(object):
     _goal = OrderActionGoal
     _time_conveyor_to_stow_one = 48 # Add 25 seconds for every subsequent cube
     _time_wait_kinect = 6
-    _time_conveyor_one = 28 # the time to just pick the cube and immediately return to source to start next trip. Add 25 seconds to every subsequent cube
+    _time_conveyor_one = 30 # the time to just pick the cube and immediately return to source to start next trip. Add 25 seconds to every subsequent cube
     _time_add_cargo = 30
     _time_turtlebot_to_conveyor = 15 # should be 20 seconds but an additional 5 seconds for tolerance
     _time_turtlebot_to_parking = 20 # should be 25 seconds but an additional 3 seconds for tolerance
@@ -57,7 +57,7 @@ class CargoAction(object):
     # Case 3. For 1 big cargo (1 trip)
     _execution_time_1_big = _avg_time_slider_large*1 + _time_turtlebot_to_conveyor*1 + _time_conveyor_one*1 + _time_turtlebot_to_parking*1 + _time_parking*1  + _time_wait_kinect*1  
     # Case 4.For 2 big cargo + 1 small cargo (2 trip)
-    _execution_time_2_big_1_small = _avg_time_slider_large*2 + _avg_time_slider_small*1 + _time_turtlebot_to_conveyor*2 + (_time_conveyor_one*2) + _time_turtlebot_to_parking*2 + _time_parking*2  + _time_wait_kinect*2
+    _execution_time_2_big_1_small = _avg_time_slider_large*2 + _avg_time_slider_small*1 + _time_turtlebot_to_conveyor*2 + (_time_conveyor_one*3) + _time_turtlebot_to_parking*2 + _time_parking*2  + _time_wait_kinect*2
     # Case 5. For 1 big cargo + 2 small cargo (1 trip)
     _execution_time_1_big_2_small = _avg_time_slider_large + _avg_time_slider_small*2 +_time_turtlebot_to_conveyor  + _time_conveyor_one*3 + _time_wait_kinect*1 + _time_turtlebot_to_parking + _time_parking
     # Case 6. For 1 big cargo + 1 small cargo (1 trip)
