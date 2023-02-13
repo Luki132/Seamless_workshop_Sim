@@ -226,8 +226,8 @@ class Laser:
             else:
                 self.speed_corr = 1.0
             if abs(error) < self.diff:
-                    print(f"Laser: Within lin tolerance ({self.diff})")
-                    self.cb_ok()
+                print(f"Laser: Within lin tolerance ({self.diff})")
+                self.cb_ok()
             else:
                 if current_dist_avg < self.dist:
                     self.change_dir(self.dir_increase)
@@ -263,7 +263,7 @@ class Laser:
 laser = Laser()
 
 
-speed_factor = 1.5
+speed_factor = 2.0
 
 
 def normalize_dir(d: str):
@@ -289,7 +289,7 @@ def navigate_step(dir: str, blind_time: float, speed_lin=0.1, speed_rot=math.rad
         twist.angular.z = rot[dir] * speed_rot * speed_factor
 
     velocity_publisher.publish(twist)
-    rospy.sleep(blind_time / speed_factor)
+    rospy.sleep(blind_time / (speed_factor * 1.1))
 
 
 def drive_along_path(p):
