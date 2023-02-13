@@ -273,12 +273,12 @@ def callback(data):
     circle_found = False
 
     cv2.imshow('Kinect Camera', cv_image)
-    cv2.imshow('Out_Inv', out_inv)
-    cv2.imshow('HSV_Inv', hsv_mask_inv)
-    cv2.imshow('Canny', edges)
-    cv2.imshow('HSV', hsv_mask)
+    # cv2.imshow('Out_Inv', out_inv)
+    # cv2.imshow('HSV_Inv', hsv_mask_inv)
+    # cv2.imshow('Canny', edges)
+    # cv2.imshow('HSV', hsv_mask)
     cv2.imshow('Output', out)
-    cv2.imshow('Blue', blue_mask)
+    # cv2.imshow('Blue', blue_mask)
 
 
     # print("Bingo")
