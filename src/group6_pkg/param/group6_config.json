@@ -217,7 +217,7 @@
         },
         "turn_upwards_3": {
           "laser": {
-            "angle": 210,
+            "angle": 220,
             "diff": 0.012,
             "dir": "l",
             "ref_diff_factor": 0
