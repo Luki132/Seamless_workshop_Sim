@@ -36,7 +36,7 @@ class CargoAction(object):
     _time_add_cargo = 30
     _time_turtlebot_to_conveyor = 15 # should be 20 seconds but an additional 5 seconds for tolerance
     _time_turtlebot_to_parking = 20 # should be 25 seconds but an additional 3 seconds for tolerance
-    _time_parking = 30 # should be 20 seconds but an additional 5 seconds for tolerance
+    _time_parking = 35 # should be 20 seconds but an additional 5 seconds for tolerance
     _time_slider_best_case = 36
     _time_slider_normal_case = 42
     _time_slider_worst_case = 48

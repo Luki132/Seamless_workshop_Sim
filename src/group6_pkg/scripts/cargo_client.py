@@ -28,7 +28,7 @@ class SomeActionClient:
     
     def send_goal(self):
         # goal = OrderActionGoal
-        goal = robis_messages.msg.OrderGoal(num_objects = [1,0,1,0,0,0], stow_box = 2, priority = 0)
+        goal = robis_messages.msg.OrderGoal(num_objects = [0,0,0,1,1,1], stow_box = 3, priority = 0)
         # goal.num_objects = [0,0,0,0,1,1]
         # goal.stow_box = 3
         self._client.send_goal(goal, self._done_cb, self._active_cb, self._feedback_cb)
