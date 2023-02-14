@@ -20,7 +20,7 @@ class get_turtle_pos:
     def __init__(self):
 
         if Area == "A":
-            self.z_tur_s = 140 # in mm
+            self.z_tur_s = 139 # in mm
             self.z_tur_b = 124 # in mm
         elif Area == "B":
             self.z_tur_s = 129 # in mm
@@ -149,8 +149,8 @@ class get_turtle_pos:
 
         cube_det = [True, True, True] # assume that 3 cubes are on the turtlebot
         biggest_num_of_detected_cubes = 0 # innitialize that zero cubes are detected
-        num_of_positions = 3
         for i in range(40):
+            num_of_positions = 3
             x_values_test = self.x_val_raw
             y_values_test = self.y_val_raw
             cube_area_test = self.z_val_raw
@@ -161,7 +161,7 @@ class get_turtle_pos:
                 num_of_positions -= 1
             if cube_area_test[2] == 0.0:
                 num_of_positions -= 1
-            if num_of_positions > biggest_num_of_detected_cubes:
+            if num_of_positions >= biggest_num_of_detected_cubes:
                 biggest_num_of_detected_cubes = num_of_positions
                 x_values = [x_values_test[0], x_values_test[1], x_values_test[2]]
                 y_values = [y_values_test[0], y_values_test[1], y_values_test[2]]
@@ -171,7 +171,12 @@ class get_turtle_pos:
                     y_values.pop(-1)
                     cube_area.pop(-1)
                     cube_det[-(j+1)] = False
+            rospy.logerr("res: x_1: %s, y_1: %s, z_1: %s", x_values, y_values, cube_area)
             time.sleep(0.1)
+        for i in range(biggest_num_of_detected_cubes):
+            cube_det[i] = True
+        rospy.logerr("fin: x_1: %s, y_1: %s, z_1: %s", x_values, y_values, cube_area)
+
 
         # now I have a list with the x and y values of the detected cubes and the area of the cubes
         pos1 = []
